@@ -10,6 +10,14 @@ import json
 import urllib.request
 import urllib.error
 
+# Ensure UTF-8 output on Windows console
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 # Ports configuration
 EXPRESS_URL = "http://localhost:5000"
 FASTAPI_URL = "http://localhost:8000"
@@ -84,15 +92,31 @@ def main():
     log_header("Node.js Auth & JWT Token Issuance")
     login_data = {
         "email": "farmer@smartkisan.com",
-        "password": "demo123"
+        "password": "Password123!"
     }
     status, res = make_request(f"{EXPRESS_URL}/api/auth/login", method="POST", data=login_data)
     token = None
-    if status == 200 and "token" in res:
-        token = res["token"]
-        print(f"✅ Authentication Success for: {res.get('name')}")
-        print(f"   User Role: {res.get('role')}")
-        print(f"   JWT Token acquired (first 30 chars): {token[:30]}...")
+    if status != 200:
+        # Try registering the test user
+        reg_data = {
+            "name": "Ramesh Kisan",
+            "email": "farmer@smartkisan.com",
+            "password": "Password123!",
+            "role": "farmer"
+        }
+        reg_status, reg_res = make_request(f"{EXPRESS_URL}/api/auth/register", method="POST", data=reg_data)
+        if reg_status in (200, 201):
+            token = reg_res.get("data", {}).get("accessToken") or reg_res.get("accessToken")
+            print(f"✅ User registered and authenticated: Ramesh Kisan")
+        else:
+            # Try login again
+            status, res = make_request(f"{EXPRESS_URL}/api/auth/login", method="POST", data=login_data)
+            token = res.get("data", {}).get("accessToken") or res.get("accessToken") or res.get("token")
+    else:
+        token = res.get("data", {}).get("accessToken") or res.get("accessToken") or res.get("token")
+
+    if token:
+        print(f"✅ Authentication Success! JWT Token acquired (first 30 chars): {token[:30]}...")
     else:
         print(f"❌ Authentication failed: {res}")
         sys.exit(1)
