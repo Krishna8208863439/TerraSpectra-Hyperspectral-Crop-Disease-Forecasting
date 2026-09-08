@@ -1,7 +1,18 @@
 import os
+import sys
 import shutil
 import json
 import pickle
+
+# Ensure Windows stdout/stderr handles UTF-8 gracefully without crashing on emojis
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+except Exception:
+    pass
+
 try:
     import pandas as pd
 except Exception:
@@ -12,8 +23,10 @@ from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form, sta
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-import requests
-from twilio.rest import Client
+try:
+    from twilio.rest import Client
+except ImportError:
+    Client = None
 
 # Load .env file if present (local development)
 try:
@@ -70,7 +83,7 @@ logger = logging.getLogger("SmartKisanBackend")
 async def log_requests(request: Request, call_next):
     start = time.time()
     client_ip = request.client.host if request.client else "unknown"
-    logger.info("→ %s %s [%s]", request.method, request.url.path, client_ip)
+    logger.info("-> %s %s [%s]", request.method, request.url.path, client_ip)
     try:
         response = await call_next(request)
     except Exception as exc:
@@ -78,7 +91,7 @@ async def log_requests(request: Request, call_next):
         raise
     duration_ms = round((time.time() - start) * 1000, 1)
     level = logging.ERROR if response.status_code >= 500 else logging.WARNING if response.status_code >= 400 else logging.INFO
-    logger.log(level, "← %s %s → %d (%sms)", request.method, request.url.path, response.status_code, duration_ms)
+    logger.log(level, "<- %s %s -> %d (%sms)", request.method, request.url.path, response.status_code, duration_ms)
     return response
 
 # Exception handlers
@@ -348,6 +361,30 @@ async def diagnose_crop_disease(
     # Read image bytes for model prediction
     with open(file_path, "rb") as f:
          img_bytes = f.read()
+
+    # 1b. STAGE 1 Validation Gate: MobileNetV2 ML classifier + Face/Skin Detector
+    # Strictly rejects selfies, people, indoor walls, furniture, non-plant items
+    gate_result = validate_is_plant_image(img_bytes, confidence_threshold=0.60, custom_key=x_gemini_key)
+    if not gate_result.get("is_valid"):
+        print(f"[Diagnose] [REJECT] Plant Gate rejected image: {gate_result}")
+        return {
+            "success": True,
+            "isAgriculturalImage": False,
+            "isPlant": False,
+            "is_plant": False,
+            "crop": "Not a Crop",
+            "disease": "Invalid Image (Non-Crop Detected)",
+            "severity": "Low",
+            "confidence": 0.0,
+            "certaintyPercent": 0,
+            "error": "No crop or plant leaf detected in this image. Please upload or photograph a real crop leaf, agricultural plant, or farm produce.",
+            "message": "No crop or plant leaf detected in this image. Please upload or photograph a real crop leaf, agricultural plant, or farm produce.",
+            "advice": "Please ensure the camera is pointed directly at a crop leaf or farm plant. Selfies, indoor rooms, and non-plant objects are strictly rejected.",
+            "symptoms": ["Non-crop or human/indoor image detected."],
+            "treatment": ["Please take a clear photo of your crop, plant leaves, fruit, or farm produce."],
+            "imageUrl": image_url,
+            "ai_model": f"MobileNetV2 Plant Gate ({gate_result.get('mode', 'ml')})"
+        }
 
     # 2. Run ML pipeline (with strict crop isolation guardrails)
     prediction = predict_image(img_bytes, crop_hint=crop, filename=image.filename, custom_key=x_gemini_key)

@@ -33,6 +33,7 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [diagnosisResult, setDiagnosisResult] = useState(null);
   const [diagnosisError, setDiagnosisError] = useState(null);
+  const [plantCheckWarning, setPlantCheckWarning] = useState(null);
 
   // Selected Crop State
   const [selectedCrop, setSelectedCrop] = useState('Potato');
@@ -84,6 +85,7 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
     setIsAnalyzing(false);
     setDiagnosisResult(null);
     setDiagnosisError(null);
+    setPlantCheckWarning(null);
     onClose();
   };
 
@@ -111,6 +113,67 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
     }
   };
 
+  // Instant client-side check to verify if the frame contains agricultural plant foliage
+  const analyzeCanvasPlantFoliage = (canvas) => {
+    try {
+      const ctx = canvas.getContext('2d');
+      const { width, height } = canvas;
+      if (!width || !height) return { isPlant: true };
+
+      const sampleStep = Math.max(2, Math.floor(Math.min(width, height) / 60));
+      const imgData = ctx.getImageData(0, 0, width, height).data;
+      let plantPixels = 0;
+      let skinPixels = 0;
+      let totalSampled = 0;
+
+      for (let y = 0; y < height; y += sampleStep) {
+        for (let x = 0; x < width; x += sampleStep) {
+          const idx = (y * width + x) * 4;
+          const r = imgData[idx];
+          const g = imgData[idx + 1];
+          const b = imgData[idx + 2];
+          totalSampled++;
+
+          // Chlorophyll green / plant foliage detection
+          if (g > 35 && g > r * 1.05 && g > b * 1.05) {
+            plantPixels++;
+          } else if (r > 60 && g > 60 && b < 50 && Math.abs(r - g) < 40) {
+            // Yellow / chlorotic agricultural leaf
+            plantPixels += 0.6;
+          }
+
+          // Human skin tone heuristic (standard biometric RGB rule)
+          if (r > 95 && g > 40 && b > 20 && (r - g) > 15 && (r - b) > 15 && r > g && g > b) {
+            skinPixels++;
+          }
+        }
+      }
+
+      const plantRatio = plantPixels / (totalSampled || 1);
+      const skinRatio = skinPixels / (totalSampled || 1);
+
+      if (skinRatio > 0.12 && plantRatio < 0.10) {
+        return {
+          isPlant: false,
+          reason: language === 'mr'
+            ? 'व्यक्ती किंवा चेहरा आढळला आहे. कृपया फक्त पिकाचे किंवा वनस्पतीचे छायाचित्र काढा.'
+            : 'Human face or selfie detected. Only agricultural crop and plant images can be scanned.'
+        };
+      }
+      if (plantRatio < 0.035 && skinRatio > 0.04) {
+        return {
+          isPlant: false,
+          reason: language === 'mr'
+            ? 'पिकाचे पान किंवा शेती उत्पादन आढळले नाही. कृपया योग्य पिकाचा फोटो घ्या.'
+            : 'No crop or plant foliage detected. Please photograph a real crop leaf, agricultural plant, or farm produce.'
+        };
+      }
+      return { isPlant: true, plantRatio, skinRatio };
+    } catch (e) {
+      return { isPlant: true };
+    }
+  };
+
   // Capture snapshot from live camera stream
   const handleTakeSnapshot = () => {
     if (!videoRef.current || !canvasRef.current) return;
@@ -122,6 +185,10 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
 
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Run client-side plant foliage validation
+    const check = analyzeCanvasPlantFoliage(canvas);
+    setPlantCheckWarning(check.isPlant ? null : check.reason);
 
     canvas.toBlob((blob) => {
       if (blob) {
@@ -147,6 +214,20 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
       setPreviewUrl(url);
       setDiagnosisResult(null);
       setDiagnosisError(null);
+
+      // Analyze uploaded gallery image for foliage
+      const img = new Image();
+      img.onload = () => {
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = img.width || 640;
+        offCanvas.height = img.height || 480;
+        const offCtx = offCanvas.getContext('2d');
+        offCtx.drawImage(img, 0, 0, offCanvas.width, offCanvas.height);
+        const check = analyzeCanvasPlantFoliage(offCanvas);
+        setPlantCheckWarning(check.isPlant ? null : check.reason);
+      };
+      img.src = url;
+
       setModalMode('preview');
     }
   };
@@ -157,12 +238,23 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
     setPreviewUrl('');
     setDiagnosisResult(null);
     setDiagnosisError(null);
+    setPlantCheckWarning(null);
     setModalMode('camera');
   };
 
   // Execute AI Vision Analysis via endpoint /api/crop-diagnosis
   const handleAnalyzeImage = async () => {
     if (!capturedFile) return;
+
+    // Immediately reject if client-side check found human face or non-plant image
+    if (plantCheckWarning) {
+      setDiagnosisResult({
+        isAgriculturalImage: false,
+        error: plantCheckWarning
+      });
+      setModalMode('result');
+      return;
+    }
 
     setIsAnalyzing(true);
     setDiagnosisError(null);
@@ -317,7 +409,7 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
               <div className="camera-frame-guide">
                 <div className="camera-frame-box">
                   <span className="camera-frame-label">
-                    {language === 'mr' ? 'पानाचा फोटो या चौकटीत ठेवा' : 'POSITION CROP / LEAF WITHIN FRAME'}
+                    🍃 {language === 'mr' ? 'फक्त पिके / झाडांची पाने चौकटीत ठेवा' : 'POSITION CROP / LEAF WITHIN FRAME (CROPS ONLY)'}
                   </span>
                 </div>
               </div>
@@ -387,6 +479,31 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
                 style={{ width: '100%', maxHeight: '280px', objectFit: 'contain', display: 'block' }}
               />
             </div>
+
+            {/* Client-side Non-Plant / Face Warning Banner */}
+            {plantCheckWarning && (
+              <div style={{
+                background: '#450a0a',
+                border: '1.5px solid #ef4444',
+                borderRadius: 10,
+                padding: '12px 16px',
+                marginBottom: 16,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                textAlign: 'left'
+              }}>
+                <ShieldAlert size={26} color="#f87171" style={{ flexShrink: 0 }} />
+                <div>
+                  <div style={{ color: '#fee2e2', fontWeight: 800, fontSize: 13.5 }}>
+                    {language === 'mr' ? 'अयोग्य छायाचित्र (पिकाचे पान नाही)' : 'Non-Crop Image Detected'}
+                  </div>
+                  <div style={{ color: '#fca5a5', fontSize: 12, marginTop: 2 }}>
+                    {plantCheckWarning}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Crop Name Selector & Input Section */}
             <div style={{

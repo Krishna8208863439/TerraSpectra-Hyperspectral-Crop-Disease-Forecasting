@@ -1564,27 +1564,37 @@ def validate_agricultural_image(image_bytes: bytes) -> tuple[bool, str]:
         # 1. OpenCV Haar Face Detection (Selfie / Human detection)
         try:
             face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50))
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.08, minNeighbors=3, minSize=(30, 30))
             if len(faces) > 0 and plant_ratio < 0.25:
-                print(f"[Guardrail] [REJECT] Human face detected ({len(faces)} face(s)). Rejecting non-crop image.")
+                print(f"[Guardrail] [REJECT] Human face/selfie detected ({len(faces)} face(s)). Rejecting non-crop image.")
                 return False, "Human face or selfie detected. Please upload a clear photo of a crop, plant, leaf, or farm produce."
         except Exception as face_e:
             print(f"[Guardrail] Face check error: {face_e}")
 
         # 2. Skin Color vs Vegetation Ratio
-        if skin_ratio > 0.15 and plant_ratio < 0.10:
-            print(f"[Guardrail] [REJECT] High skin ratio ({skin_ratio:.1%}) with low plant content ({plant_ratio:.1%}). Rejecting.")
+        if skin_ratio > 0.08 and plant_ratio < 0.15:
+            print(f"[Guardrail] [REJECT] Human skin ratio ({skin_ratio:.1%}) with low plant content ({plant_ratio:.1%}). Rejecting.")
             return False, "Human subject or skin detected. Please capture only a crop, plant, leaf, or farm vegetable."
 
-        # 3. Non-plant indoor / artificial objects (e.g. wall, bed, furniture, car, phone screen)
-        if plant_ratio < 0.03 and tuber_ratio < 0.05:
+        # 3. MobileNetV2 Machine Learning Plant Gate Check
+        try:
+            from plant_gate import validate_is_plant_image
+            gate_res = validate_is_plant_image(image_bytes, confidence_threshold=0.60)
+            if not gate_res.get("is_valid"):
+                print(f"[Guardrail] [REJECT] MobileNetV2 Plant Gate flagged image as non-plant: {gate_res}")
+                return False, "No crop or plant leaf detected in this image. Please upload a clear photo of a crop, leaf, or plant."
+        except Exception as gate_e:
+            print(f"[Guardrail] Plant gate check error: {gate_e}")
+
+        # 4. Non-plant indoor / artificial objects (e.g. wall, bed, furniture, car, phone screen)
+        if plant_ratio < 0.04 and tuber_ratio < 0.04:
             print(f"[Guardrail] [REJECT] No agricultural vegetation or crop features detected (Plant: {plant_ratio:.1%}, Tuber: {tuber_ratio:.1%}).")
             return False, "No crop, plant, leaf, or farm produce detected in the image. Please upload a clear photo of your field crop."
 
         return True, ""
     except Exception as err:
         print(f"[Guardrail] Validation error: {err}")
-        return True, ""
+        return False, "Image validation could not verify plant content. Please upload a clear photo of a crop or plant leaf."
 
 
 # ─────────────────────────────────────────────────────────────────────────────

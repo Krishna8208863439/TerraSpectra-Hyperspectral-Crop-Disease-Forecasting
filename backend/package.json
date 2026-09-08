@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --ignore db_fallback.json --ignore uploads/ server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test:db": "node test_db.js",
+    "seed:db": "node seed_db.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

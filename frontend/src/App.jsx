@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import BottomNav from "./components/common/BottomNav";
 import MobileMoreDrawer from "./components/common/MobileMoreDrawer";
 import CameraScannerModal from "./components/common/CameraScannerModal";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -44,11 +45,6 @@ const OfflineBar = () => {
   );
 };
 
-const RootRoute = () => {
-  const { user } = useAuth();
-  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
-};
-
 const MainLayout = ({ children }) => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -82,8 +78,8 @@ const App = () => {
           <BrowserRouter>
             <MainLayout>
               <Routes>
-                <Route path="/" element={<RootRoute />} />
-                <Route path="/home" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Home />} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
                 <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />

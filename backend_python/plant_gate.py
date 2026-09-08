@@ -118,7 +118,13 @@ def _load_gate_model():
         # Fine-tuned binary checkpoint: output layer = 2 (plant / not_plant)
         try:
             model = models.mobilenet_v2(weights=None)
-            model.classifier[1] = nn.Linear(model.last_channel, 2)
+            model.classifier = nn.Sequential(
+                nn.Dropout(p=0.25),
+                nn.Linear(model.last_channel, 64),
+                nn.ReLU(),
+                nn.Dropout(p=0.2),
+                nn.Linear(64, 2)
+            )
             state = torch.load(_GATE_WEIGHTS_PATH, map_location="cpu")
             model.load_state_dict(state)
             model.eval()
@@ -209,7 +215,8 @@ def _score_binary_finetuned(image_bytes: bytes) -> tuple[float, str]:
 
     plant_prob = probs[0].item()
     not_plant_prob = probs[1].item()
-    label = "plant" if plant_prob >= not_plant_prob else "not_plant"
+    # High certainty required for plant (>= 0.70)
+    label = "plant" if (plant_prob >= 0.70 and plant_prob > not_plant_prob) else "not_plant"
     logger.info(
         "[Gate-Binary] plant=%.3f not_plant=%.3f → %s",
         plant_prob, not_plant_prob, label,
@@ -217,8 +224,94 @@ def _score_binary_finetuned(image_bytes: bytes) -> tuple[float, str]:
     return float(plant_prob), label
 
 
+def _run_cv_pregate(image_bytes: bytes) -> tuple[Optional[bool], float, str, str]:
+    """
+    Multi-stage Computer Vision Pre-Filter (OpenCV + NumPy):
+    1. Detects frontal and profile human faces (Haar Cascades).
+    2. Analyzes human skin tone ratio (YCrCb color space).
+    3. Analyzes chlorophyll vegetation / agricultural foliage ratio (HSV color space).
+    Returns: (is_plant: Optional[bool], confidence: float, label: "plant"|"not_plant", reason: str)
+    """
+    try:
+        import cv2
+        import numpy as np
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        cv_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if cv_img is None:
+            return False, 0.99, "not_plant", "Could not decode uploaded image bytes."
+
+        h, w, _ = cv_img.shape
+        total_px = float(h * w)
+
+        # 1. Human Face Detection (Frontal + Profile)
+        gray = cv2.cvtColor(cv_img, cv2.COLOR_BGR2GRAY)
+        cascade_dir = getattr(cv2.data, "haarcascades", "")
+        frontal_path = os.path.join(cascade_dir, "haarcascade_frontalface_default.xml")
+        profile_path = os.path.join(cascade_dir, "haarcascade_profileface.xml")
+
+        faces = []
+        if os.path.exists(frontal_path):
+            face_cascade = cv2.CascadeClassifier(frontal_path)
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30))
+
+        if len(faces) > 0:
+            logger.info(f"[Gate] [REJECT] Human face/selfie detected ({len(faces)} face(s))! Immediate non-plant rejection.")
+            return False, 0.99, "not_plant", "Human face or selfie detected. Only agricultural crop and plant images can be scanned."
+
+        if os.path.exists(profile_path):
+            profile_cascade = cv2.CascadeClassifier(profile_path)
+            profiles = profile_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30))
+            if len(profiles) > 0:
+                logger.info(f"[Gate] [REJECT] Human profile face detected ({len(profiles)} face(s))! Immediate non-plant rejection.")
+                return False, 0.98, "not_plant", "Human face detected. Only agricultural crop and plant images can be scanned."
+
+        # 2. Skin tone vs Chlorophyll Plant Foliage Analysis
+        ycrcb = cv2.cvtColor(cv_img, cv2.COLOR_BGR2YCrCb)
+        hsv = cv2.cvtColor(cv_img, cv2.COLOR_BGR2HSV)
+
+        # Skin mask in YCrCb: Cr in [133, 173], Cb in [77, 127]
+        skin_mask = cv2.inRange(ycrcb, np.array([0, 133, 77]), np.array([255, 173, 127]))
+        skin_ratio = float(np.sum(skin_mask > 0) / total_px)
+
+        # Chlorophyll green vegetation mask in HSV: Hue [25, 95], Sat [25, 255], Val [25, 255]
+        plant_mask = cv2.inRange(hsv, np.array([25, 25, 25]), np.array([95, 255, 255]))
+        plant_ratio = float(np.sum(plant_mask > 0) / total_px)
+
+        # Yellowish / agricultural leaf chlorosis mask in HSV: Hue [15, 30]
+        yellow_mask = cv2.inRange(hsv, np.array([15, 40, 40]), np.array([30, 255, 255]))
+        yellow_ratio = float(np.sum(yellow_mask > 0) / total_px)
+
+        total_foliage_ratio = plant_ratio + (yellow_ratio * 0.5)
+
+        logger.info(f"[Gate-CV] skin_ratio={skin_ratio:.3f}, plant_ratio={plant_ratio:.3f}, total_foliage={total_foliage_ratio:.3f}")
+
+        # High skin ratio with low plant content -> human selfie / hand
+        if skin_ratio > 0.08 and total_foliage_ratio < 0.12:
+            logger.info(f"[Gate] [REJECT] High skin ratio ({skin_ratio:.1%}) with low plant content ({total_foliage_ratio:.1%}).")
+            return False, 0.95, "not_plant", "Human skin or selfie detected. Only agricultural crop leaves and plants can be scanned."
+
+        # Zero or negligible foliage content -> blank wall, indoor scene, car, furniture
+        if total_foliage_ratio < 0.035:
+            logger.info(f"[Gate] [REJECT] Negligible plant foliage content ({total_foliage_ratio:.1%}).")
+            return False, 0.92, "not_plant", "No crop or plant foliage detected. Please photograph a real crop leaf, agricultural plant, or farm produce."
+
+        # Significant plant foliage present
+        if total_foliage_ratio >= 0.15:
+            return True, min(0.96, 0.75 + total_foliage_ratio * 0.25), "plant", "Valid agricultural foliage detected"
+
+        return None, 0.75, "plant", "Foliage detected, awaiting secondary classifier"
+
+    except Exception as cv_e:
+        logger.warning(f"[Gate] OpenCV face/skin pre-filter exception: {cv_e}")
+        return None, 0.5, "plant", "CV prefilter error"
+
+
 def _run_mobilenetv2_gate(image_bytes: bytes) -> tuple[float, str]:
-    """Dispatch to fine-tuned or pretrained scoring depending on weights availability."""
+    """
+    Multi-stage computer vision validation gate:
+    Runs fine-tuned MobileNetV2 Binary Plant Classifier or ImageNet classifier.
+    """
+    # Stage B: Fine-tuned MobileNetV2 Binary Gate
     if os.path.exists(_GATE_WEIGHTS_PATH):
         return _score_binary_finetuned(image_bytes)
     return _score_pretrained_imagenet(image_bytes)
@@ -280,8 +373,13 @@ def _run_gemini_plant_check(
                 break
 
     if not api_key:
-        logger.warning("[Gate-Gemini] No API key available. Bypass gate (fail-open).")
-        return 0.8, "plant"
+        logger.info("[Gate-Gemini] No API key available. Running CV pre-gate heuristic.")
+        cv_decision, cv_conf, cv_label, cv_reason = _run_cv_pregate(image_bytes)
+        if cv_decision is False:
+            return cv_conf, "not_plant"
+        elif cv_decision is True:
+            return cv_conf, "plant"
+        return 0.5, "not_plant"
 
     try:
         mime_type = "image/jpeg"
@@ -314,8 +412,9 @@ def _run_gemini_plant_check(
         }
         resp = _req.post(url, json=payload, timeout=20)
         if resp.status_code != 200:
-            logger.warning("[Gate-Gemini] API error %d. Bypass gate.", resp.status_code)
-            return 0.8, "plant"
+            logger.warning("[Gate-Gemini] API error %d. Falling back to CV pre-gate.", resp.status_code)
+            cv_decision, cv_conf, cv_label, _ = _run_cv_pregate(image_bytes)
+            return (cv_conf, "plant") if cv_decision is True else (cv_conf, "not_plant")
 
         data = resp.json()
         raw = (
@@ -342,8 +441,9 @@ def _run_gemini_plant_check(
         return confidence, label
 
     except Exception as e:
-        logger.warning("[Gate-Gemini] Exception: %s — bypass gate (fail-open).", e)
-        return 0.8, "plant"
+        logger.warning("[Gate-Gemini] Exception: %s — using CV pre-gate.", e)
+        cv_decision, cv_conf, _, _ = _run_cv_pregate(image_bytes)
+        return (cv_conf, "plant") if cv_decision is True else (0.95, "not_plant")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -380,31 +480,40 @@ def log_rejection(filename: str, endpoint: str, confidence: float, reason: str):
 # ─────────────────────────────────────────────────────────────────────────────
 def validate_is_plant_image(
     image_bytes: bytes,
-    confidence_threshold: float = 0.75,
+    confidence_threshold: float = 0.70,
     custom_key: Optional[str] = None,
 ) -> dict:
     """
-    Step 1 Validation Gate — must pass before any diagnosis logic runs.
-
-    Returns:
-        {
-            "is_valid": bool,
-            "confidence": float,        # 0.0 – 1.0
-            "label": "plant"|"not_plant",
-            "mode":  "mobilenetv2" | "gemini_fallback" | "bypass"
-        }
-
-    Decision:
-        is_valid = (label == "plant") AND (confidence >= confidence_threshold)
+    Step 1 Validation Gate — strictly ensures ONLY crop/plant images are processed.
+    Non-plant images (human faces/selfies, indoor rooms, vehicles, animals) are rejected.
     """
     try:
+        # 1. ALWAYS run the OpenCV face, skin & foliage pre-gate first
+        cv_decision, cv_conf, cv_label, cv_reason = _run_cv_pregate(image_bytes)
+        if cv_decision is False:
+            logger.info(f"[Gate] Rejection triggered by CV pre-gate: {cv_reason}")
+            log_rejection("scan.jpg", "validate_is_plant_image", cv_conf, cv_reason)
+            return {
+                "is_valid": False,
+                "confidence": round(cv_conf, 4),
+                "label": "not_plant",
+                "reason": cv_reason,
+                "mode": "opencv_pregate",
+            }
+
+        # 2. If it passed pre-gate, verify with ML model if available
+        has_gemini = bool((custom_key or os.getenv("GEMINI_API_KEY", "")).strip())
         if TORCH_AVAILABLE:
             confidence, label = _run_mobilenetv2_gate(image_bytes)
             mode = "mobilenetv2"
-        else:
-            # PythonAnywhere or no torch: use Gemini strict plant check
+        elif has_gemini:
             confidence, label = _run_gemini_plant_check(image_bytes, custom_key)
             mode = "gemini_fallback"
+        else:
+            # OpenCV pre-gate passed with verified foliage
+            confidence = cv_conf if cv_decision is True else 0.75
+            label = "plant" if cv_decision is True else "not_plant"
+            mode = "opencv_foliage"
 
         is_valid = (label == "plant") and (confidence >= confidence_threshold)
 
@@ -417,6 +526,7 @@ def validate_is_plant_image(
             "is_valid": is_valid,
             "confidence": round(confidence, 4),
             "label": label,
+            "reason": "Plant validated successfully" if is_valid else "Not an agricultural crop/plant image",
             "mode": mode,
         }
 
@@ -425,10 +535,11 @@ def validate_is_plant_image(
             "[Gate] Unexpected error in validate_is_plant_image: %s\n%s",
             e, traceback.format_exc(),
         )
-        # Fail-open on unexpected exceptions to avoid breaking existing deployments
+        # Strictly reject on unexpected exceptions to prevent false positives
         return {
-            "is_valid": True,
-            "confidence": 0.8,
-            "label": "plant",
-            "mode": "bypass",
+            "is_valid": False,
+            "confidence": 0.0,
+            "label": "not_plant",
+            "reason": "Could not verify plant in image.",
+            "mode": "error_guard",
         }
