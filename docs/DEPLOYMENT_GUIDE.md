@@ -94,3 +94,4 @@ docker-compose up --build -d
 - **PythonAnywhere Hosting Note**: The existing Smart Kisan deployment at `https://Krishna3114.pythonanywhere.com` remains completely untouched. Because PythonAnywhere WSGI has CPU and memory ceilings for heavy scientific array processing, the recommended hosting targets for TerraSpectra in production are:
   - Docker on AWS ECS / DigitalOcean / GCP Cloud Run.
   - Render / Railway using the provided `backend/Dockerfile` and `frontend/Dockerfile`.
+
