@@ -106,3 +106,4 @@ class GeospatialHeatmapEngine:
             "statistics": stats,
             "geojson": geojson
         }
+

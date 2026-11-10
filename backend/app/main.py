@@ -14,6 +14,7 @@ from app.forecasting.crop_stress_engine import EarlyCropStressEngine
 from app.forecasting.forecasting_engine import CropDiseaseForecastingEngine
 from app.explainability.xai_engine import ExplainableAIEngine
 from app.services.weather_service import EnvironmentalIntelligenceService
+from app.services.report_service import ReportExportEngine
 from app.database import db
 from app.geospatial.heatmap_engine import GeospatialHeatmapEngine
 
@@ -239,6 +240,21 @@ def get_model_evaluation_metrics():
         },
         "ablation_insights": "The hybrid architecture achieves a +4.3% F1 gain over stand-alone 3D-CNN by capturing non-local spectral absorption correlations through multi-head self-attention."
     }
+
+@app.post("/api/v1/reports/export-csv")
+@app.get("/api/reports/export-csv")
+def export_csv_report():
+    """
+    Exports a comprehensive CSV scientific report of the active benchmark specimen diagnosis.
+    """
+    sample = get_sample_hypercube()
+    forecast = CropDiseaseForecastingEngine.forecast_7_day_risk(
+        crop_type="Wheat (Triticum aestivum)",
+        current_stress_score=sample["stress"]["composite_stress_score"],
+        historical_spectral_trend=[0.35, 0.40, sample["stress"]["composite_stress_score"]],
+        weather_forecast_days=[]
+    )
+    return ReportExportEngine.generate_csv_report(sample, forecast)
 
 @app.get("/api/research/sample-hypercube")
 def get_sample_hypercube():

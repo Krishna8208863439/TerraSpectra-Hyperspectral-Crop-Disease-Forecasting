@@ -63,3 +63,4 @@ class LargeRasterTilingEngine:
         weight_mask = np.maximum(weight_mask, 1e-5)
         blended_scene = accum_risk[:orig_h, :orig_w] / weight_mask[:orig_h, :orig_w]
         return np.clip(blended_scene, 0.0, 1.0)
+
