@@ -16,6 +16,9 @@ from app.explainability.xai_engine import ExplainableAIEngine
 from app.services.weather_service import EnvironmentalIntelligenceService
 from app.database import db
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 app = FastAPI(
     title="TerraSpectra Hyperspectral AI API",
     description="Scientific Hyperspectral Crop Intelligence & Disease Forecasting System",
@@ -34,7 +37,7 @@ app.add_middleware(
 # Instantiate ML classification engine
 classifier = HyperspectralDiseaseClassifier()
 
-@app.get("/")
+@app.get("/api/health")
 def health_check():
     return {
         "status": "online",
@@ -216,4 +219,19 @@ def get_sample_hypercube():
         "stress": stress,
         "explainability": xai
     }
+
+# Mount Frontend static distribution for unified Single-URL deployment
+frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+if os.path.exists(frontend_dist):
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        file_path = os.path.join(frontend_dist, full_path)
+        if full_path and os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
 
