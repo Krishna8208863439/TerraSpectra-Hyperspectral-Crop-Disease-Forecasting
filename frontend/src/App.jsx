@@ -19,7 +19,9 @@ import {
   Search,
   MapPin,
   Compass,
-  Maximize2
+  Maximize2,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const API_BASE = '/api';
@@ -36,6 +38,12 @@ export default function App() {
   const [selectedCrop, setSelectedCrop] = useState('Wheat (Triticum aestivum)');
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadError, setUploadError] = useState(null);
+  const [isDark, setIsDark] = useState(true);
+
+  // Apply theme on toggle
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   // Load sample baseline analysis & telemetry on start
   useEffect(() => {
@@ -199,7 +207,7 @@ export default function App() {
                   borderRadius: '8px',
                   border: 'none',
                   background: isActive ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
-                  color: isActive ? '#34d399' : '#94a3b8',
+                  color: isActive ? '#34d399' : 'var(--text-muted)',
                   fontWeight: isActive ? 600 : 500,
                   fontSize: '0.875rem',
                   cursor: 'pointer',
@@ -207,17 +215,17 @@ export default function App() {
                   transition: 'all 0.15s ease'
                 }}
               >
-                <Icon size={18} color={isActive ? '#34d399' : '#64748b'} />
+                <Icon size={18} color={isActive ? '#34d399' : 'var(--text-faint)'} />
                 <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        <div style={{ padding: '16px 20px', borderTop: '1px solid #1e293b', fontSize: '0.75rem', color: '#64748b' }}>
+        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', fontSize: '0.75rem', color: 'var(--text-faint)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span>
-            <span style={{ color: '#cbd5e1', fontWeight: 500 }}>Engine: VNIR 400-1000nm</span>
+            <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Engine: VNIR 400-1000nm</span>
           </div>
           <p>Scientific Core v2.0.0</p>
         </div>
@@ -228,14 +236,14 @@ export default function App() {
         {/* Top Header */}
         <header className="topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Target Agronomic Specimen:</span>
+            <span style={{ fontSize: '0.875rem', color: 'var(--text-faint)' }}>Target Agronomic Specimen:</span>
             <select
               value={selectedCrop}
               onChange={(e) => setSelectedCrop(e.target.value)}
               style={{
-                background: '#0f172a',
-                border: '1px solid #334155',
-                color: '#f8fafc',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-hover)',
+                color: 'var(--text-main)',
                 padding: '6px 12px',
                 borderRadius: '6px',
                 fontSize: '0.85rem'
@@ -258,6 +266,17 @@ export default function App() {
             >
               <RefreshCw size={14} className={loading ? 'spin' : ''} />
               <span>Load Benchmark Cube</span>
+            </button>
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="theme-toggle-btn"
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDark ? <Sun size={15} /> : <Moon size={15} />}
+              <div className={`toggle-track ${!isDark ? 'active' : ''}`}>
+                <div className="toggle-thumb"></div>
+              </div>
+              <span style={{ fontSize: '0.78rem' }}>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
             </button>
             <div className="badge badge-emerald">Hyperspectral Active</div>
           </div>

@@ -1,19 +1,85 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-:root {
+/* =============================================
+   DARK MODE (DEFAULT)
+   ============================================= */
+:root,
+html[data-theme="dark"] {
   --primary-emerald: #10b981;
   --primary-emerald-dark: #047857;
   --secondary-teal: #0d9488;
+
   --bg-deep: #090d16;
+  --bg-sidebar: #0b1120;
   --bg-card: #0f172a;
-  --bg-card-border: #1e293b;
+  --bg-card-alt: #090d16;
+  --bg-topbar: rgba(11, 17, 32, 0.9);
+
+  --border-color: #1e293b;
+  --border-hover: #334155;
+
   --text-main: #f8fafc;
+  --text-secondary: #e2e8f0;
   --text-muted: #94a3b8;
+  --text-faint: #64748b;
+
   --accent-cyan: #06b6d4;
   --accent-amber: #f59e0b;
   --accent-rose: #f43f5e;
+
+  --scrollbar-track: #090d16;
+  --scrollbar-thumb: #1e293b;
+  --scrollbar-thumb-hover: #334155;
+
+  --input-bg: #090d16;
+  --input-border: #334155;
+
+  --table-row-hover: rgba(30, 41, 59, 0.5);
+
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
 }
 
+/* =============================================
+   LIGHT MODE
+   ============================================= */
+html[data-theme="light"] {
+  --primary-emerald: #059669;
+  --primary-emerald-dark: #047857;
+  --secondary-teal: #0d9488;
+
+  --bg-deep: #f0fdf4;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-alt: #f8fafc;
+  --bg-topbar: rgba(255, 255, 255, 0.95);
+
+  --border-color: #d1fae5;
+  --border-hover: #a7f3d0;
+
+  --text-main: #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted: #475569;
+  --text-faint: #64748b;
+
+  --accent-cyan: #0891b2;
+  --accent-amber: #d97706;
+  --accent-rose: #e11d48;
+
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+
+  --input-bg: #f8fafc;
+  --input-border: #cbd5e1;
+
+  --table-row-hover: rgba(209, 250, 229, 0.4);
+
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* =============================================
+   BASE RESET & BODY
+   ============================================= */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -25,29 +91,24 @@ body {
   background-color: var(--bg-deep);
   color: var(--text-main);
   min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 code, pre, .font-mono {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #090d16;
-}
-::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #334155;
-}
+/* =============================================
+   SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
-/* Utility layout classes */
+/* =============================================
+   LAYOUT
+   ============================================= */
 .app-container {
   display: flex;
   min-height: 100vh;
@@ -55,10 +116,12 @@ code, pre, .font-mono {
 
 .sidebar {
   width: 270px;
-  background: #0b1120;
-  border-right: 1px solid #1e293b;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  box-shadow: var(--shadow);
 }
 
 .main-content {
@@ -67,13 +130,16 @@ code, pre, .font-mono {
   flex-direction: column;
   overflow-y: auto;
   height: 100vh;
+  background: var(--bg-deep);
+  transition: background-color 0.25s ease;
 }
 
 .topbar {
   height: 64px;
-  background: rgba(11, 17, 32, 0.85);
+  background: var(--bg-topbar);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid #1e293b;
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -81,6 +147,7 @@ code, pre, .font-mono {
   position: sticky;
   top: 0;
   z-index: 20;
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .content-body {
@@ -88,12 +155,17 @@ code, pre, .font-mono {
   flex: 1;
 }
 
+/* =============================================
+   CARDS
+   ============================================= */
 .card {
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 20px;
   position: relative;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  box-shadow: var(--shadow);
 }
 
 .card-header {
@@ -103,6 +175,9 @@ code, pre, .font-mono {
   margin-bottom: 16px;
 }
 
+/* =============================================
+   BADGES
+   ============================================= */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -112,11 +187,12 @@ code, pre, .font-mono {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .badge-emerald {
   background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
@@ -128,16 +204,19 @@ code, pre, .font-mono {
 
 .badge-amber {
   background: rgba(245, 158, 11, 0.15);
-  color: #fcd34d;
+  color: #d97706;
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .badge-cyan {
   background: rgba(6, 182, 212, 0.15);
-  color: #67e8f9;
+  color: #0891b2;
   border: 1px solid rgba(6, 182, 212, 0.3);
 }
 
+/* =============================================
+   BUTTONS
+   ============================================= */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -153,24 +232,78 @@ code, pre, .font-mono {
 }
 
 .btn-primary {
-  background: #10b981;
-  color: #042f2e;
+  background: var(--primary-emerald);
+  color: #fff;
   font-weight: 600;
 }
 .btn-primary:hover {
-  background: #059669;
+  background: var(--primary-emerald-dark);
 }
 
 .btn-secondary {
-  background: #1e293b;
-  color: #f8fafc;
-  border-color: #334155;
+  background: var(--bg-card-alt);
+  color: var(--text-main);
+  border-color: var(--border-hover);
 }
 .btn-secondary:hover {
-  background: #334155;
+  background: var(--border-color);
 }
 
-/* Grid systems */
+/* =============================================
+   THEME TOGGLE BUTTON
+   ============================================= */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-hover);
+  background: var(--bg-card-alt);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--primary-emerald);
+  color: var(--primary-emerald);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Toggle track/pill */
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--border-hover);
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.toggle-track.active {
+  background: var(--primary-emerald);
+}
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-track.active .toggle-thumb {
+  transform: translateX(16px);
+}
+
+/* =============================================
+   GRIDS
+   ============================================= */
 .grid-cols-4 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -190,11 +323,16 @@ code, pre, .font-mono {
 }
 
 @media (max-width: 1024px) {
-  .grid-cols-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .grid-cols-2, .grid-cols-3 {
-    grid-template-columns: 1fr;
-  }
+  .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols-2, .grid-cols-3 { grid-template-columns: 1fr; }
 }
 
+/* =============================================
+   TABLE LIGHT MODE
+   ============================================= */
+html[data-theme="light"] table thead tr th {
+  color: var(--text-muted);
+}
+html[data-theme="light"] table tbody tr:hover td {
+  background: var(--table-row-hover);
+}
