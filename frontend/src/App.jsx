@@ -336,11 +336,11 @@ export default function App() {
           )}
 
           {activeTab === 'analytics' && (
-            <ResearchAnalyticsTab researchData={researchData} />
+            <ResearchAnalyticsTab researchData={researchData} analysisData={analysisData} />
           )}
 
           {activeTab === 'datasets' && (
-            <DatasetManagementTab analysisData={analysisData} />
+            <DatasetManagementTab analysisData={analysisData} researchData={researchData} />
           )}
 
           {activeTab === 'reports' && (
@@ -713,37 +713,37 @@ function SpectralAnalysisTab({ analysisData }) {
       <div className="grid-cols-3">
         <div className="card">
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>NDVI (Normalized Difference)</h3>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#34d399' }}>{indices.NDVI?.toFixed(3) || '0.742'}</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#34d399' }}>{indices.NDVI !== undefined ? indices.NDVI.toFixed(3) : '0.742'}</div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Band contrast: 800nm (NIR) vs 670nm (Red)</p>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>NDRE (Red Edge Index)</h3>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#38bdf8' }}>{indices.NDRE?.toFixed(3) || '0.518'}</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#38bdf8' }}>{indices.NDRE !== undefined ? indices.NDRE.toFixed(3) : '0.518'}</div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Sensitive to sub-canopy chlorophyll (720nm / 790nm)</p>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>PRI (Photochemical Index)</h3>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fcd34d' }}>{indices.PRI?.toFixed(3) || '0.041'}</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fcd34d' }}>{indices.PRI !== undefined ? indices.PRI.toFixed(3) : '0.041'}</div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Photosynthetic light-use efficiency (531nm vs 570nm)</p>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>WBI (Water Band Index)</h3>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#818cf8' }}>{indices.WBI?.toFixed(3) || '1.092'}</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#818cf8' }}>{indices.WBI !== undefined ? indices.WBI.toFixed(3) : '1.092'}</div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Liquid foliar water absorption (900nm / 970nm)</p>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>PSRI (Plant Senescence)</h3>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fb7185' }}>{indices.PSRI?.toFixed(3) || '-0.024'}</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fb7185' }}>{indices.PSRI !== undefined ? indices.PSRI.toFixed(3) : '-0.024'}</div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Carotenoid to chlorophyll-a ratio (680, 500, 750nm)</p>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>MCARI (Modified Chlorophyll)</h3>
-          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#a78bfa' }}>{indices.MCARI?.toFixed(3) || '0.412'}</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#a78bfa' }}>{indices.MCARI !== undefined ? indices.MCARI.toFixed(3) : '0.412'}</div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Red-edge inflection chlorophyll absorption</p>
         </div>
       </div>
@@ -1130,11 +1130,49 @@ function ResearchAnalyticsTab({ researchData }) {
         <div className="card">
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Calibrated Scans</span>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#fcd34d', marginTop: '6px' }}>
-            {dbStats?.total_spectral_analyses || 360}
+            {dbStats?.total_spectral_analyses !== undefined ? dbStats.total_spectral_analyses : 360}
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>Persisted in SQLite database</span>
         </div>
       </div>
+
+      {/* Recent Analyses Activity Feed */}
+      {researchData?.recent_analyses && researchData.recent_analyses.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Recent Analyzed Hyperspectral Scans</h3>
+            <span className="badge badge-emerald">{researchData.recent_analyses.length} Recorded</span>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)' }}>ID</th>
+                  <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)' }}>Dataset File</th>
+                  <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)' }}>Crop</th>
+                  <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)' }}>Predicted Diagnosis</th>
+                  <th style={{ padding: '8px', textAlign: 'right', color: 'var(--text-muted)' }}>Confidence</th>
+                  <th style={{ padding: '8px', textAlign: 'right', color: 'var(--text-muted)' }}>Stress Score</th>
+                  <th style={{ padding: '8px', textAlign: 'right', color: 'var(--text-muted)' }}>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {researchData.recent_analyses.map((a) => (
+                  <tr key={a.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '8px', fontFamily: 'monospace', color: 'var(--text-faint)' }}>#{a.id}</td>
+                    <td style={{ padding: '8px', fontWeight: 500, color: 'var(--text-main)' }}>{a.dataset_name}</td>
+                    <td style={{ padding: '8px', color: 'var(--text-secondary)' }}>{a.crop_type}</td>
+                    <td style={{ padding: '8px', fontWeight: 600, color: a.is_healthy ? '#34d399' : '#fb7185' }}>{a.condition}</td>
+                    <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'monospace' }}>{(a.confidence * 100).toFixed(1)}%</td>
+                    <td style={{ padding: '8px', textAlign: 'right', fontFamily: 'monospace', color: a.stress_score > 0.4 ? '#fb7185' : '#34d399' }}>{(a.stress_score * 100).toFixed(1)}%</td>
+                    <td style={{ padding: '8px', textAlign: 'right', color: 'var(--text-faint)' }}>{new Date(a.created_at).toLocaleTimeString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Actual Calculated Confusion Matrix */}
       <div className="card">
@@ -1187,9 +1225,66 @@ function ResearchAnalyticsTab({ researchData }) {
   );
 }
 
-function DatasetManagementTab({ analysisData }) {
+function DatasetManagementTab({ analysisData, researchData }) {
+  const recent = researchData?.recent_analyses || [];
+  const currentFileName = analysisData?.metadata?.filename || analysisData?.sample_name;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Uploaded / Analyzed Hypercubes List */}
+      <div className="card">
+        <div className="card-header">
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Analyzed Hyperspectral Scans & Data Cubes</h2>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Real-time ingested and evaluated hyperspectral datasets from SQLite persistence.
+            </p>
+          </div>
+          <span className="badge badge-emerald">{recent.length} Ingested Scans</span>
+        </div>
+
+        {recent.length === 0 ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-faint)', fontStyle: 'italic', padding: '12px 0' }}>
+            No scans uploaded yet. Go to Hyperspectral Upload to ingest a hypercube (.npy, .hdr).
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {recent.map((scan, i) => (
+              <div
+                key={scan.id || i}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: scan.dataset_name === currentFileName ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-card-alt)',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: scan.dataset_name === currentFileName ? '1px solid #10b981' : '1px solid var(--border-color)'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)' }}>{scan.dataset_name}</h4>
+                    {scan.dataset_name === currentFileName && (
+                      <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>CURRENTLY LOADED</span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '2px' }}>
+                    Crop: {scan.crop_type} | Predicted: <strong style={{ color: scan.is_healthy ? '#34d399' : '#fb7185' }}>{scan.condition}</strong> | Confidence: {(scan.confidence * 100).toFixed(1)}% | Stress: {(scan.stress_score * 100).toFixed(1)}%
+                  </p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span className="badge badge-cyan">{scan.severity || 'Calibrated'}</span>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-faint)', marginTop: '4px' }}>
+                    {scan.created_at ? new Date(scan.created_at).toLocaleTimeString() : ''}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="card">
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Scientific Dataset Repositories</h2>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
