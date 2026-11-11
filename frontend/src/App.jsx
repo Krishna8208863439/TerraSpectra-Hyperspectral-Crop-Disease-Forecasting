@@ -191,7 +191,6 @@ export default function App() {
             { id: 'analytics', label: 'Research Analytics', icon: BarChart2 },
             { id: 'datasets', label: 'Dataset Management', icon: Database },
             { id: 'reports', label: 'Scientific Reports', icon: FileText },
-            { id: 'settings', label: 'System Settings', icon: Settings },
           ].map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -346,10 +345,6 @@ export default function App() {
 
           {activeTab === 'reports' && (
             <ScientificReportsTab analysisData={analysisData} forecastData={forecastData} />
-          )}
-
-          {activeTab === 'settings' && (
-            <SettingsTab />
           )}
         </div>
       </main>
@@ -1268,38 +1263,6 @@ function ScientificReportsTab({ analysisData, forecastData }) {
           <button onClick={() => window.print()} className="btn btn-primary">
             Export / Print PDF Report
           </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SettingsTab() {
-  return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div className="card">
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '16px' }}>TerraSpectra Platform Settings</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>FastAPI Backend Endpoint</label>
-            <input
-              type="text"
-              defaultValue="http://127.0.0.1:8000/api"
-              style={{ width: '100%', background: 'var(--bg-card-alt)', border: '1px solid var(--border-hover)', color: 'var(--text-main)', padding: '10px', borderRadius: '6px' }}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Savitzky-Golay Filter Window</label>
-            <input
-              type="number"
-              defaultValue="7"
-              style={{ width: '100%', background: 'var(--bg-card-alt)', border: '1px solid var(--border-hover)', color: 'var(--text-main)', padding: '10px', borderRadius: '6px' }}
-            />
-          </div>
-          <div>
-            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Open-Meteo Weather API Integration</label>
-            <div className="badge badge-emerald">Connected (Lat: 16.7050, Lon: 74.2433)</div>
-          </div>
         </div>
       </div>
     </div>

@@ -43,3 +43,4 @@ with open(path, 'w', encoding='utf-8') as f:
     f.write(c)
 
 print(f'Successfully replaced {count} hardcoded color occurrences in App.jsx!')
+
