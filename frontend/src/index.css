@@ -37,6 +37,8 @@ html[data-theme="dark"] {
   --table-row-hover: rgba(30, 41, 59, 0.5);
 
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+
+  --map-bg: radial-gradient(circle at 50% 50%, #0d1e38 0%, #060b14 100%);
 }
 
 /* =============================================
@@ -75,6 +77,8 @@ html[data-theme="light"] {
   --table-row-hover: rgba(209, 250, 229, 0.4);
 
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+
+  --map-bg: radial-gradient(circle at 50% 50%, #dbeafe 0%, #e0f2fe 100%);
 }
 
 /* =============================================
@@ -335,4 +339,172 @@ html[data-theme="light"] table thead tr th {
 }
 html[data-theme="light"] table tbody tr:hover td {
   background: var(--table-row-hover);
+}
+
+/* =============================================
+   LIGHT MODE — COMPREHENSIVE INLINE OVERRIDES
+   Force all hardcoded dark colors to respond to light theme
+   ============================================= */
+
+/* All inline text that uses dark-only fixed colors */
+html[data-theme="light"] span,
+html[data-theme="light"] p,
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] label,
+html[data-theme="light"] td,
+html[data-theme="light"] th,
+html[data-theme="light"] li {
+  color: inherit;
+}
+
+/* Cards / panel divs with dark inline backgrounds */
+html[data-theme="light"] .content-body > div,
+html[data-theme="light"] .content-body section {
+  color: var(--text-main);
+}
+
+/* Sidebar logo area */
+html[data-theme="light"] .sidebar {
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+}
+
+/* Any div with inline style background that wasn't converted */
+html[data-theme="light"] [style*="background: #090d16"],
+html[data-theme="light"] [style*="background: rgb(9, 13, 22)"],
+html[data-theme="light"] [style*="background:#090d16"] {
+  background: var(--bg-card-alt) !important;
+  color: var(--text-main) !important;
+}
+
+html[data-theme="light"] [style*="background: #0f172a"],
+html[data-theme="light"] [style*="background: rgb(15, 23, 42)"],
+html[data-theme="light"] [style*="background:#0f172a"] {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+}
+
+html[data-theme="light"] [style*="background: #0b1120"],
+html[data-theme="light"] [style*="background:#0b1120"] {
+  background: var(--bg-sidebar) !important;
+  color: var(--text-main) !important;
+}
+
+html[data-theme="light"] [style*="background: #1e293b"],
+html[data-theme="light"] [style*="background:#1e293b"] {
+  background: #e2e8f0 !important;
+  color: var(--text-main) !important;
+}
+
+/* Border overrides */
+html[data-theme="light"] [style*="border: 1px solid #1e293b"],
+html[data-theme="light"] [style*="border-bottom: 1px solid #1e293b"],
+html[data-theme="light"] [style*="border-top: 1px solid #1e293b"],
+html[data-theme="light"] [style*="borderBottom: '1px solid #1e293b'"] {
+  border-color: var(--border-color) !important;
+}
+
+html[data-theme="light"] [style*="border: 1px solid #334155"],
+html[data-theme="light"] [style*="border-bottom: 1px solid #334155"] {
+  border-color: var(--border-hover) !important;
+}
+
+/* Muted text overrides */
+html[data-theme="light"] [style*="color: #64748b"],
+html[data-theme="light"] [style*="color: rgb(100, 116, 139)"] {
+  color: var(--text-faint) !important;
+}
+
+html[data-theme="light"] [style*="color: #94a3b8"],
+html[data-theme="light"] [style*="color: rgb(148, 163, 184)"] {
+  color: var(--text-muted) !important;
+}
+
+html[data-theme="light"] [style*="color: #cbd5e1"],
+html[data-theme="light"] [style*="color: rgb(203, 213, 225)"] {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="light"] [style*="color: #e2e8f0"],
+html[data-theme="light"] [style*="color: #f8fafc"],
+html[data-theme="light"] [style*="color: rgb(248, 250, 252)"] {
+  color: var(--text-main) !important;
+}
+
+/* Input / select overrides */
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea {
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-main) !important;
+}
+
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* SVG chart backgrounds (spectral curve, forecast trajectory) */
+html[data-theme="light"] svg[style*="background: #090d16"],
+html[data-theme="light"] svg[style*="background:#090d16"] {
+  background: #f8fafc !important;
+}
+
+/* SVG text labels inside charts */
+html[data-theme="light"] svg text[fill="#64748b"] {
+  fill: #94a3b8 !important;
+}
+
+/* Grid lines inside SVG charts */
+html[data-theme="light"] svg line[stroke="#1e293b"],
+html[data-theme="light"] svg line[stroke="#334155"] {
+  stroke: #cbd5e1 !important;
+}
+
+/* GIS/Heatmap map panel (the dark navy container) */
+html[data-theme="light"] [style*="rgba(11, 17, 32"] {
+  background: rgba(241, 245, 249, 0.9) !important;
+  color: var(--text-main) !important;
+}
+
+/* GIS coordinate footer text */
+html[data-theme="light"] [style*="color: #64748b"][style*="bottom"] {
+  color: var(--text-faint) !important;
+}
+
+/* Table row borders */
+html[data-theme="light"] tr[style*="borderBottom: '1px solid #1e293b'"],
+html[data-theme="light"] tr[style*="border-bottom: 1px solid #1e293b"] {
+  border-bottom-color: var(--border-color) !important;
+}
+
+/* Highlighted table row (hybrid model comparison) */
+html[data-theme="light"] tr[style*="rgba(16, 185, 129, 0.1)"] {
+  background: rgba(5, 150, 105, 0.07) !important;
+}
+
+/* Tag / chip elements */
+html[data-theme="light"] [style*="background: #1e293b"][style*="border-radius"] {
+  background: #e2e8f0 !important;
+  color: var(--text-main) !important;
+}
+
+/* Upload drop zone */
+html[data-theme="light"] [style*="border: 2px dashed #334155"] {
+  border-color: var(--border-hover) !important;
+  background: var(--bg-card-alt) !important;
+}
+
+/* Spin animation still works in light mode */
+html[data-theme="light"] .spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Smooth color transitions on all themed elements */
+html[data-theme="light"] * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }

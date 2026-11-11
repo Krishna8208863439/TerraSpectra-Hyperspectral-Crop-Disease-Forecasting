@@ -381,9 +381,9 @@ function GeospatialGISTab({ geospatialData }) {
         {/* Interactive Simulated GIS Map Canvas */}
         <div style={{
           height: '420px',
-          background: 'radial-gradient(circle at 50% 50%, #0d1e38 0%, #060b14 100%)',
+          background: 'var(--map-bg, radial-gradient(circle at 50% 50%, #0d1e38 0%, #060b14 100%))',
           borderRadius: '12px',
-          border: '1px solid #1e293b',
+          border: '1px solid var(--border-color)',
           position: 'relative',
           overflow: 'hidden',
           display: 'flex',
@@ -391,9 +391,9 @@ function GeospatialGISTab({ geospatialData }) {
           justifyContent: 'center'
         }}>
           {/* Top GIS HUD Overlay */}
-          <div style={{ position: 'absolute', top: '16px', left: '16px', background: 'rgba(11, 17, 32, 0.9)', padding: '8px 14px', borderRadius: '8px', border: '1px solid #334155', fontSize: '0.75rem', zIndex: 10 }}>
+          <div style={{ position: 'absolute', top: '16px', left: '16px', background: 'var(--bg-topbar)', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--border-hover)', fontSize: '0.75rem', zIndex: 10 }}>
             <span style={{ color: '#38bdf8', fontWeight: 600 }}>Tiled Raster Layer: </span>
-            <span>PRISMA / AVIRIS Calibrated Polygon Mesh (14x14 Grid)</span>
+            <span style={{ color: 'var(--text-secondary)' }}>PRISMA / AVIRIS Calibrated Polygon Mesh (14x14 Grid)</span>
           </div>
 
           <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', gap: '8px', zIndex: 10 }}>
@@ -411,7 +411,7 @@ function GeospatialGISTab({ geospatialData }) {
             maxWidth: '560px',
             height: '320px',
             padding: '8px',
-            background: 'rgba(15, 23, 42, 0.7)',
+            background: 'rgba(15, 23, 42, 0.5)',
             borderRadius: '8px',
             border: '1px solid rgba(56, 189, 248, 0.2)'
           }}>
@@ -437,7 +437,7 @@ function GeospatialGISTab({ geospatialData }) {
           </div>
 
           {/* Bottom Coordinates Bar */}
-          <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '16px' }}>
+          <div style={{ position: 'absolute', bottom: '12px', left: '16px', fontSize: '0.75rem', color: 'var(--text-faint)', display: 'flex', gap: '16px' }}>
             <span>Lat: [16.6850°N - 16.7250°N]</span>
             <span>Lon: [74.2150°E - 74.2550°E]</span>
             <span>Resolution: 30m / pixel</span>
