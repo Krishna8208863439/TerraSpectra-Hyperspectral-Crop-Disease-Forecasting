@@ -633,7 +633,7 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
 
 function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploadError }) {
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card">
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Hyperspectral Data Cube Ingestion</h2>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
@@ -1221,7 +1221,7 @@ function ScientificReportsTab({ analysisData, forecastData }) {
   const indices = analysisData?.indices || analysisData?.spectral_indices;
 
   return (
-    <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card" style={{ padding: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid var(--border-color)', paddingBottom: '16px', marginBottom: '24px' }}>
           <div>
