@@ -166,12 +166,12 @@ export default function App() {
     <div className="app-container">
       {/* Scientific Navigation Sidebar */}
       <aside className="sidebar">
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #10b981, #06b6d4)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Layers size={20} color="#042f2e" strokeWidth={2.5} />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.02em', color: '#f8fafc' }}>TerraSpectra</h1>
+            <h1 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-main)' }}>TerraSpectra</h1>
             <p style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hyperspectral Crop AI</p>
           </div>
         </div>
@@ -371,7 +371,7 @@ function GeospatialGISTab({ geospatialData }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Geospatial Hyperspectral Risk Heatmap & GIS Layer</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               Coverage: {geospatialData?.total_area_hectares || '1971'} Hectares | Center: {geospatialData?.center ? `${geospatialData.center[1]}°N, ${geospatialData.center[0]}°E` : 'Kolhapur Agriculture Belt'}
             </p>
           </div>
@@ -459,14 +459,14 @@ function HybridModelTab({ modelMetrics }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Hybrid 3D-CNN + Vision Transformer Architecture</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>PyTorch Deep Learning Engine combining Spatial-Spectral Convolutions with Multi-Head Self-Attention</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>PyTorch Deep Learning Engine combining Spatial-Spectral Convolutions with Multi-Head Self-Attention</p>
           </div>
           <span className="badge badge-emerald">PyTorch Checkpoint Active</span>
         </div>
 
-        <div style={{ background: '#090d16', border: '1px solid #1e293b', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
+        <div style={{ background: 'var(--bg-card-alt)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
           <h4 style={{ fontSize: '0.85rem', color: '#38bdf8', marginBottom: '4px' }}>Ablation & Research Finding:</h4>
-          <p style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
             {modelMetrics?.ablation_insights || 'The hybrid architecture achieves a +4.3% F1 gain over stand-alone 3D-CNN by capturing non-local spectral absorption correlations through multi-head self-attention.'}
           </p>
         </div>
@@ -476,7 +476,7 @@ function HybridModelTab({ modelMetrics }) {
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '12px' }}>Comparative Experimental Benchmark</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #1e293b', color: '#94a3b8', textAlign: 'left' }}>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'left' }}>
                 <th style={{ padding: '8px 12px' }}>Architecture</th>
                 <th style={{ padding: '8px 12px' }}>Accuracy</th>
                 <th style={{ padding: '8px 12px' }}>F1-Score</th>
@@ -486,7 +486,7 @@ function HybridModelTab({ modelMetrics }) {
               </tr>
             </thead>
             <tbody>
-              <tr style={{ borderBottom: '1px solid #1e293b', background: 'rgba(16, 185, 129, 0.1)' }}>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', background: 'rgba(16, 185, 129, 0.1)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 600, color: '#34d399' }}>{hybrid?.name || 'Hybrid 3D-CNN + ViT'}</td>
                 <td style={{ padding: '10px 12px', fontWeight: 700, color: '#34d399' }}>{(hybrid?.accuracy * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px', fontWeight: 700, color: '#34d399' }}>{(hybrid?.f1_score * 100).toFixed(1)}%</td>
@@ -494,16 +494,16 @@ function HybridModelTab({ modelMetrics }) {
                 <td style={{ padding: '10px 12px' }}>{(hybrid?.recall * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px', fontFamily: 'monospace' }}>{hybrid?.latency_ms} ms</td>
               </tr>
-              <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{cnn?.name || 'Stand-alone 3D-CNN'}</td>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '10px 12px', color: 'var(--text-muted)' }}>{cnn?.name || 'Stand-alone 3D-CNN'}</td>
                 <td style={{ padding: '10px 12px' }}>{(cnn?.accuracy * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px' }}>{(cnn?.f1_score * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px' }}>{(cnn?.precision * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px' }}>{(cnn?.recall * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px', fontFamily: 'monospace' }}>{cnn?.latency_ms} ms</td>
               </tr>
-              <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{vit?.name || 'Stand-alone Vision Transformer'}</td>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '10px 12px', color: 'var(--text-muted)' }}>{vit?.name || 'Stand-alone Vision Transformer'}</td>
                 <td style={{ padding: '10px 12px' }}>{(vit?.accuracy * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px' }}>{(vit?.f1_score * 100).toFixed(1)}%</td>
                 <td style={{ padding: '10px 12px' }}>{(vit?.precision * 100).toFixed(1)}%</td>
@@ -530,52 +530,52 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
       <div className="grid-cols-4">
         <div className="card">
           <div className="card-header">
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Detected Condition</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Detected Condition</span>
             <ShieldAlert size={18} color="#10b981" />
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: diag?.is_healthy ? '#34d399' : '#fb7185' }}>
             {diag?.predicted_condition || 'Calibrating...'}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>
             Model Confidence: {diag ? `${(diag.confidence * 100).toFixed(1)}%` : '--'}
           </div>
         </div>
 
         <div className="card">
           <div className="card-header">
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Early Stress Index</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Early Stress Index</span>
             <AlertTriangle size={18} color="#f59e0b" />
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fcd34d' }}>
             {stress ? `${(stress.composite_stress_score * 100).toFixed(1)}%` : '--'}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>
             Status: {stress?.stress_level || 'Normal'}
           </div>
         </div>
 
         <div className="card">
           <div className="card-header">
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Vegetation Health (NDVI)</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Vegetation Health (NDVI)</span>
             <Layers size={18} color="#06b6d4" />
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#67e8f9' }}>
             {indices?.NDVI !== undefined ? indices.NDVI.toFixed(3) : '0.782'}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>
             RedEdge (NDRE): {indices?.NDRE !== undefined ? indices.NDRE.toFixed(3) : '0.512'}
           </div>
         </div>
 
         <div className="card">
           <div className="card-header">
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>7-Day Pathogen Risk</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>7-Day Pathogen Risk</span>
             <TrendingUp size={18} color="#ec4899" />
           </div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: forecastData?.peak_risk_level === 'High' ? '#fb7185' : '#34d399' }}>
             {forecastData?.peak_risk_level || 'Moderate'}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>
             Peak Risk Day: {forecastData ? `Day ${forecastData.peak_risk_day}` : '--'}
           </div>
         </div>
@@ -591,7 +591,7 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
               Full Spectrum <ChevronRight size={14} />
             </button>
           </div>
-          <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
             Reflectance across 400nm (Visible Blue) to 1000nm (Near Infrared). Showing chlorophyll absorption troughs and red-edge slope.
           </p>
           <SpectralCurveSVG curve={analysisData?.spectral_curve} />
@@ -605,7 +605,7 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
               Detailed Forecast <ChevronRight size={14} />
             </button>
           </div>
-          <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
             Multi-modal projection combining progressive spectral degradation with Open-Meteo microclimatic sporulation favorability.
           </p>
           <ForecastTrajectorySVG trajectory={forecastData?.trajectory} />
@@ -621,12 +621,12 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
           </h3>
           <span className="badge badge-cyan">SHAP Spectral Bands</span>
         </div>
-        <p style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
           {analysisData?.explainability?.explainability_summary || 'Analyzing spectral band contribution...'}
         </p>
         <div style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           {analysisData?.explainability?.top_influential_wavelengths?.slice(0, 5).map((w, i) => (
-            <div key={i} style={{ background: '#1e293b', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem' }}>
+            <div key={i} style={{ background: 'var(--border-color)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem' }}>
               <span style={{ color: '#38bdf8', fontWeight: 600 }}>{w.wavelength}nm</span>: SHAP {w.shap_value} ({w.direction})
             </div>
           ))}
@@ -641,7 +641,7 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
     <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card">
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Hyperspectral Data Cube Ingestion</h2>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '24px', lineHeight: '1.6' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '24px', lineHeight: '1.6' }}>
           Upload high-dimensional calibrated agricultural hypercubes. The pipeline validates dimensional criteria
           (&ge; 10 contiguous spectral bands), parses ENVI header geometry (.hdr), and reads calibrated reflectance data.
           RGB 3-band images are strictly rejected.
@@ -653,14 +653,14 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
             borderRadius: '12px',
             padding: '40px 20px',
             textAlign: 'center',
-            background: '#090d16',
+            background: 'var(--bg-card-alt)',
             cursor: 'pointer'
           }}>
             <UploadCloud size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
-            <p style={{ fontSize: '0.95rem', fontWeight: 500, color: '#f8fafc', marginBottom: '4px' }}>
+            <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', marginBottom: '4px' }}>
               {uploadFile ? uploadFile.name : 'Select or drop scientific Hyperspectral Cube (.npy, .hdr)'}
             </p>
-            <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
               Supported: NumPy Hypercubes (.npy), ENVI Binary + Header (.hdr/.raw), GeoTIFF Multi-band
             </p>
             <input
@@ -689,7 +689,7 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
 
       <div className="card">
         <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '12px' }}>Supported Hyperspectral Specifications</h3>
-        <ul style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.8', paddingLeft: '20px' }}>
+        <ul style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.8', paddingLeft: '20px' }}>
           <li>Spectral Coverage: VNIR (400nm - 1000nm), SWIR (1000nm - 2500nm).</li>
           <li>Contiguous Bands: Minimum 10 spectral channels (Standard benchmarks: 50 - 224 bands).</li>
           <li>Data Interleaving: BSQ (Band Sequential), BIL (Band Interleaved by Line), BIP.</li>
@@ -717,39 +717,39 @@ function SpectralAnalysisTab({ analysisData }) {
 
       <div className="grid-cols-3">
         <div className="card">
-          <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px' }}>NDVI (Normalized Difference)</h3>
+          <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>NDVI (Normalized Difference)</h3>
           <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#34d399' }}>{indices.NDVI?.toFixed(3) || '0.742'}</div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>Band contrast: 800nm (NIR) vs 670nm (Red)</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Band contrast: 800nm (NIR) vs 670nm (Red)</p>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px' }}>NDRE (Red Edge Index)</h3>
+          <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>NDRE (Red Edge Index)</h3>
           <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#38bdf8' }}>{indices.NDRE?.toFixed(3) || '0.518'}</div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>Sensitive to sub-canopy chlorophyll (720nm / 790nm)</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Sensitive to sub-canopy chlorophyll (720nm / 790nm)</p>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px' }}>PRI (Photochemical Index)</h3>
+          <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>PRI (Photochemical Index)</h3>
           <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fcd34d' }}>{indices.PRI?.toFixed(3) || '0.041'}</div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>Photosynthetic light-use efficiency (531nm vs 570nm)</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Photosynthetic light-use efficiency (531nm vs 570nm)</p>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px' }}>WBI (Water Band Index)</h3>
+          <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>WBI (Water Band Index)</h3>
           <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#818cf8' }}>{indices.WBI?.toFixed(3) || '1.092'}</div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>Liquid foliar water absorption (900nm / 970nm)</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Liquid foliar water absorption (900nm / 970nm)</p>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px' }}>PSRI (Plant Senescence)</h3>
+          <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>PSRI (Plant Senescence)</h3>
           <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fb7185' }}>{indices.PSRI?.toFixed(3) || '-0.024'}</div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>Carotenoid to chlorophyll-a ratio (680, 500, 750nm)</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Carotenoid to chlorophyll-a ratio (680, 500, 750nm)</p>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '8px' }}>MCARI (Modified Chlorophyll)</h3>
+          <h3 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '8px' }}>MCARI (Modified Chlorophyll)</h3>
           <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#a78bfa' }}>{indices.MCARI?.toFixed(3) || '0.412'}</div>
-          <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>Red-edge inflection chlorophyll absorption</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '6px' }}>Red-edge inflection chlorophyll absorption</p>
         </div>
       </div>
 
@@ -759,17 +759,17 @@ function SpectralAnalysisTab({ analysisData }) {
             <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Principal Component Analysis (Dimensionality Reduction)</h3>
             <span className="badge badge-cyan">Total Explained Variance: {(pca.total_explained_variance * 100).toFixed(1)}%</span>
           </div>
-          <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '16px' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
             Orthogonal transformation condensing high-dimensional spectral channels into orthogonal principal components.
           </p>
           <div style={{ display: 'flex', gap: '20px' }}>
             {pca.components?.map((c, i) => (
-              <div key={i} style={{ flex: 1, background: '#1e293b', padding: '12px', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Principal Component {c.pc_index}</div>
+              <div key={i} style={{ flex: 1, background: 'var(--border-color)', padding: '12px', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Principal Component {c.pc_index}</div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#38bdf8', marginTop: '4px' }}>
                   {(c.variance_ratio * 100).toFixed(1)}%
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '4px' }}>Variance Captured</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', marginTop: '4px' }}>Variance Captured</div>
               </div>
             ))}
           </div>
@@ -789,33 +789,33 @@ function DiseaseDetectionTab({ analysisData }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>AI Hyperspectral Disease Classification</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Ensemble Random Forest (100 Trees) + Support Vector Machine Cross-Validation</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ensemble Random Forest (100 Trees) + Support Vector Machine Cross-Validation</p>
           </div>
           <div className={`badge ${diag?.is_healthy ? 'badge-emerald' : 'badge-rose'}`} style={{ fontSize: '0.85rem' }}>
             {diag?.predicted_condition || 'Evaluating...'}
           </div>
         </div>
 
-        <div style={{ background: '#090d16', border: '1px solid #1e293b', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
+        <div style={{ background: 'var(--bg-card-alt)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
           <h4 style={{ fontSize: '0.85rem', color: '#38bdf8', marginBottom: '6px' }}>Biological & Spectral Pathophysiology:</h4>
-          <p style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6' }}>{diag?.scientific_rationale}</p>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{diag?.scientific_rationale}</p>
         </div>
 
         <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
-          <div style={{ flex: 1, background: '#1e293b', padding: '14px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Classification Confidence</span>
+          <div style={{ flex: 1, background: 'var(--border-color)', padding: '14px', borderRadius: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Classification Confidence</span>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#34d399', marginTop: '4px' }}>
               {diag ? `${(diag.confidence * 100).toFixed(1)}%` : '--'}
             </div>
           </div>
-          <div style={{ flex: 1, background: '#1e293b', padding: '14px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Severity Level</span>
+          <div style={{ flex: 1, background: 'var(--border-color)', padding: '14px', borderRadius: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Severity Level</span>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: diag?.severity === 'Severe' ? '#fb7185' : '#fcd34d', marginTop: '4px' }}>
               {diag?.severity || 'None'}
             </div>
           </div>
-          <div style={{ flex: 1, background: '#1e293b', padding: '14px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Ensemble Cross-Agreement</span>
+          <div style={{ flex: 1, background: 'var(--border-color)', padding: '14px', borderRadius: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ensemble Cross-Agreement</span>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: diag?.ensemble_agreement ? '#34d399' : '#fcd34d', marginTop: '4px' }}>
               {diag?.ensemble_agreement ? 'Confirmed' : 'Discrepant'}
             </div>
@@ -830,14 +830,14 @@ function DiseaseDetectionTab({ analysisData }) {
           {probs.map((p, i) => (
             <div key={i}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-                <span style={{ color: i === 0 ? '#34d399' : '#e2e8f0', fontWeight: i === 0 ? 600 : 400 }}>{p.class_name}</span>
-                <span style={{ fontFamily: 'monospace', color: '#94a3b8' }}>{(p.probability * 100).toFixed(1)}%</span>
+                <span style={{ color: i === 0 ? '#34d399' : 'var(--text-secondary)', fontWeight: i === 0 ? 600 : 400 }}>{p.class_name}</span>
+                <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{(p.probability * 100).toFixed(1)}%</span>
               </div>
-              <div style={{ width: '100%', height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div style={{
                   width: `${p.probability * 100}%`,
                   height: '100%',
-                  background: i === 0 ? '#10b981' : '#334155',
+                  background: i === 0 ? '#10b981' : 'var(--border-hover)',
                   borderRadius: '4px',
                   transition: 'width 0.4s ease'
                 }}></div>
@@ -859,33 +859,33 @@ function CropStressTab({ analysisData }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Pre-Symptomatic Crop Stress Assessment</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Early warning detection before visible lesion manifestation</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Early warning detection before visible lesion manifestation</p>
           </div>
           <span className="badge badge-amber">{stress?.stress_level || 'Moderate Stress'}</span>
         </div>
 
         <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
           <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 600, textTransform: 'uppercase' }}>Scientific Distinction:</div>
-          <p style={{ fontSize: '0.85rem', color: '#e2e8f0', marginTop: '4px' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
             {stress?.distinction_note || 'Sub-visual crop stress reflects physiological depletion and must not be confused with confirmed fungal/bacterial infection.'}
           </p>
         </div>
 
         <div className="grid-cols-3" style={{ marginTop: '16px' }}>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Moisture Deficit (970nm)</span>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Moisture Deficit (970nm)</span>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#38bdf8', marginTop: '4px' }}>
               {stress ? (stress.water_stress_index * 100).toFixed(1) : '24.2'}%
             </div>
           </div>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Chlorophyll Breakdown (720nm)</span>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Chlorophyll Breakdown (720nm)</span>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fb7185', marginTop: '4px' }}>
               {stress ? (stress.chlorophyll_stress_index * 100).toFixed(1) : '18.5'}%
             </div>
           </div>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Photosynthetic Depression (531nm)</span>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Photosynthetic Depression (531nm)</span>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fcd34d', marginTop: '4px' }}>
               {stress ? (stress.photochemical_depression_index * 100).toFixed(1) : '31.0'}%
             </div>
@@ -894,7 +894,7 @@ function CropStressTab({ analysisData }) {
 
         <div style={{ marginTop: '20px' }}>
           <h4 style={{ fontSize: '0.9rem', color: '#34d399', marginBottom: '6px' }}>Agronomic Actionable Guidance:</h4>
-          <p style={{ fontSize: '0.875rem', color: '#cbd5e1', lineHeight: '1.6' }}>{stress?.actionable_recommendation}</p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{stress?.actionable_recommendation}</p>
         </div>
       </div>
 
@@ -902,7 +902,7 @@ function CropStressTab({ analysisData }) {
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Diagnostic Spectral Wavebands</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #1e293b', color: '#94a3b8', textAlign: 'left' }}>
+            <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'left' }}>
               <th style={{ padding: '8px 12px' }}>Band</th>
               <th style={{ padding: '8px 12px' }}>Diagnostic Sensitivity</th>
               <th style={{ padding: '8px 12px' }}>Biological Physiological Role</th>
@@ -910,10 +910,10 @@ function CropStressTab({ analysisData }) {
           </thead>
           <tbody>
             {stress?.diagnostic_bands?.map((b, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
+              <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <td style={{ padding: '10px 12px', fontFamily: 'monospace', color: '#38bdf8' }}>{b.band}</td>
                 <td style={{ padding: '10px 12px' }}><span className="badge badge-amber">{b.importance}</span></td>
-                <td style={{ padding: '10px 12px', color: '#cbd5e1' }}>{b.role}</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{b.role}</td>
               </tr>
             ))}
           </tbody>
@@ -930,7 +930,7 @@ function DiseaseForecastingTab({ forecastData, selectedCrop }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>7-Day Crop Disease Epidemiological Forecast</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Crop: {selectedCrop} | Weather Coupled Model</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Crop: {selectedCrop} | Weather Coupled Model</p>
           </div>
           <span className="badge badge-rose">Peak Risk: Day {forecastData?.peak_risk_day || 3}</span>
         </div>
@@ -939,7 +939,7 @@ function DiseaseForecastingTab({ forecastData, selectedCrop }) {
           <ForecastTrajectorySVG trajectory={forecastData?.trajectory} height={300} />
         </div>
 
-        <div style={{ background: '#090d16', border: '1px solid #1e293b', padding: '14px', borderRadius: '8px', fontSize: '0.8rem', color: '#94a3b8' }}>
+        <div style={{ background: 'var(--bg-card-alt)', border: '1px solid var(--border-color)', padding: '14px', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
           <strong>Epidemiological Methodology:</strong> {forecastData?.methodology_disclaimer}
         </div>
       </div>
@@ -949,7 +949,7 @@ function DiseaseForecastingTab({ forecastData, selectedCrop }) {
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Day-by-Day Pathogen Microclimate Risk Matrix</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #1e293b', color: '#94a3b8', textAlign: 'left' }}>
+            <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'left' }}>
               <th style={{ padding: '8px 12px' }}>Day / Date</th>
               <th style={{ padding: '8px 12px' }}>Projected Risk</th>
               <th style={{ padding: '8px 12px' }}>Confidence Bounds (CI)</th>
@@ -960,18 +960,18 @@ function DiseaseForecastingTab({ forecastData, selectedCrop }) {
           </thead>
           <tbody>
             {forecastData?.trajectory?.map((d, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
+              <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 500 }}>Day {d.day} ({d.date})</td>
                 <td style={{ padding: '10px 12px' }}>
                   <span className={`badge ${d.risk_category === 'High' ? 'badge-rose' : d.risk_category === 'Moderate' ? 'badge-amber' : 'badge-emerald'}`}>
                     {(d.projected_risk * 100).toFixed(1)}% - {d.risk_category}
                   </span>
                 </td>
-                <td style={{ padding: '10px 12px', fontFamily: 'monospace', color: '#64748b' }}>
+                <td style={{ padding: '10px 12px', fontFamily: 'monospace', color: 'var(--text-faint)' }}>
                   [{(d.confidence_lower * 100).toFixed(0)}% - {(d.confidence_upper * 100).toFixed(0)}%]
                 </td>
-                <td style={{ padding: '10px 12px', color: '#cbd5e1' }}>{d.temp_c}°C</td>
-                <td style={{ padding: '10px 12px', color: '#cbd5e1' }}>{d.humidity_pct}%</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{d.temp_c}°C</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{d.humidity_pct}%</td>
                 <td style={{ padding: '10px 12px', color: '#38bdf8' }}>{(d.pathogen_weather_suitability * 100).toFixed(1)}%</td>
               </tr>
             ))}
@@ -992,28 +992,28 @@ function EnvironmentalTab({ weatherData }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Agro-Meteorological Intelligence</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Source: {weatherData?.source || 'Open-Meteo High Resolution Model'}</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Source: {weatherData?.source || 'Open-Meteo High Resolution Model'}</p>
           </div>
           <span className="badge badge-emerald">Microclimate Active</span>
         </div>
 
         <div className="grid-cols-4" style={{ marginTop: '16px' }}>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Surface Temperature</span>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Surface Temperature</span>
             <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#f59e0b', marginTop: '4px' }}>{curr.temperature || '25.4'}°C</div>
           </div>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Canopy Wind Speed</span>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Canopy Wind Speed</span>
             <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#06b6d4', marginTop: '4px' }}>{curr.windspeed || '12.2'} km/h</div>
           </div>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Latitude / Longitude</span>
-            <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#94a3b8', marginTop: '8px' }}>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Latitude / Longitude</span>
+            <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-muted)', marginTop: '8px' }}>
               {weatherData?.latitude?.toFixed(2)}°N, {weatherData?.longitude?.toFixed(2)}°E
             </div>
           </div>
-          <div className="card" style={{ background: '#0b1120' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Pathogen Microclimate Index</span>
+          <div className="card" style={{ background: 'var(--bg-sidebar)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Pathogen Microclimate Index</span>
             <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#fb7185', marginTop: '4px' }}>Elevated</div>
           </div>
         </div>
@@ -1023,7 +1023,7 @@ function EnvironmentalTab({ weatherData }) {
         <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>7-Day Agricultural Meteorological Forecast</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #1e293b', color: '#94a3b8', textAlign: 'left' }}>
+            <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', textAlign: 'left' }}>
               <th style={{ padding: '8px 12px' }}>Date</th>
               <th style={{ padding: '8px 12px' }}>Max Temp</th>
               <th style={{ padding: '8px 12px' }}>Min Temp</th>
@@ -1034,13 +1034,13 @@ function EnvironmentalTab({ weatherData }) {
           </thead>
           <tbody>
             {days.map((d, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
+              <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <td style={{ padding: '10px 12px', fontWeight: 500 }}>{d.date}</td>
                 <td style={{ padding: '10px 12px', color: '#f59e0b' }}>{d.temp_max}°C</td>
                 <td style={{ padding: '10px 12px', color: '#38bdf8' }}>{d.temp_min}°C</td>
                 <td style={{ padding: '10px 12px', color: '#06b6d4' }}>{d.rain_mm} mm</td>
-                <td style={{ padding: '10px 12px', color: '#e2e8f0' }}>{d.humidity}%</td>
-                <td style={{ padding: '10px 12px', color: '#94a3b8' }}>{d.wind_speed} km/h</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-secondary)' }}>{d.humidity}%</td>
+                <td style={{ padding: '10px 12px', color: 'var(--text-muted)' }}>{d.wind_speed} km/h</td>
               </tr>
             ))}
           </tbody>
@@ -1061,14 +1061,14 @@ function ExplainableAITab({ analysisData }) {
         <div className="card-header">
           <div>
             <h2 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Explainable AI (XAI) Spectral Attributions</h2>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Band-wise Shapley decomposition showing exact biophysical wavelengths determining prediction</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Band-wise Shapley decomposition showing exact biophysical wavelengths determining prediction</p>
           </div>
           <span className="badge badge-cyan">SHAP Kernel</span>
         </div>
 
-        <div style={{ background: '#090d16', border: '1px solid #1e293b', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
+        <div style={{ background: 'var(--bg-card-alt)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
           <h4 style={{ fontSize: '0.85rem', color: '#34d399', marginBottom: '6px' }}>Decision Rationale:</h4>
-          <p style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6' }}>{xai?.explainability_summary}</p>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{xai?.explainability_summary}</p>
         </div>
       </div>
 
@@ -1077,9 +1077,9 @@ function ExplainableAITab({ analysisData }) {
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Top 10 Influential Spectral Bands</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {topBands.map((b, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#090d16', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card-alt)', padding: '8px 12px', borderRadius: '6px', fontSize: '0.85rem' }}>
                 <span style={{ fontFamily: 'monospace', color: '#38bdf8' }}>{b.wavelength} nm</span>
-                <span style={{ color: '#94a3b8' }}>Reflectance: {b.reflectance}</span>
+                <span style={{ color: 'var(--text-muted)' }}>Reflectance: {b.reflectance}</span>
                 <span className={`badge ${b.direction === 'contributing' ? 'badge-emerald' : 'badge-amber'}`}>
                   SHAP {b.shap_value}
                 </span>
@@ -1092,12 +1092,12 @@ function ExplainableAITab({ analysisData }) {
           <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '16px' }}>Biological Domain Sensitivity Breakdown</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {domains.map((d, i) => (
-              <div key={i} style={{ background: '#090d16', padding: '10px 14px', borderRadius: '6px' }}>
+              <div key={i} style={{ background: 'var(--bg-card-alt)', padding: '10px 14px', borderRadius: '6px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: 600, color: '#f8fafc' }}>{d.domain_name} ({d.wavelength_range})</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{d.domain_name} ({d.wavelength_range})</span>
                   <span style={{ fontFamily: 'monospace', color: '#10b981' }}>{d.relative_importance}</span>
                 </div>
-                <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{d.biological_significance}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>{d.biological_significance}</p>
               </div>
             ))}
           </div>
@@ -1117,27 +1117,27 @@ function ResearchAnalyticsTab({ researchData }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="grid-cols-3">
         <div className="card">
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Overall Model Accuracy</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Overall Model Accuracy</span>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#34d399', marginTop: '6px' }}>
             {modelPerf ? `${(modelPerf.accuracy * 100).toFixed(2)}%` : '96.67%'}
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Cross-validated test partition</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>Cross-validated test partition</span>
         </div>
 
         <div className="card">
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Weighted F1-Score</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Weighted F1-Score</span>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#38bdf8', marginTop: '6px' }}>
             {modelPerf ? `${(modelPerf.weighted_f1_score * 100).toFixed(2)}%` : '96.65%'}
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Harmonic mean of precision & recall</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>Harmonic mean of precision & recall</span>
         </div>
 
         <div className="card">
-          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Total Calibrated Scans</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Calibrated Scans</span>
           <div style={{ fontSize: '2rem', fontWeight: 700, color: '#fcd34d', marginTop: '6px' }}>
             {dbStats?.total_spectral_analyses || 360}
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Persisted in SQLite database</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>Persisted in SQLite database</span>
         </div>
       </div>
 
@@ -1147,17 +1147,17 @@ function ResearchAnalyticsTab({ researchData }) {
           <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Multi-Class Confusion Matrix (Experimental Benchmark)</h3>
           <span className="badge badge-cyan">{modelPerf?.algorithm}</span>
         </div>
-        <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px' }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
           Rows represent actual annotated agricultural classes; columns represent predicted classes.
         </p>
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                <th style={{ padding: '8px', textAlign: 'left', color: '#94a3b8' }}>Class</th>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <th style={{ padding: '8px', textAlign: 'left', color: 'var(--text-muted)' }}>Class</th>
                 {classes.map((c, i) => (
-                  <th key={i} style={{ padding: '8px', color: '#94a3b8', textAlign: 'center' }}>
+                  <th key={i} style={{ padding: '8px', color: 'var(--text-muted)', textAlign: 'center' }}>
                     {c.split(' ')[0]}
                   </th>
                 ))}
@@ -1165,8 +1165,8 @@ function ResearchAnalyticsTab({ researchData }) {
             </thead>
             <tbody>
               {cm.map((row, rIdx) => (
-                <tr key={rIdx} style={{ borderBottom: '1px solid #1e293b' }}>
-                  <td style={{ padding: '8px', fontWeight: 500, color: '#e2e8f0' }}>{classes[rIdx]}</td>
+                <tr key={rIdx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '8px', fontWeight: 500, color: 'var(--text-secondary)' }}>{classes[rIdx]}</td>
                   {row.map((val, cIdx) => (
                     <td
                       key={cIdx}
@@ -1176,7 +1176,7 @@ function ResearchAnalyticsTab({ researchData }) {
                         fontFamily: 'monospace',
                         fontWeight: 600,
                         background: rIdx === cIdx ? 'rgba(16, 185, 129, 0.2)' : val > 0 ? 'rgba(244, 63, 94, 0.15)' : 'transparent',
-                        color: rIdx === cIdx ? '#34d399' : val > 0 ? '#fb7185' : '#64748b'
+                        color: rIdx === cIdx ? '#34d399' : val > 0 ? '#fb7185' : 'var(--text-faint)'
                       }}
                     >
                       {val}
@@ -1197,7 +1197,7 @@ function DatasetManagementTab({ analysisData }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card">
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>Scientific Dataset Repositories</h2>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '20px' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '20px' }}>
           Calibrated benchmark repositories for agricultural hyperspectral remote sensing.
         </p>
 
@@ -1207,10 +1207,10 @@ function DatasetManagementTab({ analysisData }) {
             { name: 'Soybean Foliar Fungal Pathogen Cubes (ENVI format)', bands: 186, samples: '140 Cubes', status: 'Ready' },
             { name: 'Rice Blast & Sheath Blight Multi-band Imagery', bands: 64, samples: '210 Cubes', status: 'Ready' }
           ].map((d, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#090d16', padding: '14px 18px', borderRadius: '8px', border: '1px solid #1e293b' }}>
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card-alt)', padding: '14px 18px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
               <div>
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#f8fafc' }}>{d.name}</h4>
-                <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{d.bands} Spectral Bands | {d.samples}</p>
+                <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-main)' }}>{d.name}</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: '2px' }}>{d.bands} Spectral Bands | {d.samples}</p>
               </div>
               <span className="badge badge-emerald">{d.status}</span>
             </div>
@@ -1228,12 +1228,12 @@ function ScientificReportsTab({ analysisData, forecastData }) {
   return (
     <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card" style={{ padding: '32px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #1e293b', paddingBottom: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid var(--border-color)', paddingBottom: '16px', marginBottom: '24px' }}>
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#f8fafc' }}>TerraSpectra Agronomic Diagnostic Report</h1>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>TerraSpectra Agronomic Diagnostic Report</h1>
             <p style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600, marginTop: '4px' }}>Hyperspectral Remote Sensing Lab</p>
           </div>
-          <div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#94a3b8' }}>
+          <div style={{ textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             <p>Report Date: {new Date().toLocaleDateString()}</p>
             <p>Report ID: TS-{Math.floor(100000 + Math.random() * 900000)}</p>
           </div>
@@ -1244,15 +1244,15 @@ function ScientificReportsTab({ analysisData, forecastData }) {
             <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#38bdf8', marginBottom: '8px' }}>1. Specimen Diagnostic Summary</h3>
             <p><strong>Identified Condition:</strong> {diag?.predicted_condition || 'Healthy'}</p>
             <p><strong>Confidence:</strong> {diag ? `${(diag.confidence * 100).toFixed(1)}%` : '--'} | <strong>Severity:</strong> {diag?.severity || 'None'}</p>
-            <p style={{ color: '#cbd5e1', marginTop: '6px' }}>{diag?.scientific_rationale}</p>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '6px' }}>{diag?.scientific_rationale}</p>
           </div>
 
           <div>
             <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#38bdf8', marginBottom: '8px' }}>2. Narrowband Vegetation Indices</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-              <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px' }}>NDVI: {indices?.NDVI?.toFixed(3)}</div>
-              <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px' }}>NDRE: {indices?.NDRE?.toFixed(3)}</div>
-              <div style={{ background: '#090d16', padding: '10px', borderRadius: '6px' }}>WBI: {indices?.WBI?.toFixed(3)}</div>
+              <div style={{ background: 'var(--bg-card-alt)', padding: '10px', borderRadius: '6px' }}>NDVI: {indices?.NDVI?.toFixed(3)}</div>
+              <div style={{ background: 'var(--bg-card-alt)', padding: '10px', borderRadius: '6px' }}>NDRE: {indices?.NDRE?.toFixed(3)}</div>
+              <div style={{ background: 'var(--bg-card-alt)', padding: '10px', borderRadius: '6px' }}>WBI: {indices?.WBI?.toFixed(3)}</div>
             </div>
           </div>
 
@@ -1264,7 +1264,7 @@ function ScientificReportsTab({ analysisData, forecastData }) {
           </div>
         </div>
 
-        <div style={{ marginTop: '32px', paddingTop: '16px', borderTop: '1px solid #1e293b', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+        <div style={{ marginTop: '32px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
           <button onClick={() => window.print()} className="btn btn-primary">
             Export / Print PDF Report
           </button>
@@ -1281,23 +1281,23 @@ function SettingsTab() {
         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '16px' }}>TerraSpectra Platform Settings</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ fontSize: '0.85rem', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>FastAPI Backend Endpoint</label>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>FastAPI Backend Endpoint</label>
             <input
               type="text"
               defaultValue="http://127.0.0.1:8000/api"
-              style={{ width: '100%', background: '#090d16', border: '1px solid #334155', color: '#f8fafc', padding: '10px', borderRadius: '6px' }}
+              style={{ width: '100%', background: 'var(--bg-card-alt)', border: '1px solid var(--border-hover)', color: 'var(--text-main)', padding: '10px', borderRadius: '6px' }}
             />
           </div>
           <div>
-            <label style={{ fontSize: '0.85rem', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Savitzky-Golay Filter Window</label>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Savitzky-Golay Filter Window</label>
             <input
               type="number"
               defaultValue="7"
-              style={{ width: '100%', background: '#090d16', border: '1px solid #334155', color: '#f8fafc', padding: '10px', borderRadius: '6px' }}
+              style={{ width: '100%', background: 'var(--bg-card-alt)', border: '1px solid var(--border-hover)', color: 'var(--text-main)', padding: '10px', borderRadius: '6px' }}
             />
           </div>
           <div>
-            <label style={{ fontSize: '0.85rem', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Open-Meteo Weather API Integration</label>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Open-Meteo Weather API Integration</label>
             <div className="badge badge-emerald">Connected (Lat: 16.7050, Lon: 74.2433)</div>
           </div>
         </div>
@@ -1312,7 +1312,7 @@ function SettingsTab() {
 
 function SpectralCurveSVG({ curve = [], height = 240 }) {
   if (!curve || curve.length === 0) {
-    return <div style={{ height: `${height}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>No spectral points available</div>;
+    return <div style={{ height: `${height}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>No spectral points available</div>;
   }
 
   const width = 600;
@@ -1331,7 +1331,7 @@ function SpectralCurveSVG({ curve = [], height = 240 }) {
   const pointsStr = curve.map((pt) => `${getX(pt.wavelength)},${getY(pt.reflectance)}`).join(' ');
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: `${height}px`, background: '#090d16', borderRadius: '8px' }}>
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: `${height}px`, background: 'var(--bg-card-alt)', borderRadius: '8px' }}>
       {/* Grid lines */}
       {[0.2, 0.4, 0.6].map((yVal, i) => (
         <line
@@ -1340,7 +1340,7 @@ function SpectralCurveSVG({ curve = [], height = 240 }) {
           y1={getY(yVal)}
           x2={width - padding.right}
           y2={getY(yVal)}
-          stroke="#1e293b"
+          stroke="var(--border-color)"
           strokeDasharray="4 4"
         />
       ))}
@@ -1362,24 +1362,24 @@ function SpectralCurveSVG({ curve = [], height = 240 }) {
       />
 
       {/* Axes */}
-      <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#334155" />
-      <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#334155" />
+      <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="var(--border-hover)" />
+      <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="var(--border-hover)" />
 
       {/* Axis Labels */}
-      <text x={padding.left} y={height - 10} fill="#64748b" fontSize="11">400nm</text>
-      <text x={getX(700)} y={height - 10} fill="#64748b" fontSize="11" textAnchor="middle">700nm (VNIR)</text>
-      <text x={width - padding.right} y={height - 10} fill="#64748b" fontSize="11" textAnchor="end">1000nm</text>
+      <text x={padding.left} y={height - 10} fill="var(--text-faint)" fontSize="11">400nm</text>
+      <text x={getX(700)} y={height - 10} fill="var(--text-faint)" fontSize="11" textAnchor="middle">700nm (VNIR)</text>
+      <text x={width - padding.right} y={height - 10} fill="var(--text-faint)" fontSize="11" textAnchor="end">1000nm</text>
 
-      <text x={12} y={padding.top + 10} fill="#64748b" fontSize="11">0.8</text>
-      <text x={12} y={getY(0.4)} fill="#64748b" fontSize="11">0.4</text>
-      <text x={12} y={height - padding.bottom} fill="#64748b" fontSize="11">0.0</text>
+      <text x={12} y={padding.top + 10} fill="var(--text-faint)" fontSize="11">0.8</text>
+      <text x={12} y={getY(0.4)} fill="var(--text-faint)" fontSize="11">0.4</text>
+      <text x={12} y={height - padding.bottom} fill="var(--text-faint)" fontSize="11">0.0</text>
     </svg>
   );
 }
 
 function ForecastTrajectorySVG({ trajectory = [], height = 240 }) {
   if (!trajectory || trajectory.length === 0) {
-    return <div style={{ height: `${height}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>No forecast trajectory available</div>;
+    return <div style={{ height: `${height}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>No forecast trajectory available</div>;
   }
 
   const width = 600;
@@ -1403,9 +1403,9 @@ function ForecastTrajectorySVG({ trajectory = [], height = 240 }) {
   const ciPolygon = [...upperPts, ...lowerPts].join(' ');
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: `${height}px`, background: '#090d16', borderRadius: '8px' }}>
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: `${height}px`, background: 'var(--bg-card-alt)', borderRadius: '8px' }}>
       {/* 50% threshold line */}
-      <line x1={padding.left} y1={getY(0.5)} x2={width - padding.right} y2={getY(0.5)} stroke="#334155" strokeDasharray="4 4" />
+      <line x1={padding.left} y1={getY(0.5)} x2={width - padding.right} y2={getY(0.5)} stroke="var(--border-hover)" strokeDasharray="4 4" />
       <text x={width - padding.right} y={getY(0.5) - 6} fill="#f59e0b" fontSize="10" textAnchor="end">Moderate/High Threshold</text>
 
       {/* CI envelope */}
@@ -1416,21 +1416,21 @@ function ForecastTrajectorySVG({ trajectory = [], height = 240 }) {
 
       {/* Points */}
       {trajectory.map((t, i) => (
-        <circle key={i} cx={getX(t.day)} cy={getY(t.projected_risk)} r="4" fill="#fb7185" stroke="#090d16" strokeWidth="2" />
+        <circle key={i} cx={getX(t.day)} cy={getY(t.projected_risk)} r="4" fill="#fb7185" stroke="var(--bg-card-alt)" strokeWidth="2" />
       ))}
 
       {/* Axes */}
-      <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#334155" />
-      <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#334155" />
+      <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="var(--border-hover)" />
+      <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="var(--border-hover)" />
 
       {/* Day labels */}
       {trajectory.map((t, i) => (
-        <text key={i} x={getX(t.day)} y={height - 12} fill="#64748b" fontSize="11" textAnchor="middle">D{t.day}</text>
+        <text key={i} x={getX(t.day)} y={height - 12} fill="var(--text-faint)" fontSize="11" textAnchor="middle">D{t.day}</text>
       ))}
 
-      <text x={12} y={padding.top + 10} fill="#64748b" fontSize="11">100%</text>
-      <text x={12} y={getY(0.5)} fill="#64748b" fontSize="11">50%</text>
-      <text x={12} y={height - padding.bottom} fill="#64748b" fontSize="11">0%</text>
+      <text x={12} y={padding.top + 10} fill="var(--text-faint)" fontSize="11">100%</text>
+      <text x={12} y={getY(0.5)} fill="var(--text-faint)" fontSize="11">50%</text>
+      <text x={12} y={height - padding.bottom} fill="var(--text-faint)" fontSize="11">0%</text>
     </svg>
   );
 }

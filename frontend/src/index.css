@@ -346,23 +346,10 @@ html[data-theme="light"] table tbody tr:hover td {
    Force all hardcoded dark colors to respond to light theme
    ============================================= */
 
-/* All inline text that uses dark-only fixed colors */
-html[data-theme="light"] span,
-html[data-theme="light"] p,
-html[data-theme="light"] h1,
-html[data-theme="light"] h2,
-html[data-theme="light"] h3,
-html[data-theme="light"] h4,
-html[data-theme="light"] label,
-html[data-theme="light"] td,
-html[data-theme="light"] th,
-html[data-theme="light"] li {
-  color: inherit;
-}
-
 /* Cards / panel divs with dark inline backgrounds */
 html[data-theme="light"] .content-body > div,
-html[data-theme="light"] .content-body section {
+html[data-theme="light"] .content-body section,
+html[data-theme="light"] .card {
   color: var(--text-main);
 }
 
