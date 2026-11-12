@@ -669,7 +669,20 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
             </p>
             <input
               type="file"
-              onChange={(e) => setUploadFile(e.target.files[0])}
+              accept=".npy,.npz,.hdr,.raw,.tif,.tiff,.dat"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const ext = file.name.split('.').pop().toLowerCase();
+                  if (['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'txt'].includes(ext)) {
+                    setUploadError(`Invalid File Type: '.${ext}' is a document/image format. TerraSpectra requires scientific multi-band hyperspectral data cubes (.npy, .hdr, .raw, .tif) with ≥ 10 spectral channels.`);
+                    setUploadFile(null);
+                    return;
+                  }
+                  setUploadError(null);
+                  setUploadFile(file);
+                }
+              }}
               style={{ marginTop: '16px' }}
             />
           </div>
