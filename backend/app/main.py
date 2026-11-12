@@ -197,15 +197,18 @@ def get_geospatial_heatmap(
     min_lon: float = Query(74.2150),
     min_lat: float = Query(16.6850),
     max_lon: float = Query(74.2550),
-    max_lat: float = Query(16.7250)
+    max_lat: float = Query(16.7250),
+    stress_score: Optional[float] = Query(None),
+    crop_type: Optional[str] = Query(None)
 ):
     """
-    Returns georeferenced disease-risk GeoJSON grid compatible with Deck.gl and Mapbox layers.
+    Returns georeferenced disease-risk GeoJSON grid dynamically coupled to the currently analyzed crop condition and stress score.
     """
+    bias = float(stress_score) if stress_score is not None else 0.48
     return GeospatialHeatmapEngine.generate_georeferenced_risk_grid(
         bounds=(min_lon, min_lat, max_lon, max_lat),
         grid_dim=14,
-        stress_bias=0.48
+        stress_bias=bias
     )
 
 @app.get("/api/v1/models/metrics")

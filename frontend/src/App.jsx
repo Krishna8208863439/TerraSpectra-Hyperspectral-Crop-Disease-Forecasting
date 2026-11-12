@@ -54,9 +54,9 @@ export default function App() {
     loadModelMetrics();
   }, []);
 
-  const loadGeospatialHeatmap = async () => {
+  const loadGeospatialHeatmap = async (stressScore = 0.48, crop = selectedCrop) => {
     try {
-      const res = await fetch(`${API_BASE}/geospatial/heatmap`);
+      const res = await fetch(`${API_BASE}/geospatial/heatmap?stress_score=${stressScore}&crop_type=${encodeURIComponent(crop)}`);
       if (res.ok) {
         const data = await res.json();
         setGeospatialData(data);
@@ -85,8 +85,10 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setAnalysisData(data);
-        // Automatically fetch matching disease forecast for this crop and stress score
-        fetchForecast(data.stress.composite_stress_score, crop);
+        const stress = data?.stress?.composite_stress_score || 0.45;
+        // Automatically fetch matching disease forecast & update GIS heatmap for this crop and stress score
+        fetchForecast(stress, crop);
+        loadGeospatialHeatmap(stress, crop);
       }
     } catch (err) {
       console.error('Error fetching sample hypercube:', err);
@@ -157,7 +159,9 @@ export default function App() {
       }
       const result = await res.json();
       setAnalysisData(result);
-      fetchForecast(result.early_stress.composite_stress_score);
+      const stress = result?.early_stress?.composite_stress_score || 0.45;
+      fetchForecast(stress, selectedCrop);
+      loadGeospatialHeatmap(stress, selectedCrop);
       loadResearchDashboard();
       setActiveTab('spectral');
     } catch (err) {
