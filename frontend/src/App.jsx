@@ -78,15 +78,15 @@ export default function App() {
     }
   };
 
-  const loadBenchmarkDataset = async () => {
+  const loadBenchmarkDataset = async (crop = selectedCrop) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/research/sample-hypercube`);
+      const res = await fetch(`${API_BASE}/research/sample-hypercube?crop_type=${encodeURIComponent(crop)}`);
       if (res.ok) {
         const data = await res.json();
         setAnalysisData(data);
-        // Automatically fetch matching disease forecast for this stress score
-        fetchForecast(data.stress.composite_stress_score);
+        // Automatically fetch matching disease forecast for this crop and stress score
+        fetchForecast(data.stress.composite_stress_score, crop);
       }
     } catch (err) {
       console.error('Error fetching sample hypercube:', err);
@@ -119,9 +119,9 @@ export default function App() {
     }
   };
 
-  const fetchForecast = async (stressScore = 0.42) => {
+  const fetchForecast = async (stressScore = 0.42, crop = selectedCrop) => {
     try {
-      const res = await fetch(`${API_BASE}/forecasting/disease-risk?crop_type=${encodeURIComponent(selectedCrop)}&stress_score=${stressScore}`);
+      const res = await fetch(`${API_BASE}/forecasting/disease-risk?crop_type=${encodeURIComponent(crop)}&stress_score=${stressScore}`);
       if (res.ok) {
         const data = await res.json();
         setForecastData(data.disease_forecast);
@@ -129,6 +129,11 @@ export default function App() {
     } catch (err) {
       console.error('Forecast error:', err);
     }
+  };
+
+  const handleCropChange = (newCrop) => {
+    setSelectedCrop(newCrop);
+    loadBenchmarkDataset(newCrop);
   };
 
   const handleFileUpload = async (e) => {
@@ -238,7 +243,7 @@ export default function App() {
             <span style={{ fontSize: '0.875rem', color: 'var(--text-faint)' }}>Target Agronomic Specimen:</span>
             <select
               value={selectedCrop}
-              onChange={(e) => setSelectedCrop(e.target.value)}
+              onChange={(e) => handleCropChange(e.target.value)}
               style={{
                 background: 'var(--bg-card)',
                 border: '1px solid var(--border-hover)',

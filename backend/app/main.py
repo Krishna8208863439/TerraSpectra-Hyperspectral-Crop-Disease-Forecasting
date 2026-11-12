@@ -257,13 +257,32 @@ def export_csv_report():
     return ReportExportEngine.generate_csv_report(sample, forecast)
 
 @app.get("/api/research/sample-hypercube")
-def get_sample_hypercube():
+def get_sample_hypercube(crop_type: Optional[str] = Query(None)):
     """
-    Generates a calibrated sample VNIR hyperspectral cube (100 bands, 40x40 spatial resolution)
-    to allow instant benchmarking and testing of the pipeline without external file downloads.
+    Generates or loads a calibrated sample VNIR hyperspectral cube (100 bands, 40x40 spatial resolution)
+    corresponding to the selected agronomic crop specimen.
     """
-    # Sample condition: Stripe Rust infected wheat canopy
-    profile = classifier._generate_synthetic_spectral_profile(cls_idx=1, n_samples=1, n_bands=100)[0]
+    # Crop to disease condition mapping for representative agronomic profiles
+    crop_disease_map = {
+        "wheat": (1, "Wheat_Canopy_StripeRust_VNIR_100b.npy"),
+        "rice": (5, "Rice_Foliar_BacterialStreak_VNIR_100b.npy"),
+        "soybean": (3, "Soybean_SeptoriaBlotch_VNIR_100b.npy"),
+        "maize": (4, "Maize_FusariumBlight_VNIR_100b.npy"),
+        "sugarcane": (2, "Sugarcane_PowderyMildew_VNIR_100b.npy"),
+    }
+
+    cls_idx = 1
+    sample_name = "Wheat_Canopy_StripeRust_VNIR_100b.npy"
+
+    if crop_type:
+        c_lower = crop_type.lower()
+        for key, (c_idx, s_name) in crop_disease_map.items():
+            if key in c_lower:
+                cls_idx = c_idx
+                sample_name = s_name
+                break
+
+    profile = classifier._generate_synthetic_spectral_profile(cls_idx=cls_idx, n_samples=1, n_bands=100)[0]
     wavelengths = np.linspace(400, 1000, 100).tolist()
     step = max(1, len(wavelengths) // 50)
 
@@ -279,7 +298,8 @@ def get_sample_hypercube():
 
     return {
         "status": "success",
-        "sample_name": "Wheat_Canopy_StripeRust_VNIR_100b.npy",
+        "sample_name": sample_name,
+        "crop_type": crop_type or "Wheat (Triticum aestivum)",
         "dimensions": [40, 40, 100],
         "spectral_curve": curve,
         "indices": indices,
