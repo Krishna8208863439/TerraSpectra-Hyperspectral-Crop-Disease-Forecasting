@@ -133,16 +133,22 @@ export default function App() {
     }
   };
 
+  const [uploadSuccess, setUploadSuccess] = useState(null);
+
   const handleCropChange = (newCrop) => {
     setSelectedCrop(newCrop);
     loadBenchmarkDataset(newCrop);
   };
 
   const handleFileUpload = async (e) => {
-    e.preventDefault();
-    if (!uploadFile) return;
+    if (e && e.preventDefault) e.preventDefault();
+    if (!uploadFile) {
+      setUploadError('Please select a hyperspectral file first (.npy, .hdr, .raw, .tif)');
+      return;
+    }
     setLoading(true);
     setUploadError(null);
+    setUploadSuccess(null);
 
     const formData = new FormData();
     formData.append('file', uploadFile);
@@ -163,9 +169,13 @@ export default function App() {
       fetchForecast(stress, selectedCrop);
       loadGeospatialHeatmap(stress, selectedCrop);
       loadResearchDashboard();
-      setActiveTab('spectral');
+      setUploadSuccess(`Analysis complete! Successfully parsed ${uploadFile.name} (${result?.metadata?.bands || 50} bands). Redirecting to Spectral Analysis...`);
+      setTimeout(() => {
+        setActiveTab('spectral');
+      }, 700);
     } catch (err) {
-      setUploadError(err.message);
+      console.error('Upload error:', err);
+      setUploadError(err.message || 'Error uploading file');
     } finally {
       setLoading(false);
     }
@@ -317,6 +327,7 @@ export default function App() {
               handleFileUpload={handleFileUpload}
               loading={loading}
               uploadError={uploadError}
+              uploadSuccess={uploadSuccess}
             />
           )}
 
@@ -640,7 +651,7 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
   );
 }
 
-function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploadError }) {
+function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploadError, uploadSuccess }) {
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card">
@@ -693,11 +704,18 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
             </div>
           )}
 
+          {uploadSuccess && (
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)', color: '#34d399', padding: '12px', borderRadius: '8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle2 size={18} />
+              <span>{uploadSuccess}</span>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={!uploadFile || loading}
             className="btn btn-primary"
-            style={{ padding: '12px 24px', fontSize: '1rem' }}
+            style={{ padding: '12px 24px', fontSize: '1rem', cursor: (!uploadFile || loading) ? 'not-allowed' : 'pointer' }}
           >
             {loading ? 'Processing Hypercube...' : 'Execute Hyperspectral Spectral Analysis'}
           </button>
