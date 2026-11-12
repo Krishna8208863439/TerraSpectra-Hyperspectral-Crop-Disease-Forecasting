@@ -9,6 +9,9 @@ from typing import Optional, List, Dict, Any
 
 from app.preprocessing.cube_parser import HyperspectralCubeParser, HyperspectralMetadata
 from app.preprocessing.spectral_engine import SpectralAnalysisEngine
+from app.services.hyperspectral_loader import HyperspectralCubeLoader
+from app.services.spectral_preprocessing import SpectralPreprocessingPipeline
+from app.services.spectral_analysis import SpectralAnalysisService
 from app.inference.disease_classifier import HyperspectralDiseaseClassifier
 from app.forecasting.crop_stress_engine import EarlyCropStressEngine
 from app.forecasting.forecasting_engine import CropDiseaseForecastingEngine
@@ -49,6 +52,7 @@ def health_check():
         "supported_formats": ["ENVI (.hdr/.raw)", "NumPy Cube (.npy)", "Calibrated VNIR (400-1000nm)"]
     }
 
+@app.post("/api/v1/hyperspectral/upload")
 @app.post("/api/hyperspectral/upload-and-analyze")
 async def upload_and_analyze(
     file: UploadFile = File(...),
@@ -56,41 +60,29 @@ async def upload_and_analyze(
     crop_type: str = Form("Wheat (Triticum aestivum)")
 ):
     """
-    Ingests hyperspectral hypercubes (.npy, .hdr + raw, or spectral binary),
+    Ingests hyperspectral hypercubes (.npy, .npz, .hdr + raw, or multi-band .tif),
     extracts continuous reflectance, computes narrowband vegetation indices,
     classifies disease status, evaluates early stress, and runs XAI attribution.
     """
     contents = await file.read()
-    filename = file.filename.lower()
+    filename = file.filename
+    header_bytes = await header_file.read() if header_file else None
+    header_name = header_file.filename if header_file else None
 
     try:
-        if filename.endswith(".npy"):
-            cube, meta = HyperspectralCubeParser.load_numpy_cube(contents, file.filename)
-        elif filename.endswith(".hdr") or (header_file and header_file.filename.endswith(".hdr")):
-            # ENVI format
-            if filename.endswith(".hdr"):
-                hdr_text = contents.decode("utf-8", errors="ignore")
-                raw_bytes = await header_file.read() if header_file else b""
-            else:
-                hdr_bytes = await header_file.read()
-                hdr_text = hdr_bytes.decode("utf-8", errors="ignore")
-                raw_bytes = contents
-            cube, meta = HyperspectralCubeParser.load_envi_cube(raw_bytes, hdr_text, file.filename)
-        else:
-            # Fallback: Check if file can be interpreted as a calibrated 1D or 3D numpy array
-            try:
-                cube, meta = HyperspectralCubeParser.load_numpy_cube(contents, file.filename)
-            except Exception:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Unsupported format '{file.filename}'. Please provide a valid Hyperspectral Cube (.npy or ENVI .hdr/.raw pairs with >= 10 spectral channels)."
-                )
+        cube, meta = HyperspectralCubeLoader.load_hyperspectral_cube(
+            primary_bytes=contents,
+            primary_filename=filename,
+            secondary_bytes=header_bytes,
+            secondary_filename=header_name
+        )
 
-        # 1. Spectral processing
-        signature = SpectralAnalysisEngine.extract_mean_spectral_signature(cube)
-        filtered_sig = SpectralAnalysisEngine.apply_savitzky_golay(signature)
-        indices = SpectralAnalysisEngine.compute_spectral_indices(filtered_sig, meta.wavelengths)
-        pca_res = SpectralAnalysisEngine.compute_pca_projection(cube)
+        # 1. Modular spectral processing & index extraction
+        profile = SpectralAnalysisService.extract_full_profile(cube, meta.wavelengths)
+        pca_res = SpectralPreprocessingPipeline.compute_pca(cube, n_components=3)
+
+        filtered_sig = np.array(profile["filtered_signature"], dtype=np.float32)
+        indices = profile["indices"]
 
         # 2. Disease classification inference
         diagnosis = classifier.predict(filtered_sig, meta.wavelengths)
@@ -119,23 +111,26 @@ async def upload_and_analyze(
             xai_summary=xai["explainability_summary"]
         )
 
-        # Spectral response curve points for frontend charts (subsample to 60 points for lightweight plotting)
-        step = max(1, len(meta.wavelengths) // 60)
-        spectral_curve = [
-            {"wavelength": round(meta.wavelengths[i], 1), "reflectance": round(float(filtered_sig[i]), 4)}
-            for i in range(0, len(meta.wavelengths), step)
-        ]
-
         return {
             "analysis_id": rec_id,
             "metadata": meta.dict(),
             "spectral_indices": indices,
-            "spectral_curve": spectral_curve,
+            "spectral_curve": [
+                {"wavelength": pt["wavelength"], "reflectance": pt["filtered_reflectance"]}
+                for pt in profile["chart_points"]
+            ],
+            "preprocessing_comparison": profile["chart_points"],
+            "snr_db": profile["snr_db"],
             "pca_analysis": pca_res,
             "diagnosis": diagnosis,
             "early_stress": stress,
             "explainability": xai
         }
+
+    except ValueError as ve:
+        raise HTTPException(status_code=422, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Hyperspectral processing error: {str(e)}")
 
     except ValueError as ve:
         raise HTTPException(status_code=422, detail=str(ve))

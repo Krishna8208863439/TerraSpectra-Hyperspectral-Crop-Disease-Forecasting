@@ -134,6 +134,8 @@ export default function App() {
   };
 
   const [uploadSuccess, setUploadSuccess] = useState(null);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [headerFile, setHeaderFile] = useState(null);
 
   const handleCropChange = (newCrop) => {
     setSelectedCrop(newCrop);
@@ -149,10 +151,14 @@ export default function App() {
     setLoading(true);
     setUploadError(null);
     setUploadSuccess(null);
+    setUploadResult(null);
 
     const formData = new FormData();
     formData.append('file', uploadFile);
     formData.append('crop_type', selectedCrop);
+    if (headerFile) {
+      formData.append('header_file', headerFile);
+    }
 
     try {
       const res = await fetch(`${API_BASE}/hyperspectral/upload-and-analyze`, {
@@ -165,14 +171,12 @@ export default function App() {
       }
       const result = await res.json();
       setAnalysisData(result);
+      setUploadResult(result);
       const stress = result?.early_stress?.composite_stress_score || 0.45;
       fetchForecast(stress, selectedCrop);
       loadGeospatialHeatmap(stress, selectedCrop);
       loadResearchDashboard();
-      setUploadSuccess(`Analysis complete! Successfully parsed ${uploadFile.name} (${result?.metadata?.bands || 50} bands). Redirecting to Spectral Analysis...`);
-      setTimeout(() => {
-        setActiveTab('spectral');
-      }, 700);
+      setUploadSuccess(`✓ Ingestion complete — ${uploadFile.name} (${result?.metadata?.bands_count || result?.metadata?.bands || 50} spectral bands, SNR ${result?.snr_db || '—'} dB)`);
     } catch (err) {
       console.error('Upload error:', err);
       setUploadError(err.message || 'Error uploading file');
@@ -324,10 +328,14 @@ export default function App() {
             <UploadTab
               uploadFile={uploadFile}
               setUploadFile={setUploadFile}
+              headerFile={headerFile}
+              setHeaderFile={setHeaderFile}
               handleFileUpload={handleFileUpload}
               loading={loading}
               uploadError={uploadError}
               uploadSuccess={uploadSuccess}
+              uploadResult={uploadResult}
+              setActiveTab={setActiveTab}
             />
           )}
 
@@ -651,7 +659,65 @@ function OverviewTab({ analysisData, forecastData, weatherData, researchData, se
   );
 }
 
-function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploadError, uploadSuccess }) {
+function PreprocessingCurveSVG({ curve }) {
+  if (!curve || curve.length === 0) return null;
+  const W = 700, H = 220, PAD = 40;
+  const vals_raw = curve.map(p => p.raw_reflectance ?? p.reflectance ?? 0);
+  const vals_flt = curve.map(p => p.filtered_reflectance ?? p.reflectance ?? 0);
+  const vals_cr  = curve.map(p => p.continuum_removed ?? 0);
+  const allVals  = [...vals_raw, ...vals_flt, ...vals_cr].filter(v => isFinite(v));
+  const minV = Math.min(...allVals), maxV = Math.max(...allVals) || 1;
+  const wls = curve.map(p => p.wavelength);
+  const minW = Math.min(...wls), maxW = Math.max(...wls) || 1;
+  const sx = i => PAD + ((wls[i] - minW) / (maxW - minW || 1)) * (W - 2 * PAD);
+  const sy = v => H - PAD - ((v - minV) / (maxV - minV || 1)) * (H - 2 * PAD);
+  const makePath = vals => vals.map((v, i) => `${i === 0 ? 'M' : 'L'} ${sx(i).toFixed(1)} ${sy(v).toFixed(1)}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxHeight: '220px' }}>
+      <path d={makePath(vals_raw)} fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="4 2" />
+      <path d={makePath(vals_flt)} fill="none" stroke="#10b981" strokeWidth="2" />
+      <path d={makePath(vals_cr)}  fill="none" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="6 3" />
+      <text x={PAD} y={H - 8} fontSize="10" fill="#64748b">Raw</text>
+      <text x={PAD + 50} y={H - 8} fontSize="10" fill="#10b981">Savitzky-Golay</text>
+      <text x={PAD + 165} y={H - 8} fontSize="10" fill="#38bdf8">Continuum Removed</text>
+      <text x={PAD} y="12" fontSize="10" fill="#94a3b8">{minW.toFixed(0)}nm</text>
+      <text x={W - PAD - 20} y="12" fontSize="10" fill="#94a3b8">{maxW.toFixed(0)}nm</text>
+    </svg>
+  );
+}
+
+function UploadTab({ uploadFile, setUploadFile, headerFile, setHeaderFile, handleFileUpload, loading, uploadError, uploadSuccess, uploadResult, setActiveTab }) {
+  const [isDragOver, setIsDragOver] = React.useState(false);
+
+  const INVALID_EXTS = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'bmp', 'txt', 'csv', 'xls', 'xlsx'];
+
+  const validateAndSetFile = (file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (INVALID_EXTS.includes(ext)) {
+      alert(`Invalid File Type: '.${ext}' files are not hyperspectral cubes.\nPlease upload .npy, .hdr, .raw, or .tif files with >= 10 spectral bands.`);
+      return;
+    }
+    setUploadFile(file);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    const hdrFile = files.find(f => f.name.toLowerCase().endsWith('.hdr'));
+    const dataFile = files.find(f => !f.name.toLowerCase().endsWith('.hdr'));
+    if (hdrFile && setHeaderFile) setHeaderFile(hdrFile);
+    if (dataFile) validateAndSetFile(dataFile);
+  };
+
+  const diag   = uploadResult?.diagnosis;
+  const meta   = uploadResult?.metadata;
+  const stress = uploadResult?.early_stress;
+  const idxs   = uploadResult?.spectral_indices;
+  const pca    = uploadResult?.pca_analysis;
+  const curve  = uploadResult?.preprocessing_comparison || uploadResult?.spectral_curve || [];
+
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="card">
@@ -663,44 +729,54 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
         </p>
 
         <form onSubmit={handleFileUpload} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{
-            border: '2px dashed #334155',
-            borderRadius: '12px',
-            padding: '40px 20px',
-            textAlign: 'center',
-            background: 'var(--bg-card-alt)',
-            cursor: 'pointer'
-          }}>
-            <UploadCloud size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={handleDrop}
+            style={{
+              border: `2px dashed ${isDragOver ? '#10b981' : '#334155'}`,
+              borderRadius: '12px',
+              padding: '36px 20px',
+              textAlign: 'center',
+              background: isDragOver ? 'rgba(16,185,129,0.06)' : 'var(--bg-card-alt)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            <UploadCloud size={48} color={isDragOver ? '#10b981' : '#475569'} style={{ margin: '0 auto 12px' }} />
             <p style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-main)', marginBottom: '4px' }}>
-              {uploadFile ? uploadFile.name : 'Select or drop scientific Hyperspectral Cube (.npy, .hdr)'}
+              {uploadFile ? uploadFile.name : 'Drag & drop or click to select Hyperspectral Cube'}
             </p>
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>
-              Supported: NumPy Hypercubes (.npy), ENVI Binary + Header (.hdr/.raw), GeoTIFF Multi-band
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginBottom: '12px' }}>
+              Supported: NumPy (.npy / .npz) · ENVI pair (.hdr + .raw/.img) · GeoTIFF Multi-band (.tif)
             </p>
-            <input
-              type="file"
-              accept=".npy,.npz,.hdr,.raw,.tif,.tiff,.dat"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const ext = file.name.split('.').pop().toLowerCase();
-                  if (['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'txt'].includes(ext)) {
-                    setUploadError(`Invalid File Type: '.${ext}' is a document/image format. TerraSpectra requires scientific multi-band hyperspectral data cubes (.npy, .hdr, .raw, .tif) with ≥ 10 spectral channels.`);
-                    setUploadFile(null);
-                    return;
-                  }
-                  setUploadError(null);
-                  setUploadFile(file);
-                }
-              }}
-              style={{ marginTop: '16px' }}
-            />
+            <label style={{ display: 'inline-block', marginBottom: '8px' }}>
+              <span style={{ background: '#10b981', color: '#042f2e', padding: '6px 16px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>Choose Data File</span>
+              <input type="file" accept=".npy,.npz,.hdr,.raw,.tif,.tiff,.dat,.img" style={{ display: 'none' }} onChange={(e) => validateAndSetFile(e.target.files[0])} />
+            </label>
+            {setHeaderFile && (
+              <div style={{ marginTop: '8px' }}>
+                <label style={{ display: 'inline-block' }}>
+                  <span style={{ background: 'var(--border-color)', color: 'var(--text-muted)', padding: '5px 14px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}>
+                    + ENVI Header (.hdr) {headerFile ? `✓ ${headerFile.name}` : '(optional)'}
+                  </span>
+                  <input type="file" accept=".hdr" style={{ display: 'none' }} onChange={(e) => setHeaderFile(e.target.files[0] || null)} />
+                </label>
+              </div>
+            )}
           </div>
+
+          {(uploadFile || headerFile) && (
+            <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '8px', padding: '10px 16px', fontSize: '0.82rem', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+              {uploadFile && <span style={{ color: '#34d399' }}>📦 <strong>{uploadFile.name}</strong> — {(uploadFile.size / 1024).toFixed(1)} KB</span>}
+              {headerFile && <span style={{ color: '#38bdf8' }}>📄 <strong>{headerFile.name}</strong> — {(headerFile.size / 1024).toFixed(1)} KB</span>}
+              <button type="button" onClick={() => { setUploadFile(null); if (setHeaderFile) setHeaderFile(null); }} style={{ marginLeft: 'auto', background: 'rgba(244,63,94,0.15)', color: '#fb7185', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.75rem', cursor: 'pointer' }}>✕ Clear</button>
+            </div>
+          )}
 
           {uploadError && (
             <div style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.3)', color: '#fb7185', padding: '12px', borderRadius: '8px', fontSize: '0.85rem' }}>
-              <strong>Upload Error:</strong> {uploadError}
+              <strong>⚠ Ingestion Error:</strong> {uploadError}
             </div>
           )}
 
@@ -711,16 +787,111 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={!uploadFile || loading}
-            className="btn btn-primary"
-            style={{ padding: '12px 24px', fontSize: '1rem', cursor: (!uploadFile || loading) ? 'not-allowed' : 'pointer' }}
-          >
-            {loading ? 'Processing Hypercube...' : 'Execute Hyperspectral Spectral Analysis'}
+          <button type="submit" disabled={!uploadFile || loading} className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '1rem', cursor: (!uploadFile || loading) ? 'not-allowed' : 'pointer', opacity: (!uploadFile || loading) ? 0.6 : 1 }}>
+            {loading ? '⏳ Processing Hypercube…' : 'Execute Hyperspectral Spectral Analysis'}
           </button>
         </form>
       </div>
+
+      {/* ── Inline Scientific Results (shown after upload) ── */}
+      {uploadResult && (
+        <>
+          <div className="card">
+            <div className="card-header">
+              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Section A — Dataset Information</h3>
+              <span className="badge badge-emerald">INGESTED</span>
+            </div>
+            <div className="grid-cols-4" style={{ marginTop: '16px' }}>
+              {[
+                { label: 'Format', value: meta?.format || '—' },
+                { label: 'Dimensions (H×W×B)', value: meta?.dimensions ? `${meta.dimensions[0]}×${meta.dimensions[1]}×${meta.dimensions[2]}` : '—' },
+                { label: 'Spectral Bands', value: meta?.bands_count || '—' },
+                { label: 'SNR', value: uploadResult?.snr_db ? `${uploadResult.snr_db} dB` : '—' },
+                { label: 'Wavelength Range', value: meta?.wavelengths ? `${meta.wavelengths[0]}nm – ${meta.wavelengths[meta.wavelengths.length - 1]}nm` : '—' },
+                { label: 'CRS', value: meta?.crs || 'EPSG:4326 WGS-84' },
+                { label: 'File Size', value: meta?.file_size_bytes ? `${(meta.file_size_bytes / 1024).toFixed(1)} KB` : '—' },
+                { label: 'Data Type', value: meta?.data_type || 'float32' },
+              ].map((item, i) => (
+                <div key={i} style={{ background: 'var(--bg-card-alt)', borderRadius: '8px', padding: '12px 16px' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginBottom: '4px' }}>{item.label}</div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-main)', wordBreak: 'break-all' }}>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Section B — Spectral Profile (Raw / Savitzky-Golay / Continuum-Removed)</h3>
+              <span className="badge badge-emerald">VNIR 400–1000nm</span>
+            </div>
+            <PreprocessingCurveSVG curve={curve} />
+          </div>
+
+          {idxs && Object.keys(idxs).length > 0 && (
+            <div className="card">
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '16px' }}>Section C — Narrowband Vegetation Indices</h3>
+              <div className="grid-cols-4">
+                {Object.entries(idxs).map(([key, val]) => {
+                  const color = val > 0.5 ? '#34d399' : val > 0.2 ? '#fcd34d' : '#fb7185';
+                  return (
+                    <div key={key} style={{ background: 'var(--bg-card-alt)', borderRadius: '8px', padding: '12px 16px', borderLeft: `3px solid ${color}` }}>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginBottom: '4px' }}>{key}</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color }}>{typeof val === 'number' ? val.toFixed(4) : val}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {pca && (
+            <div className="card">
+              <div className="card-header">
+                <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Section C — PCA Dimensionality Reduction</h3>
+                <span className="badge badge-amber">TOTAL VARIANCE: {pca.total_explained_variance ? (pca.total_explained_variance * 100).toFixed(1) : '—'}%</span>
+              </div>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {(pca.components || []).map((comp, i) => (
+                  <div key={i} style={{ background: 'var(--bg-card-alt)', borderRadius: '8px', padding: '12px 20px', minWidth: '130px' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginBottom: '4px' }}>PC {comp.pc_index}</div>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8' }}>{(comp.variance_ratio * 100).toFixed(2)}%</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)' }}>Explained Variance</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="card">
+            <div className="card-header">
+              <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Section D — Diagnostic Classification</h3>
+              <span className={`badge ${diag?.is_healthy ? 'badge-emerald' : 'badge-rose'}`}>{diag?.is_healthy ? 'HEALTHY' : 'DISEASE DETECTED'}</span>
+            </div>
+            <div className="grid-cols-4" style={{ marginTop: '16px' }}>
+              <div style={{ background: 'var(--bg-card-alt)', borderRadius: '8px', padding: '14px 18px', gridColumn: 'span 2' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginBottom: '6px' }}>Detected Condition</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: diag?.is_healthy ? '#34d399' : '#fb7185' }}>{diag?.predicted_condition || '—'}</div>
+              </div>
+              <div style={{ background: 'var(--bg-card-alt)', borderRadius: '8px', padding: '14px 18px' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginBottom: '6px' }}>Confidence</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fcd34d' }}>{diag?.confidence ? `${(diag.confidence * 100).toFixed(1)}%` : '—'}</div>
+              </div>
+              <div style={{ background: 'var(--bg-card-alt)', borderRadius: '8px', padding: '14px 18px' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginBottom: '6px' }}>Stress Score</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#38bdf8' }}>{stress?.composite_stress_score ? `${(stress.composite_stress_score * 100).toFixed(1)}%` : '—'}</div>
+              </div>
+            </div>
+            {setActiveTab && (
+              <div style={{ marginTop: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button onClick={() => setActiveTab('spectral')} style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>📊 Spectral Analysis →</button>
+                <button onClick={() => setActiveTab('disease')} style={{ background: 'rgba(251,113,133,0.1)', color: '#fb7185', border: '1px solid rgba(251,113,133,0.3)', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>🔬 Disease Detection →</button>
+                <button onClick={() => setActiveTab('forecasting')} style={{ background: 'rgba(56,189,248,0.1)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.3)', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>📈 Disease Forecast →</button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="card">
         <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '12px' }}>Supported Hyperspectral Specifications</h3>
@@ -728,7 +899,8 @@ function UploadTab({ uploadFile, setUploadFile, handleFileUpload, loading, uploa
           <li>Spectral Coverage: VNIR (400nm - 1000nm), SWIR (1000nm - 2500nm).</li>
           <li>Contiguous Bands: Minimum 10 spectral channels (Standard benchmarks: 50 - 224 bands).</li>
           <li>Data Interleaving: BSQ (Band Sequential), BIL (Band Interleaved by Line), BIP.</li>
-          <li>Automatic Calibration: Savitzky-Golay filtering and continuum removal.</li>
+          <li>Automatic Calibration: Savitzky-Golay filtering, continuum removal, PCA reduction.</li>
+          <li>ENVI Pairs: Select both .hdr header and .raw/.img/.dat binary data simultaneously.</li>
         </ul>
       </div>
     </div>
