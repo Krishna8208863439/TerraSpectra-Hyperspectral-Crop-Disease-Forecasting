@@ -1,9 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, X, RefreshCw, Upload, AlertCircle, Wifi, WifiOff, ShieldCheck, AlertTriangle, AlertOctagon, CheckCircle2, Sparkles, Droplets, Leaf, Sprout, ShieldAlert } from 'lucide-react';
+import { Camera, X, RefreshCw, Upload, AlertCircle, Wifi, WifiOff, ShieldCheck, AlertTriangle, AlertOctagon, CheckCircle2, Sparkles, Droplets, Leaf, Sprout, ShieldAlert, Globe } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import api from '../../api';
 import { extractErrorMessage } from '../../utils/errorUtils';
+import { localizeDiagnosisResult } from '../../utils/cropDiagnosisMarathi';
 
 /**
  * Upgraded CameraScannerModal Component — End-to-End AI Crop & Leaf Diagnostics
@@ -16,7 +17,7 @@ import { extractErrorMessage } from '../../utils/errorUtils';
  * - Full structured diagnosis output display
  */
 export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) {
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -120,7 +121,7 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
       const { width, height } = canvas;
       if (!width || !height) return { isPlant: true };
 
-      const sampleStep = Math.max(2, Math.floor(Math.min(width, height) / 60));
+      const sampleStep = Math.max(2, Math.floor(Math.min(width, height) / 80));
       const imgData = ctx.getImageData(0, 0, width, height).data;
       let plantPixels = 0;
       let skinPixels = 0;
@@ -134,17 +135,25 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
           const b = imgData[idx + 2];
           totalSampled++;
 
-          // Chlorophyll green / plant foliage detection
-          if (g > 35 && g > r * 1.05 && g > b * 1.05) {
-            plantPixels++;
-          } else if (r > 60 && g > 60 && b < 50 && Math.abs(r - g) < 40) {
-            // Yellow / chlorotic agricultural leaf
-            plantPixels += 0.6;
+          // 1. Human skin tone detection (YCbCr biometric model + RGB rules)
+          // Y = 0.299*R + 0.587*G + 0.114*B
+          // Cb = 128 - 0.168736*R - 0.331264*G + 0.5*B
+          // Cr = 128 + 0.5*R - 0.418688*G - 0.081312*B
+          const cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+          const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+          const isSkinYCbCr = (cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173);
+          const isSkinRGB = (r > 80 && g > 40 && b > 25 && (r - g) > 10 && (r - b) > 10 && r > g && g > b);
+
+          if (isSkinYCbCr || isSkinRGB) {
+            skinPixels++;
           }
 
-          // Human skin tone heuristic (standard biometric RGB rule)
-          if (r > 95 && g > 40 && b > 20 && (r - g) > 15 && (r - b) > 15 && r > g && g > b) {
-            skinPixels++;
+          // 2. Chlorophyll green & chlorotic agricultural leaf detection
+          const isGreen = (g > 35 && g > r * 1.05 && g > b * 1.05);
+          const isYellowLeaf = (r > 60 && g > 60 && b < 55 && Math.abs(r - g) < 45 && (r + g) > 2.0 * b);
+
+          if (isGreen || isYellowLeaf) {
+            plantPixels++;
           }
         }
       }
@@ -152,7 +161,8 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
       const plantRatio = plantPixels / (totalSampled || 1);
       const skinRatio = skinPixels / (totalSampled || 1);
 
-      if (skinRatio > 0.12 && plantRatio < 0.10) {
+      // Rule 1: Human face / selfie / skin detected
+      if (skinRatio > 0.05 && plantRatio < 0.15) {
         return {
           isPlant: false,
           reason: language === 'mr'
@@ -160,7 +170,9 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
             : 'Human face or selfie detected. Only agricultural crop and plant images can be scanned.'
         };
       }
-      if (plantRatio < 0.035 && skinRatio > 0.04) {
+
+      // Rule 2: Insufficient plant foliage (room, furniture, wall, car, computer, animals)
+      if (plantRatio < 0.05) {
         return {
           isPlant: false,
           reason: language === 'mr'
@@ -168,6 +180,17 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
             : 'No crop or plant foliage detected. Please photograph a real crop leaf, agricultural plant, or farm produce.'
         };
       }
+
+      // Rule 3: Low plant ratio with elevated skin
+      if (plantRatio < 0.08 && skinRatio > 0.03) {
+        return {
+          isPlant: false,
+          reason: language === 'mr'
+            ? 'पिकाचे स्पष्ट छायाचित्र आढळले नाही. कृपया कॅमेरा पिकाच्या जवळ धरा.'
+            : 'Image does not contain a clear agricultural crop. Please hold the camera closer to the leaf or plant.'
+        };
+      }
+
       return { isPlant: true, plantRatio, skinRatio };
     } catch (e) {
       return { isPlant: true };
@@ -268,9 +291,13 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
       formData.append('image', capturedFile);
       formData.append('crop', cropToUse);
       formData.append('cropHint', cropToUse);
+      formData.append('language', language);
 
       const res = await api.post('/crop-diagnosis', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'x-language': language
+        }
       });
 
       const data = res.data || {};
@@ -278,7 +305,7 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
       if (data.isAgriculturalImage === false) {
         setDiagnosisResult({
           isAgriculturalImage: false,
-          error: data.error || data.message || 'Please upload a clear crop, plant, or leaf image for agricultural diagnosis.'
+          error: data.error || data.message || (language === 'mr' ? 'कृपया शेतातील पिकाच्या पानाचा स्पष्ट फोटो अपलोड करा.' : 'Please upload a clear crop, plant, or leaf image for agricultural diagnosis.')
         });
         setModalMode('result');
         return;
@@ -346,11 +373,15 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
         disclaimer: data.disclaimer || report.disclaimer || 'AI-based assessment; consult an agricultural expert (KVK) for confirmation.'
       };
 
-      setDiagnosisResult(normalizedResult);
+      const finalResult = (language === 'mr')
+        ? localizeDiagnosisResult(normalizedResult, 'mr')
+        : normalizedResult;
+
+      setDiagnosisResult(finalResult);
       setModalMode('result');
 
       if (onCaptureImage) {
-        onCaptureImage(capturedFile, normalizedResult);
+        onCaptureImage(capturedFile, finalResult);
       }
     } catch (err) {
       console.error('[CameraScannerModal] Vision AI Analysis Error:', err);
@@ -360,6 +391,11 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
       setIsAnalyzing(false);
     }
   };
+
+  const displayResult = useMemo(() => {
+    if (!diagnosisResult) return null;
+    return language === 'mr' ? localizeDiagnosisResult(diagnosisResult, 'mr') : diagnosisResult;
+  }, [diagnosisResult, language]);
 
   if (!isOpen) return null;
 
@@ -380,7 +416,38 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Quick Language Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextLang = language === 'mr' ? 'en' : 'mr';
+                setLanguage(nextLang);
+                try {
+                  localStorage.setItem('sk-lang', nextLang);
+                  localStorage.setItem('i18nextLng', nextLang);
+                } catch (e) {}
+              }}
+              style={{
+                background: language === 'mr' ? 'rgba(34, 197, 94, 0.25)' : 'rgba(255, 255, 255, 0.12)',
+                border: language === 'mr' ? '1.5px solid #22c55e' : '1px solid rgba(255, 255, 255, 0.25)',
+                color: language === 'mr' ? '#86efac' : '#FFFFFF',
+                borderRadius: 20,
+                padding: '4px 12px',
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                transition: 'all 0.15s ease'
+              }}
+              title={language === 'mr' ? 'Switch to English' : 'मराठीमध्ये भाषा बदला'}
+            >
+              <Globe size={13} />
+              <span>{language === 'mr' ? 'मराठी (MR)' : 'English (EN)'}</span>
+            </button>
+
             <span style={{ fontSize: 11, fontWeight: 700, color: isOnline ? '#22C55E' : '#EAB308', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               {isOnline ? <Wifi size={14} /> : <WifiOff size={14} />}
               {isOnline ? 'Online' : 'Offline Mode'}
@@ -681,17 +748,17 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
         )}
 
         {/* ── MODE 3: DIAGNOSIS RESULT VIEW ───────────────────────────────── */}
-        {modalMode === 'result' && diagnosisResult && (
+        {modalMode === 'result' && (displayResult || diagnosisResult) && (
           <div style={{ padding: 20 }}>
             {/* Non-Agricultural Image Rejection View */}
-            {diagnosisResult.isAgriculturalImage === false ? (
+            {(displayResult || diagnosisResult).isAgriculturalImage === false ? (
               <div style={{ background: '#fef2f2', border: '1.5px solid #f87171', borderRadius: 12, padding: 24, textAlign: 'center' }}>
                 <ShieldAlert size={48} color="#dc2626" style={{ margin: '0 auto 12px auto', display: 'block' }} />
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: '#991b1b', margin: '0 0 8px 0' }}>
-                  Invalid Image Uploaded
+                  {language === 'mr' ? 'अयोग्य किंवा चुकीचे छायाचित्र' : 'Invalid Image Uploaded'}
                 </h3>
                 <p style={{ fontSize: 14, color: '#7f1d1d', lineHeight: 1.5, margin: '0 0 20px 0', fontWeight: 600 }}>
-                  {diagnosisResult.error || diagnosisResult.message || 'Please upload a clear crop, plant, or leaf image for agricultural diagnosis.'}
+                  {(displayResult || diagnosisResult).error || (displayResult || diagnosisResult).message || (language === 'mr' ? 'कृपया शेतातील पिकाच्या पानाचा स्पष्ट फोटो अपलोड करा.' : 'Please upload a clear crop, plant, or leaf image for agricultural diagnosis.')}
                 </p>
                 <button
                   type="button"
@@ -721,29 +788,29 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #334155', paddingBottom: 16, marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
                   <div>
                     <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.6px', color: '#22c55e', display: 'block', marginBottom: 2 }}>
-                      {diagnosisResult.provider ? `${diagnosisResult.provider.toUpperCase()} DIAGNOSIS` : 'AGRIEXPERT AI VISION DIAGNOSIS'}
+                      {displayResult.provider ? (language === 'mr' && !displayResult.provider.includes('AgriExpert') ? displayResult.provider : (language === 'mr' ? 'ॲग्रीएक्सपर्ट एआय व्हिजन निदान' : `${displayResult.provider.toUpperCase()} DIAGNOSIS`)) : (language === 'mr' ? 'ॲग्रीएक्सपर्ट एआय व्हिजन निदान' : 'AGRIEXPERT AI VISION DIAGNOSIS')}
                     </span>
                     <h2 style={{ fontSize: 24, fontWeight: 800, color: '#FFFFFF', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      🌱 {diagnosisResult.crop || 'Crop / Plant'}
+                      🌱 {displayResult.crop || (language === 'mr' ? 'शेती पीक / वनस्पती' : 'Crop / Plant')}
                     </h2>
                   </div>
 
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     {/* Confidence percentage badge */}
                     <span style={{ background: '#1e293b', border: '1px solid #334155', color: '#38bdf8', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 800 }}>
-                      📊 {diagnosisResult.certaintyPercent !== undefined ? diagnosisResult.certaintyPercent : (Number(diagnosisResult.confidence || 0.85) * 100).toFixed(0)}% Certainty
+                      📊 {displayResult.certaintyPercent !== undefined ? displayResult.certaintyPercent : (Number(displayResult.confidence || 0.85) * 100).toFixed(0)}% {language === 'mr' ? 'अचूकता (Certainty)' : 'Certainty'}
                     </span>
 
                     {/* Severity Badge */}
                     <span style={{
-                      background: diagnosisResult.severity === 'High' ? '#fee2e2' : diagnosisResult.severity === 'Medium' ? '#fef3c7' : '#dcfce7',
-                      color: diagnosisResult.severity === 'High' ? '#dc2626' : diagnosisResult.severity === 'Medium' ? '#b45309' : '#15803d',
+                      background: (displayResult.severity === 'High' || String(displayResult.severityDisplay).includes('उच्च')) ? '#fee2e2' : (displayResult.severity === 'Medium' || String(displayResult.severityDisplay).includes('मध्यम')) ? '#fef3c7' : '#dcfce7',
+                      color: (displayResult.severity === 'High' || String(displayResult.severityDisplay).includes('उच्च')) ? '#dc2626' : (displayResult.severity === 'Medium' || String(displayResult.severityDisplay).includes('मध्यम')) ? '#b45309' : '#15803d',
                       padding: '4px 12px',
                       borderRadius: 20,
                       fontSize: 12,
                       fontWeight: 800
                     }}>
-                      ⚠️ {diagnosisResult.severity || 'Medium'} Severity
+                      ⚠️ {displayResult.severityDisplay || (language === 'mr' ? `${displayResult.severity} धोका` : `${displayResult.severity || 'Medium'} Severity`)}
                     </span>
                   </div>
                 </div>
@@ -751,10 +818,10 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
                 {/* Main Problem / Disease Banner */}
                 <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: 10, padding: 14, marginBottom: 16 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    🔍 Problem / Disease Detected
+                    🔍 {language === 'mr' ? 'शोधलेला रोग / समस्या' : 'Problem / Disease Detected'}
                   </span>
                   <div style={{ fontSize: 18, fontWeight: 800, color: '#FFFFFF', marginTop: 2 }}>
-                    {diagnosisResult.diagnosis || diagnosisResult.disease || diagnosisResult.report?.suspectedIssue || diagnosisResult.report?.disease || `${diagnosisResult.crop || 'Crop'} Health & Disease Screening Completed`}
+                    {displayResult.diagnosis || displayResult.disease || (language === 'mr' ? `${displayResult.crop || 'पीक'} आरोग्य व रोग तपासणी पूर्ण` : `${displayResult.crop || 'Crop'} Health & Disease Screening Completed`)}
                   </div>
                 </div>
 
@@ -762,13 +829,13 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginBottom: 16 }}>
                   
                   {/* Visible Symptoms */}
-                  {diagnosisResult.symptoms && diagnosisResult.symptoms.length > 0 && (
+                  {displayResult.symptoms && displayResult.symptoms.length > 0 && (
                     <div style={{ background: '#1e293b', borderRadius: 10, padding: 14, border: '1px solid #334155' }}>
                       <h4 style={{ fontSize: 12.5, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        📝 Visible Symptoms
+                        📝 {language === 'mr' ? 'दिसणारी लक्षणे' : 'Visible Symptoms'}
                       </h4>
                       <ul style={{ margin: 0, paddingLeft: 18, color: '#e2e8f0', fontSize: 13, lineHeight: 1.5 }}>
-                        {diagnosisResult.symptoms.map((sym, idx) => (
+                        {displayResult.symptoms.map((sym, idx) => (
                           <li key={idx}>{sym}</li>
                         ))}
                       </ul>
@@ -776,13 +843,13 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
                   )}
 
                   {/* Recommended Treatment */}
-                  {diagnosisResult.treatment && diagnosisResult.treatment.length > 0 && (
+                  {displayResult.treatment && displayResult.treatment.length > 0 && (
                     <div style={{ background: '#1e293b', borderRadius: 10, padding: 14, border: '1px solid #334155' }}>
                       <h4 style={{ fontSize: 12.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        💊 Recommended Treatment
+                        💊 {language === 'mr' ? 'शिफारस केलेले उपचार' : 'Recommended Treatment'}
                       </h4>
                       <ul style={{ margin: 0, paddingLeft: 18, color: '#e2e8f0', fontSize: 13, lineHeight: 1.5 }}>
-                        {diagnosisResult.treatment.map((trt, idx) => (
+                        {displayResult.treatment.map((trt, idx) => (
                           <li key={idx}>{trt}</li>
                         ))}
                       </ul>
@@ -790,39 +857,39 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
                   )}
 
                   {/* Fertilizer Advice */}
-                  {diagnosisResult.fertilizerAdvice && (
+                  {displayResult.fertilizerAdvice && (
                     <div style={{ background: '#1e293b', borderRadius: 10, padding: 14, border: '1px solid #334155' }}>
                       <h4 style={{ fontSize: 12.5, fontWeight: 800, color: '#fde047', textTransform: 'uppercase', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        🌾 Recommended Fertilizer / Nutrients
+                        🌾 {language === 'mr' ? 'शिफारस केलेली खते व पोषण' : 'Recommended Fertilizer / Nutrients'}
                       </h4>
                       <div style={{ color: '#e2e8f0', fontSize: 13, lineHeight: 1.5 }}>
-                        {Array.isArray(diagnosisResult.fertilizerAdvice) 
-                          ? diagnosisResult.fertilizerAdvice.join('; ')
-                          : diagnosisResult.fertilizerAdvice}
+                        {Array.isArray(displayResult.fertilizerAdvice) 
+                          ? displayResult.fertilizerAdvice.join('; ')
+                          : displayResult.fertilizerAdvice}
                       </div>
                     </div>
                   )}
 
                   {/* Irrigation Advice */}
-                  {diagnosisResult.irrigationAdvice && (
+                  {displayResult.irrigationAdvice && (
                     <div style={{ background: '#1e293b', borderRadius: 10, padding: 14, border: '1px solid #334155' }}>
                       <h4 style={{ fontSize: 12.5, fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        💧 Irrigation & Care Advice
+                        💧 {language === 'mr' ? 'सिंचन व काळजी सल्ला' : 'Irrigation & Care Advice'}
                       </h4>
                       <div style={{ color: '#e2e8f0', fontSize: 13, lineHeight: 1.5 }}>
-                        {diagnosisResult.irrigationAdvice}
+                        {displayResult.irrigationAdvice}
                       </div>
                     </div>
                   )}
 
                   {/* Prevention Tips */}
-                  {diagnosisResult.prevention && diagnosisResult.prevention.length > 0 && (
+                  {displayResult.prevention && displayResult.prevention.length > 0 && (
                     <div style={{ background: '#1e293b', borderRadius: 10, padding: 14, border: '1px solid #334155', gridColumn: '1 / -1' }}>
                       <h4 style={{ fontSize: 12.5, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        🛡️ Prevention Tips
+                        🛡️ {language === 'mr' ? 'प्रतिबंधात्मक उपाय' : 'Prevention Tips'}
                       </h4>
                       <ul style={{ margin: 0, paddingLeft: 18, color: '#e2e8f0', fontSize: 13, lineHeight: 1.5 }}>
-                        {diagnosisResult.prevention.map((prv, idx) => (
+                        {displayResult.prevention.map((prv, idx) => (
                           <li key={idx}>{prv}</li>
                         ))}
                       </ul>
@@ -832,7 +899,7 @@ export default function CameraScannerModal({ isOpen, onClose, onCaptureImage }) 
 
                 {/* Disclaimer */}
                 <div style={{ background: 'rgba(234, 179, 8, 0.1)', border: '1px solid rgba(234, 179, 8, 0.3)', borderRadius: 10, padding: 12, marginBottom: 18, fontSize: 12, color: '#fef08a', lineHeight: 1.4 }}>
-                  ℹ️ <strong>Disclaimer:</strong> {diagnosisResult.disclaimer || 'AI-based assessment; consult an agricultural expert (KVK) for confirmation.'}
+                  ℹ️ <strong>{language === 'mr' ? 'माहिती / अस्वीकरण (Disclaimer):' : 'Disclaimer:'}</strong> {displayResult.disclaimer || (language === 'mr' ? 'एआय आधारित मूल्यांकन; प्रत्यक्ष शेतात खात्री करण्यासाठी स्थानिक कृषी विज्ञान केंद्र (KVK) चा सल्ला घ्या.' : 'AI-based assessment; consult an agricultural expert (KVK) for confirmation.')}
                 </div>
 
                 {/* Bottom Result Action Buttons */}
