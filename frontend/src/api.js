@@ -52,6 +52,9 @@ api.interceptors.request.use((config) => {
   if (geminiKey) {
     config.headers["x-gemini-key"] = geminiKey.trim();
   }
+  // Forward active user language preference (mr or en) for backend localization
+  const lang = localStorage.getItem("sk-lang") || "mr";
+  config.headers["x-language"] = lang;
   return config;
 });
 

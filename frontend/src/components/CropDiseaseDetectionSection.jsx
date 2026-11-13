@@ -269,9 +269,10 @@ const CropDiseaseDetectionSection = () => {
       const finalCrop = cropHint === "Other" ? customCropHint : cropHint;
       formData.append("crop", finalCrop);   // Sends the selected or custom crop
       formData.append("image", file);
+      formData.append("language", language);
 
       // Build headers — include auth token and optional Gemini key
-      const headers = { "Content-Type": "multipart/form-data" };
+      const headers = { "Content-Type": "multipart/form-data", "x-language": language };
       const token = localStorage.getItem("sk_token");
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const geminiKey = localStorage.getItem("sk_gemini_key");
