@@ -1,52 +1,39 @@
-# 🌾 Smart Kisan AI — Comprehensive Digital Agriculture Platform
+# 🌾 Smart Kisan AI — Digital Agriculture Platform
 
-Smart Kisan AI is a full-stack, AI-powered agricultural advisory and farm management platform designed for Indian farmers. It combines real-time weather forecasts, AI vision-based crop disease diagnosis, interactive agronomy advisory, predictive yield intelligence, and an agricultural marketplace.
-
----
-
-## 🚀 Key Features
-
-### 1. 🔬 AI Crop Diagnostics Scanner
-- **Direct Camera & Gallery Upload**: Capture real-time photos of crop leaves in the field.
-- **Two-Stage Validation Pipeline**:
-  - **Stage A Gate**: Validates image clarity and verifies plant presence, rejecting non-plant images with honest explanatory reasons.
-  - **Stage B Structured Tool Diagnosis**: Claude / OpenAI Vision analysis producing specific disease assessments, certainty percentages, visible symptoms, fertilizer advice, and actionable management steps.
-
-### 2. 🤖 AgriExpert AI Chatbot
-- Context-aware agricultural conversational assistant tailored for Indian farming conditions (soil types, irrigation methods, regional seasons).
-- Multi-language support (English, Hindi, Marathi).
-- Integrates live field context (GPS location, temperature, water sources) for tailored advice.
-
-### 3. 🌤️ Live Weather & 7-Day Agricultural Forecast
-- Powered by **Open-Meteo API** (reliable, keyless, zero-quota failure risk).
-- **"My Location" GPS Auto-Detection**: Instant geolocation with reverse-geocoding.
-- Real-time weather parameters: Temperature, apparent temperature, humidity, wind direction/speed, pressure, precipitation, and hourly UV index.
-- Dynamic agronomic advice generated directly from live weather conditions.
-
-### 4. 📈 Predictive Crop Yield & Fertilizer Planning
-- ML-driven crop yield estimation based on regional soil parameters (N, P, K, pH), rainfall, and season.
-- Tailored fertilizer and NPK balancing recommendations.
-
-### 5. 🛒 Agricultural Marketplace & Community
-- Direct farmer-to-buyer listing and marketplace.
-- Buy requests, product catalogs, and regional mandi rate tracking.
+Smart Kisan AI is a full-stack, AI-powered agricultural platform built for Indian farmers.
+It provides real-time weather forecasts, AI crop disease diagnosis, agronomy advisory, yield prediction, and a farmer marketplace — all in one place.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## 🚀 Features
 
-- **Frontend**: React 18, Vite, Lucide Icons, Vanilla CSS Design System, PWA (Progressive Web App).
-- **Backend (Node.js)**: Express.js, MongoDB / In-Memory Fallback, Redis Cache Layer, Anthropic SDK, OpenAI SDK, JWT Authentication.
-- **Backend (Python)**: FastAPI, PyTorch / TorchVision ML models, Google Gemini / Generative AI, SQLite / SQLAlchemy.
-- **APIs & Services**: Open-Meteo Weather & Geocoding, Nominatim Reverse Geocoding.
+| Feature | Description |
+|---|---|
+| 🔬 Crop Diagnostics | Camera/gallery upload with two-stage AI disease detection (Stage A: validation, Stage B: diagnosis) |
+| 🤖 AgriExpert Chatbot | Context-aware farming assistant with Hindi, English & Marathi support |
+| 🌤️ Weather Forecast | 7-day agricultural forecast via Open-Meteo API with GPS auto-detection |
+| 📈 Yield Prediction | ML-driven crop yield estimation based on N, P, K, pH, rainfall & season |
+| 🛒 Marketplace | Farmer-to-buyer listings, buy requests & regional mandi rate tracking |
+| 📋 Crop Calendar | Personalized sowing & harvesting schedule management |
+| 🏛️ Govt. Schemes | Browse and apply for agriculture-related government schemes |
+| 👥 Community Forum | Farmer discussion board and knowledge sharing |
 
 ---
 
-## 📦 Getting Started Locally
+## 🛠️ Tech Stack
+
+**Frontend:** React 18 · Vite · Lucide Icons · PWA  
+**Backend (Node.js):** Express.js · MongoDB · Redis · JWT · Anthropic SDK · OpenAI SDK  
+**Backend (Python):** FastAPI · PyTorch · Google Gemini AI · SQLite / SQLAlchemy  
+**APIs:** Open-Meteo · Nominatim Reverse Geocoding · Razorpay Payments  
+
+---
+
+## 📦 Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- Python (3.10+)
+- Node.js v18+
+- Python 3.10+
 - Git
 
 ### 1. Clone the Repository
@@ -55,31 +42,81 @@ git clone https://github.com/Krishna8208863439/Smart-Kisan-FInal.git
 cd Smart-Kisan-FInal
 ```
 
-### 2. Backend Setup (Node.js)
+### 2. Backend — Node.js
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# Configure your API keys in .env (OPENAI_API_KEY / ANTHROPIC_API_KEY)
-node server.js
+cp .env.example .env        # Add your API keys
+node server.js              # Runs on http://localhost:5000
 ```
-*Backend runs on `http://localhost:5000`*
 
-### 3. Frontend Setup
+### 3. Backend — Python (AI Services)
 ```bash
-cd ../frontend
-npm install
-npm run dev
+cd backend_python
+pip install -r requirements.txt
+uvicorn app:app --reload    # Runs on http://localhost:8000
 ```
-*Frontend runs on `http://localhost:5173`*
+
+### 4. Frontend
+```bash
+cd frontend
+npm install
+npm run dev                 # Runs on http://localhost:5173
+```
 
 ---
 
 ## 🌐 Deployment
 
-- **PythonAnywhere**: Run `python deploy_all_to_pythonanywhere.py` to bundle the production frontend build and backend code and deploy directly.
+Deploy the full stack to **PythonAnywhere** in one command:
+```bash
+python deploy_all_to_pythonanywhere.py
+```
+
+Or use **Docker**:
+```bash
+docker-compose up --build
+```
+
+---
+
+## 📁 Project Structure
+
+```
+Smart-Kisan/
+├── backend/          # Node.js Express API
+├── backend_python/   # FastAPI Python AI services
+├── frontend/         # React + Vite PWA
+├── datasets/         # ML training datasets
+├── docker/           # Docker configs
+└── nginx/            # Nginx reverse proxy config
+```
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file inside `backend/` using `.env.example` as reference:
+
+```env
+MONGODB_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+RAZORPAY_KEY_ID=your_razorpay_key
+RAZORPAY_KEY_SECRET=your_razorpay_secret
+```
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License.
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 🙌 Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+> Built with ❤️ for Indian Farmers 🇮🇳
