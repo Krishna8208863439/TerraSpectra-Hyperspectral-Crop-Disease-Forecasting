@@ -1,0 +1,43 @@
+{
+  "name": "Smart Kisan - Digital Agriculture",
+  "short_name": "SmartKisan",
+  "description": "AI-powered farming companion for crop management, disease detection, weather forecasting, and market prices.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#15803d",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["agriculture", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Kisan AI Chat",
+      "short_name": "AI Chat",
+      "description": "Talk to the Kisan AI Chatbot",
+      "url": "/chat",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Marketplace",
+      "short_name": "Market",
+      "description": "Buy and sell crops",
+      "url": "/marketplace",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

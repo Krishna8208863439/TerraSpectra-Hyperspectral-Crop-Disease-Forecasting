@@ -1,0 +1,684 @@
+{
+  "users": [
+    {
+      "_id": "mem_9boqg8u5z_1786445802420",
+      "isActive": true,
+      "emailVerified": false,
+      "loginCount": 1,
+      "name": "Test Farmer",
+      "email": "testfarmer@kisan.com",
+      "password": "$2a$12$9jJ5znN0wwzK3t/JYImN9.iE9dMybsLqxo6I5uourjhJU1rliRGT6",
+      "role": "farmer",
+      "createdAt": "2026-08-11T10:56:42.421Z",
+      "updatedAt": "2026-08-11T10:57:42.162Z",
+      "lastLogin": "2026-08-11T10:57:42.158Z"
+    },
+    {
+      "_id": "mem_irhbyhs1w_1786446467553",
+      "isActive": true,
+      "emailVerified": false,
+      "loginCount": 2,
+      "name": "krishna",
+      "email": "krishnadevadkar3114@gmail.com",
+      "password": "$2a$12$OHPMA30yZ.kXRw3czZpYEuh5gT5zkKjWMykQd3H1gHMCeD6/pRxgG",
+      "role": "farmer",
+      "createdAt": "2026-08-11T11:07:47.553Z",
+      "updatedAt": "2026-08-11T11:16:43.885Z",
+      "lastLogin": "2026-08-11T11:16:43.882Z"
+    },
+    {
+      "_id": "mem_8p1ilv0jt_1786446590999",
+      "isActive": true,
+      "emailVerified": false,
+      "loginCount": 1,
+      "name": "Test Farmer",
+      "email": "testfarmer2@kisan.com",
+      "password": "$2a$12$OHtp8jRc/PPimR0/eiR4yeQUs3OgyzeaKap98kgkIQ7.qAzfl/7SO",
+      "role": "farmer",
+      "createdAt": "2026-08-11T11:09:50.999Z",
+      "updatedAt": "2026-08-11T11:10:21.686Z",
+      "lastLogin": "2026-08-11T11:10:21.685Z"
+    },
+    {
+      "_id": "mem_wqb7e4kmd_1786447003754",
+      "isActive": true,
+      "emailVerified": false,
+      "loginCount": 6,
+      "name": "kd",
+      "email": "krishnadevadkar31144@gmail.com",
+      "password": "$2a$12$evRFiYb6V6pPFA6TNtqZy..HdVXXm/ZpEOHYdPGi/v.O2RHmoB2Wa",
+      "role": "farmer",
+      "createdAt": "2026-08-11T11:16:43.754Z",
+      "updatedAt": "2026-08-15T05:52:37.352Z",
+      "lastLogin": "2026-08-15T05:52:37.346Z"
+    },
+    {
+      "_id": "mem_ekfo5fmef_1786684950925",
+      "isActive": true,
+      "emailVerified": false,
+      "loginCount": 3,
+      "name": "WeatherTest",
+      "email": "weathertest@kisan.com",
+      "password": "$2a$12$PyA9XYVOh8EInXL2yl1uPekAoWRngSXedIBZBUmFOCFCShLN5qf8i",
+      "role": "farmer",
+      "createdAt": "2026-08-14T05:22:30.925Z",
+      "updatedAt": "2026-08-14T05:34:27.508Z",
+      "lastLogin": "2026-08-14T05:34:27.506Z"
+    }
+  ],
+  "posts": [],
+  "calendars": [
+    {
+      "_id": "mem_2w8rt3jsn_1786447769854",
+      "user": "mem_irhbyhs1w_1786446467553",
+      "cropName": "Tomato",
+      "customCropName": "",
+      "sowingDate": "2026-08-11T00:00:00.000Z",
+      "tasks": [
+        {
+          "_id": "mem_orb9gqund_1786447769854",
+          "title": "Deep Ploughing & Soil Solarization",
+          "dayOffset": -10,
+          "targetDate": "2026-08-01T00:00:00.000Z",
+          "status": "completed",
+          "category": "Land Preparation"
+        },
+        {
+          "_id": "mem_ri6hag8mt_1786447769854",
+          "title": "Nursery Sowing & Seedling Bed Care",
+          "dayOffset": 0,
+          "targetDate": "2026-08-11T00:00:00.000Z",
+          "status": "pending",
+          "category": "Sowing"
+        },
+        {
+          "_id": "mem_qx3wj7cc4_1786447769854",
+          "title": "Drip Irrigation Setup & Field Beds",
+          "dayOffset": 15,
+          "targetDate": "2026-08-26T00:00:00.000Z",
+          "status": "pending",
+          "category": "Irrigation"
+        },
+        {
+          "_id": "mem_psua9tc6y_1786447769854",
+          "title": "Transplanting Seedlings & Root Drenching",
+          "dayOffset": 25,
+          "targetDate": "2026-09-05T00:00:00.000Z",
+          "status": "completed",
+          "category": "Sowing"
+        },
+        {
+          "_id": "mem_xzyswh54d_1786447769854",
+          "title": "First Pre-Emergence Weeding & Mulching",
+          "dayOffset": 35,
+          "targetDate": "2026-09-15T00:00:00.000Z",
+          "status": "pending",
+          "category": "Weed Control"
+        },
+        {
+          "_id": "mem_lwh0wm2uc_1786447769854",
+          "title": "First Top Dressing (Basal NPK + Organic Manure)",
+          "dayOffset": 45,
+          "targetDate": "2026-09-25T00:00:00.000Z",
+          "status": "completed",
+          "category": "Fertilizer Schedule"
+        },
+        {
+          "_id": "mem_i867bvp84_1786447769854",
+          "title": "Staking & Trellising Tomato Vines",
+          "dayOffset": 55,
+          "targetDate": "2026-10-05T00:00:00.000Z",
+          "status": "completed",
+          "category": "Land Preparation"
+        },
+        {
+          "_id": "mem_4tcn8i8r3_1786447769854",
+          "title": "Preventive Spray against Early Blight & Whiteflies",
+          "dayOffset": 65,
+          "targetDate": "2026-10-15T00:00:00.000Z",
+          "status": "pending",
+          "category": "Disease Prevention"
+        },
+        {
+          "_id": "mem_oxs2xbamv_1786447769854",
+          "title": "Fruiting Micronutrient Foliar Spray (Boron + Calcium)",
+          "dayOffset": 75,
+          "targetDate": "2026-10-25T00:00:00.000Z",
+          "status": "pending",
+          "category": "Fertilizer Schedule"
+        },
+        {
+          "_id": "mem_u2eunc8yy_1786447769854",
+          "title": "First Harvest of Ripe Tomatoes",
+          "dayOffset": 95,
+          "targetDate": "2026-11-14T00:00:00.000Z",
+          "status": "pending",
+          "category": "Harvest Time"
+        },
+        {
+          "_id": "mem_wngawhwvb_1786447769854",
+          "title": "Post-Harvest Cleaning, Grading & Cold Storage",
+          "dayOffset": 110,
+          "targetDate": "2026-11-29T00:00:00.000Z",
+          "status": "pending",
+          "category": "Storage Recommendations"
+        }
+      ],
+      "createdAt": "2026-08-11T11:29:29.854Z",
+      "updatedAt": "2026-08-11T11:29:29.854Z"
+    }
+  ],
+  "products": [
+    {
+      "_id": "mem_rpk0ll95c_1786447757712",
+      "name": "Mahyco Sonalika Organic Wheat Seeds",
+      "category": "Seeds",
+      "seller": "Green Agro Solutions",
+      "rating": 4.8,
+      "reviews": 234,
+      "price": 850,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=600&q=80",
+      "description": "Certified high-yielding organic wheat seeds suitable for Rabi season sowing. Treated for natural disease resistance. [Germination Rate: 96%] [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_rhxqy8an2_1786447757713",
+      "name": "IFFCO NPK 19:19:19 Bio-Fertilizer",
+      "category": "Fertilizers",
+      "seller": "FarmTech India",
+      "rating": 4.8,
+      "reviews": 456,
+      "price": 1200,
+      "unit": "/25kg bag",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80",
+      "description": "Balanced macronutrient formula containing organic nitrogen, phosphorus, and potash compounds. Promotes healthy root growth and vegetative development. [NPK Formula: 19:19:19] [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_qq61klobp_1786447757713",
+      "name": "Jain Drip Irrigation Kit (1 Acre)",
+      "category": "Tools",
+      "seller": "Irrigation Pro",
+      "rating": 4.6,
+      "reviews": 89,
+      "price": 15000,
+      "unit": "/set",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=600&q=80",
+      "description": "Complete drip line kit with drippers, filters, valves, lateral pipes, and micro-sprinklers. Saves up to 60% water. [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_tzst3u33b_1786447757713",
+      "name": "Pioneer Hybrid Maize Seeds (30Y92)",
+      "category": "Seeds",
+      "seller": "AgriGrow Seeds",
+      "rating": 4.4,
+      "reviews": 120,
+      "price": 950,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80",
+      "description": "Premium hybrid corn seeds optimized for dry-land cultivation. Early maturing variety. [Germination Rate: 94%] [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_qnktlzm8e_1786447757713",
+      "name": "Multiplex Liquid Micro-Nutrient Mix",
+      "category": "Fertilizers",
+      "seller": "Nutrient Plus",
+      "rating": 4.3,
+      "reviews": 98,
+      "price": 480,
+      "unit": "/litre",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1523301343968-6a6ebf63c672?auto=format&fit=crop&w=600&q=80",
+      "description": "Foliar spray liquid nutrition rich in zinc, iron, boron, and chelated trace minerals. [NPK Formula: 5:10:5] [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_9xpjb5yw8_1786447757713",
+      "name": "Aspee Knapsack Hand Sprayer Pump (16L)",
+      "category": "Equipment",
+      "seller": "Kisan Equip Co.",
+      "rating": 4.1,
+      "reviews": 64,
+      "price": 2200,
+      "unit": "/unit",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80",
+      "description": "Ergonomic 16-liter manual knapsack sprayer with adjustable brass nozzles and heavy-duty battery backup. [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_bt3eayjj1_1786447757713",
+      "name": "Eco Pesticide (Margosom Neem Based)",
+      "category": "Pesticides",
+      "seller": "SafeCrop Bio",
+      "rating": 4.5,
+      "reviews": 142,
+      "price": 650,
+      "unit": "/litre",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80",
+      "description": "Pure cold-pressed neem oil formulation containing 1500ppm Azadirachtin. Controls sucking pests naturally. [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_10zo31q6y_1786447757713",
+      "name": "Mahyco Bollgard-II Premium Cotton Seeds",
+      "category": "Seeds",
+      "seller": "Green Agro Solutions",
+      "rating": 4.7,
+      "reviews": 165,
+      "price": 1100,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=600&q=80",
+      "description": "High-yield cotton seeds for rainfed farming. Highly resistant to bollworm. [Germination Rate: 98%] [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_pyz3v42qm_1786447757713",
+      "name": "Jaivik Bharat Organic Vermicompost",
+      "category": "Fertilizers",
+      "seller": "EcoHumus Ltd.",
+      "rating": 4.9,
+      "reviews": 312,
+      "price": 450,
+      "unit": "/50kg bag",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1628352081506-83c43123ed6d?auto=format&fit=crop&w=600&q=80",
+      "description": "Nutrient-rich natural organic vermicompost prepared from premium cow dung and plant waste. [NPK Formula: 3:1:2]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_xtigj9l14_1786447757713",
+      "name": "SmartFarm 3-in-1 Soil pH Meter",
+      "category": "Tools",
+      "seller": "SmartFarm Sensors",
+      "rating": 4.5,
+      "reviews": 78,
+      "price": 1800,
+      "unit": "/unit",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=600&q=80",
+      "description": "3-in-1 soil tester for measuring pH level, moisture percentage, and ambient sunlight intensity.",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_izsovyk42_1786447757713",
+      "name": "Kisan Tech Solar Insect Trap",
+      "category": "Equipment",
+      "seller": "Kisan Tech",
+      "rating": 4.4,
+      "reviews": 53,
+      "price": 3200,
+      "unit": "/unit",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80",
+      "description": "Automated solar-powered insect trap with UV light attraction sensor. Extremely effective for crop orchards.",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_0ao8w62cr_1786447757713",
+      "name": "SafeCrop Natural Bio-Herbicide",
+      "category": "Pesticides",
+      "seller": "SafeCrop Bio",
+      "rating": 4.2,
+      "reviews": 41,
+      "price": 890,
+      "unit": "/litre",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?auto=format&fit=crop&w=600&q=80",
+      "description": "Organic selective herbicide that controls broadleaf weeds without damaging local crops or soil health.",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_x2bj7lnzm_1786447757713",
+      "name": "Rajesh Patil's Fresh Basmati Rice (Surplus)",
+      "category": "Produce",
+      "seller": "Rajesh Patil (Farmer)",
+      "rating": 5,
+      "reviews": 15,
+      "price": 75,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80",
+      "description": "Aroma-rich premium extra long grain Basmati rice from organic fields. [Harvest Date: 05/10/2026] [Live Link: https://krishna3114.pythonanywhere.com/]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_7ms286yjg_1786447757713",
+      "name": "Suresh Mandloi's Red Potatoes (Bulk)",
+      "category": "Produce",
+      "seller": "Suresh Mandloi (Farmer)",
+      "rating": 4.8,
+      "reviews": 24,
+      "price": 18,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80",
+      "description": "Freshly dug red potatoes, medium to large sizing. Perfect for wholesale distribution. [Harvest Date: 05/15/2026]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_yvv35s8fo_1786447757713",
+      "name": "Devgad Organic Alphonso Mangoes",
+      "category": "Produce",
+      "seller": "Vikram Dev (Farmer)",
+      "rating": 5,
+      "reviews": 32,
+      "price": 650,
+      "unit": "/box (12pcs)",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=600&q=80",
+      "description": "Sweet and highly aromatic chemical-free export grade Alphonso mangoes from Devgad orchards. [Harvest Date: 06/01/2026]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_txledcynm_1786447757713",
+      "name": "Sangli Organic Turmeric Rhizomes",
+      "category": "Produce",
+      "seller": "Amit Rao (Farmer)",
+      "rating": 4.9,
+      "reviews": 19,
+      "price": 120,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80",
+      "description": "Fresh and heavy turmeric roots containing high curcumin value. Harvested naturally. [Harvest Date: 04/22/2026]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_d34gqsk5x_1786447757713",
+      "name": "Shakti Solar Water Pump System (3HP)",
+      "category": "Equipment",
+      "seller": "SolarAgro India",
+      "rating": 4.7,
+      "reviews": 34,
+      "price": 45000,
+      "unit": "/set",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=600&q=80",
+      "description": "High discharge submersible solar water pumping system complete with panels, controller, and mounting structures.",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    },
+    {
+      "_id": "mem_who98corr_1786447757713",
+      "name": "Pioneer High-Yield Mustard Seeds (45S46)",
+      "category": "Seeds",
+      "seller": "AgriGrow Seeds",
+      "rating": 4.6,
+      "reviews": 112,
+      "price": 140,
+      "unit": "/kg",
+      "stock": "In Stock",
+      "image": "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80",
+      "description": "Early maturity black mustard seeds with high oil concentration percentage. [Germination Rate: 95%]",
+      "createdAt": "2026-08-11T11:29:17.713Z",
+      "updatedAt": "2026-08-11T11:29:17.713Z"
+    }
+  ],
+  "buyRequests": [],
+  "contracts": [],
+  "orders": [],
+  "yieldPredictions": [],
+  "livestock": [],
+  "auditLogs": [
+    {
+      "_id": "mem_8syinaev8_1786446591020",
+      "userId": "mem_8p1ilv0jt_1786446590999",
+      "userEmail": "testfarmer2@kisan.com",
+      "userRole": "farmer",
+      "action": "USER_REGISTER",
+      "resource": "user",
+      "method": "POST",
+      "path": "/register",
+      "ip": "::1",
+      "userAgent": "python-requests/2.31.0",
+      "meta": {
+        "email": "testfarmer2@kisan.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-11T11:09:51.020Z"
+    },
+    {
+      "_id": "mem_suyrnalpc_1786446621691",
+      "userId": "mem_8p1ilv0jt_1786446590999",
+      "userEmail": "testfarmer2@kisan.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "python-requests/2.31.0",
+      "meta": {
+        "email": "testfarmer2@kisan.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-11T11:10:21.691Z"
+    },
+    {
+      "_id": "mem_qncm1192g_1786447003878",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_REGISTER",
+      "resource": "user",
+      "method": "POST",
+      "path": "/register",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-11T11:16:43.878Z"
+    },
+    {
+      "_id": "mem_czlhb16z6_1786447003889",
+      "userId": "mem_irhbyhs1w_1786446467553",
+      "userEmail": "krishnadevadkar3114@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar3114@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-11T11:16:43.889Z"
+    },
+    {
+      "_id": "mem_2ezhegnev_1786683342887",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-14T04:55:42.887Z"
+    },
+    {
+      "_id": "mem_byjqncdrp_1786684950929",
+      "userId": "mem_ekfo5fmef_1786684950925",
+      "userEmail": "weathertest@kisan.com",
+      "userRole": "farmer",
+      "action": "USER_REGISTER",
+      "resource": "user",
+      "method": "POST",
+      "path": "/register",
+      "ip": "::1",
+      "meta": {
+        "email": "weathertest@kisan.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-14T05:22:30.929Z"
+    },
+    {
+      "_id": "mem_h2s2p7uan_1786684952211",
+      "userId": "mem_ekfo5fmef_1786684950925",
+      "userEmail": "weathertest@kisan.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "meta": {
+        "email": "weathertest@kisan.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-14T05:22:32.211Z"
+    },
+    {
+      "_id": "mem_yyrytgldp_1786685418275",
+      "userId": "mem_ekfo5fmef_1786684950925",
+      "userEmail": "weathertest@kisan.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "meta": {
+        "email": "weathertest@kisan.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-14T05:30:18.275Z"
+    },
+    {
+      "_id": "mem_hh1ibflec_1786685667512",
+      "userId": "mem_ekfo5fmef_1786684950925",
+      "userEmail": "weathertest@kisan.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "meta": {
+        "email": "weathertest@kisan.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-14T05:34:27.512Z"
+    },
+    {
+      "_id": "mem_l6ffhuhab_1786686512897",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-14T05:48:32.897Z"
+    },
+    {
+      "_id": "mem_ha31027l7_1786768836054",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-15T04:40:36.054Z"
+    },
+    {
+      "_id": "mem_2n1668jjc_1786770383957",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-15T05:06:23.957Z"
+    },
+    {
+      "_id": "mem_qgoefueo7_1786772144962",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-15T05:35:44.962Z"
+    },
+    {
+      "_id": "mem_tx5mb03ty_1786773157383",
+      "userId": "mem_wqb7e4kmd_1786447003754",
+      "userEmail": "krishnadevadkar31144@gmail.com",
+      "userRole": "farmer",
+      "action": "USER_LOGIN",
+      "resource": "user",
+      "method": "POST",
+      "path": "/login",
+      "ip": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+      "meta": {
+        "email": "krishnadevadkar31144@gmail.com",
+        "role": "farmer"
+      },
+      "timestamp": "2026-08-15T05:52:37.383Z"
+    }
+  ]
+}

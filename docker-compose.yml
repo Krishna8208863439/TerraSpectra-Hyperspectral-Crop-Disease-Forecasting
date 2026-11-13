@@ -1,164 +1,26 @@
-version: "3.9"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Smart Kisan AI — Docker Compose (Development)
-# Services: Node API, Python FastAPI, MongoDB, Redis, Nginx
-# Production: set COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
-# ─────────────────────────────────────────────────────────────────────────────
-
-x-logging: &default-logging
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
+version: '3.8'
 
 services:
-
-  # ──────────────────────────────────────────────────────────
-  # MongoDB (single-node dev; replica set enabled via --replSet for txns)
-  # ──────────────────────────────────────────────────────────
-  mongodb:
-    image: mongo:7.0
-    container_name: sk_mongodb
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:-smartkisan2024}
-      MONGO_INITDB_DATABASE: smart_kisan
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    logging: *default-logging
-    networks:
-      - sk_net
-
-  # ──────────────────────────────────────────────────────────
-  # Redis 7 (caching + refresh token store)
-  # ──────────────────────────────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    container_name: sk_redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-sk_redis_pass}
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-sk_redis_pass}", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    logging: *default-logging
-    networks:
-      - sk_net
-
-  # ──────────────────────────────────────────────────────────
-  # Node.js API Gateway (Express)
-  # ──────────────────────────────────────────────────────────
-  api:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: sk_api
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    environment:
-      NODE_ENV: development
-      PORT: 5000
-      MONGODB_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASS:-smartkisan2024}@mongodb:27017/smart_kisan?authSource=admin
-      REDIS_URL: redis://:${REDIS_PASSWORD:-sk_redis_pass}@redis:6379
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-      - ./backend/uploads:/app/uploads
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    logging: *default-logging
-    networks:
-      - sk_net
-
-  # ──────────────────────────────────────────────────────────
-  # Python FastAPI Microservice (ML inference)
-  # ──────────────────────────────────────────────────────────
-  python_api:
-    build:
-      context: ./backend_python
-      dockerfile: Dockerfile
-    container_name: sk_python_api
-    restart: unless-stopped
-    env_file:
-      - ./backend_python/.env
-    environment:
-      PYTHONUNBUFFERED: "1"
-      PORT: 8000
+    container_name: terraspectra-backend
     ports:
       - "8000:8000"
+    environment:
+      - PORT=8000
+      - ENVIRONMENT=production
     volumes:
-      - ./backend_python:/app
-      - ./backend_python/uploads:/app/uploads
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    logging: *default-logging
-    networks:
-      - sk_net
+      - ./backend/app/database:/app/app/database
 
-  # ──────────────────────────────────────────────────────────
-  # Nginx Reverse Proxy
-  # ──────────────────────────────────────────────────────────
-  nginx:
-    image: nginx:1.25-alpine
-    container_name: sk_nginx
-    restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: terraspectra-frontend
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./frontend/dist:/usr/share/nginx/html:ro
-      - nginx_logs:/var/log/nginx
-      # SSL (uncomment for production with Let's Encrypt):
-      # - ./certbot/conf:/etc/letsencrypt:ro
-      # - ./certbot/www:/var/www/certbot:ro
+      - "3000:80"
     depends_on:
-      - api
-      - python_api
-    logging: *default-logging
-    networks:
-      - sk_net
+      - backend
 
-# ──────────────────────────────────────────────────────────
-# Volumes & Networks
-# ──────────────────────────────────────────────────────────
-volumes:
-  mongodb_data:
-  redis_data:
-  nginx_logs:
-
-networks:
-  sk_net:
-    driver: bridge

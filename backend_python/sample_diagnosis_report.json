@@ -1,0 +1,10 @@
+{
+  "disease": "Apple Scab (Venturia inaequalis)",
+  "crop": "Apples plant",
+  "severity": "medium",
+  "confidence": 0.94,
+  "advice": "Apply Mancozeb 75 WP (2 g/L) or Copper Oxychloride 50 WP (3 g/L) at pink bud stage. Prune and destroy fallen leaves. Introduce disease-resistant varieties like Redfree or Liberty next season.",
+  "image_analysis": "Dark, olive-colored lesions/spots visible on the leaf surface corresponding to Apple Scab infestation.",
+  "gemini_powered": true,
+  "model": "Google Gemini 1.5 Flash"
+}

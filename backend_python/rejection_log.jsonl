@@ -1,0 +1,5 @@
+{"ts": "2026-09-08T09:05:12.077470Z", "endpoint": "validate_is_plant_image", "filename": "scan.jpg", "confidence": 0.95, "reason": "Human skin or selfie detected. Only agricultural crop leaves and plants can be scanned."}
+{"ts": "2026-09-08T09:05:12.117399Z", "endpoint": "validate_is_plant_image", "filename": "scan.jpg", "confidence": 0.92, "reason": "No crop or plant foliage detected. Please photograph a real crop leaf, agricultural plant, or farm produce."}
+{"ts": "2026-09-08T09:11:08.657406Z", "endpoint": "validate_is_plant_image", "filename": "scan.jpg", "confidence": 0.95, "reason": "Human skin or selfie detected. Only agricultural crop leaves and plants can be scanned."}
+{"ts": "2026-09-08T09:14:46.227759Z", "endpoint": "validate_is_plant_image", "filename": "scan.jpg", "confidence": 0.99, "reason": "Human face or selfie detected. Only agricultural crop and plant images can be scanned."}
+{"ts": "2026-09-08T09:15:37.056676Z", "endpoint": "validate_is_plant_image", "filename": "scan.jpg", "confidence": 0.99, "reason": "Human face or selfie detected. Only agricultural crop and plant images can be scanned."}
