@@ -63,38 +63,43 @@ const handleAnalyze = async (req, res) => {
     }
 
     const geminiKey = (req.headers["x-gemini-key"] || req.body?.geminiKey || process.env.GEMINI_API_KEY || "").trim();
+    const language = (req.headers["x-language"] || req.body.language || req.body.lang || req.query.language || "en").toLowerCase().trim();
 
     const result = await runCropDiagnosticsPipeline({
       base64Image,
       mimeType,
       cropTypeHint,
-      geminiKey
+      geminiKey,
+      language
     });
 
     if (result.isAgriculturalImage === false || result.isPlant === false) {
+      const rejectErr = language === "mr"
+        ? (result.error || "पिकाचे किंवा झाडाचे पान आढळले नाही. कृपया शेतातील पिकाच्या पानाचा स्पष्ट फोटो अपलोड करा.")
+        : (result.error || result.message || "Please upload a clear crop, plant, or leaf image for agricultural diagnosis.");
       return res.status(200).json({
         success: false,
         isAgriculturalImage: false,
-        error: result.error || result.message || "Please upload a clear crop, plant, or leaf image for agricultural diagnosis.",
-        message: result.message || result.error || "Please upload a clear crop, plant, or leaf image for agricultural diagnosis."
+        error: rejectErr,
+        message: rejectErr
       });
     }
 
     return res.json({
       success: true,
       isAgriculturalImage: true,
-      provider: result.provider || "AgriExpert AI Vision",
-      crop: result.crop || "Crop / Plant",
+      provider: result.provider || (language === "mr" ? "ॲग्रीएक्सपर्ट एआय व्हिजन निदान" : "AgriExpert AI Vision"),
+      crop: result.crop || (language === "mr" ? "शेती पीक / वनस्पती" : "Crop / Plant"),
       diagnosis: result.diagnosis,
       certaintyPercent: result.certaintyPercent ?? (result.confidence ? Math.round(result.confidence * 100) : 85),
       confidence: result.confidence ?? 0.85,
       symptoms: result.symptoms || [],
       treatment: result.treatment || [],
       fertilizerAdvice: result.fertilizerAdvice || [],
-      irrigationAdvice: result.irrigationAdvice || "Maintain recommended watering schedule.",
+      irrigationAdvice: result.irrigationAdvice || (language === "mr" ? "पिकाच्या वाढीच्या टप्प्यानुसार नियमित पाणी पुरवठा चालू ठेवा." : "Maintain recommended watering schedule."),
       prevention: result.prevention || [],
       severity: result.severity || "Medium",
-      disclaimer: result.disclaimer || "AI-based assessment; consult an agricultural expert for confirmation."
+      disclaimer: result.disclaimer || (language === "mr" ? "एआय आधारित मूल्यांकन; प्रत्यक्ष शेतात खात्री करण्यासाठी स्थानिक कृषी विज्ञान केंद्र (KVK) चा सल्ला घ्या." : "AI-based assessment; consult an agricultural expert for confirmation.")
     });
   } catch (err) {
     console.error("[CropDiagnostics] Route error:", err.message);
