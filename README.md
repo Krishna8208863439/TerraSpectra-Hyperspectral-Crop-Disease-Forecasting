@@ -1,81 +1,95 @@
-# 🌾 Smart Kisan AI — Digital Agriculture Platform
+# 🛰️ TerraSpectra — Hyperspectral Crop Disease Forecasting
 
-Smart Kisan AI is a full-stack, AI-powered agricultural platform built for Indian farmers.
-It provides real-time weather forecasts, AI crop disease diagnosis, agronomy advisory, yield prediction, and a farmer marketplace — all in one place.
+An AI-powered agricultural intelligence system that uses **hyperspectral imaging** and **machine learning**
+to detect, analyze, and forecast crop diseases at an early stage — enabling precision agriculture and smarter farming decisions.
 
 ---
 
-## 🚀 Features
+## 🔬 What Makes TerraSpectra Different?
 
-| Feature | Description |
+Standard crop vision systems rely on 3-channel RGB images and can only detect diseases **after** visible symptoms appear.
+TerraSpectra analyzes **400nm–1000nm hyperspectral data** to catch biochemical stress signals **days before** any visible damage.
+
+---
+
+## 🚀 Core Features
+
+| Module | Description |
 |---|---|
-| 🔬 Crop Diagnostics | Camera/gallery upload with two-stage AI disease detection (Stage A: validation, Stage B: diagnosis) |
-| 🤖 AgriExpert Chatbot | Context-aware farming assistant with Hindi, English & Marathi support |
-| 🌤️ Weather Forecast | 7-day agricultural forecast via Open-Meteo API with GPS auto-detection |
-| 📈 Yield Prediction | ML-driven crop yield estimation based on N, P, K, pH, rainfall & season |
-| 🛒 Marketplace | Farmer-to-buyer listings, buy requests & regional mandi rate tracking |
-| 📋 Crop Calendar | Personalized sowing & harvesting schedule management |
-| 🏛️ Govt. Schemes | Browse and apply for agriculture-related government schemes |
-| 👥 Community Forum | Farmer discussion board and knowledge sharing |
+| 📡 Hyperspectral Ingestion | Parses ENVI (.hdr/.raw), multi-band GeoTIFF, and NumPy 3D arrays (.npy) |
+| 📊 Spectral Analysis Engine | NDVI, NDRE, PRI, WBI, PSRI, MCARI indices + PCA dimensionality reduction |
+| 🤖 ML Disease Classifier | Random Forest + SVM ensemble detecting 6 crop pathologies |
+| 🌱 Early Stress Detection | Pre-symptomatic moisture deficit & chlorophyll breakdown identification |
+| 📅 7-Day Risk Forecasting | Epidemiological projection using spectral + Open-Meteo microclimatic data |
+| 🧠 Explainable AI (XAI) | SHAP band-wise attribution identifying exact wavelengths driving predictions |
+| 📈 Research Dashboard | Confusion matrix, precision, recall, F1-score with SQLite persistent storage |
+
+---
+
+## 🦠 Detectable Crop Diseases
+
+- ✅ Healthy (No Pathogen Detected)
+- 🟡 Stripe Rust — *Puccinia striiformis*
+- ⚪ Powdery Mildew — *Blumeria graminis*
+- 🟤 Septoria Leaf Blotch — *Zymoseptoria tritici*
+- 🔴 Fusarium Head Blight
+- 🟠 Bacterial Leaf Streak — *Xanthomonas translucens*
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Frontend:** React 18 · Vite · Lucide Icons · PWA  
-**Backend (Node.js):** Express.js · MongoDB · Redis · JWT · Anthropic SDK · OpenAI SDK  
-**Backend (Python):** FastAPI · PyTorch · Google Gemini AI · SQLite / SQLAlchemy  
-**APIs:** Open-Meteo · Nominatim Reverse Geocoding · Razorpay Payments  
+**Backend:** Python 3.12 · FastAPI · Uvicorn · NumPy · SciPy · Scikit-learn · PyTorch · Pydantic · HTTPX  
+**Frontend:** React 18 · Vite · Lucide Icons · Scientific CSS Theme  
+**Storage:** SQLite / PostgreSQL  
+**Deployment:** Docker · Docker Compose  
 
 ---
 
 ## 📦 Getting Started
 
 ### Prerequisites
-- Node.js v18+
 - Python 3.10+
+- Node.js v18+
 - Git
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Krishna8208863439/Smart-Kisan-FInal.git
-cd Smart-Kisan-FInal
+git clone https://github.com/Krishna8208863439/TerraSpectra-Hyperspectral-Crop-Disease-Forecasting.git
+cd TerraSpectra-Hyperspectral-Crop-Disease-Forecasting
 ```
 
-### 2. Backend — Node.js
+### 2. Backend Setup
 ```bash
 cd backend
-npm install
-cp .env.example .env        # Add your API keys
-node server.js              # Runs on http://localhost:5000
-```
-
-### 3. Backend — Python (AI Services)
-```bash
-cd backend_python
 pip install -r requirements.txt
-uvicorn app:app --reload    # Runs on http://localhost:8000
+uvicorn app.main:app --reload --port 8000
 ```
+API docs available at: `http://localhost:8000/docs`
 
-### 4. Frontend
+### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
-npm run dev                 # Runs on http://localhost:5173
+npm run dev
+```
+Web dashboard at: `http://localhost:3000`
+
+### 4. Docker (Full Stack)
+```bash
+docker-compose up --build
 ```
 
 ---
 
-## 🌐 Deployment
+## 🧪 Testing
 
-Deploy the full stack to **PythonAnywhere** in one command:
 ```bash
-python deploy_all_to_pythonanywhere.py
-```
+# Unit tests for scientific processing engine
+python -m unittest tests/test_scientific_engine.py
 
-Or use **Docker**:
-```bash
-docker-compose up --build
+# API integration tests
+python tests/run_integration_tests.py
 ```
 
 ---
@@ -83,28 +97,24 @@ docker-compose up --build
 ## 📁 Project Structure
 
 ```
-Smart-Kisan/
-├── backend/          # Node.js Express API
-├── backend_python/   # FastAPI Python AI services
-├── frontend/         # React + Vite PWA
-├── datasets/         # ML training datasets
-├── docker/           # Docker configs
-└── nginx/            # Nginx reverse proxy config
+TerraSpectra/
+├── backend/              # FastAPI Python AI & ML engine
+│   ├── app/              # API routes and core logic
+│   ├── models/           # ML classifiers (RF + SVM)
+│   └── tests/            # Unit and integration tests
+├── frontend/             # React + Vite dashboard
+├── datasets/             # Hyperspectral training datasets
+├── docker/               # Docker configs
+└── nginx/                # Reverse proxy config
 ```
 
 ---
 
-## 🔑 Environment Variables
+## 🌐 Deployment
 
-Create a `.env` file inside `backend/` using `.env.example` as reference:
-
-```env
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-RAZORPAY_KEY_ID=your_razorpay_key
-RAZORPAY_KEY_SECRET=your_razorpay_secret
+Deploy to PythonAnywhere:
+```bash
+python deploy_all_to_pythonanywhere.py
 ```
 
 ---
@@ -117,6 +127,6 @@ This project is licensed under the **MIT License**.
 
 ## 🙌 Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
 
-> Built with ❤️ for Indian Farmers 🇮🇳
+> Built for precision agriculture and early crop disease intervention 🌾🛰️
