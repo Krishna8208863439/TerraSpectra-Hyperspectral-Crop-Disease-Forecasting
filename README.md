@@ -1,95 +1,66 @@
 # 🛰️ TerraSpectra — Hyperspectral Crop Disease Forecasting
 
-An AI-powered agricultural intelligence system that uses **hyperspectral imaging** and **machine learning**
-to detect, analyze, and forecast crop diseases at an early stage — enabling precision agriculture and smarter farming decisions.
+An AI-powered system using **hyperspectral imaging** and **machine learning** to detect and forecast crop diseases days before visible symptoms appear.
 
 ---
 
-## 🔬 What Makes TerraSpectra Different?
+## 🔬 Why TerraSpectra?
 
-Standard crop vision systems rely on 3-channel RGB images and can only detect diseases **after** visible symptoms appear.
-TerraSpectra analyzes **400nm–1000nm hyperspectral data** to catch biochemical stress signals **days before** any visible damage.
+Standard RGB vision detects diseases **after** damage is visible. TerraSpectra analyzes **400nm–1000nm spectral bands** to catch biochemical stress **days earlier**.
 
 ---
 
-## 🚀 Core Features
+## 🚀 Features
 
-| Module | Description |
+- 📡 **Hyperspectral Ingestion** — Supports ENVI (.hdr/.raw), GeoTIFF, and NumPy (.npy) formats
+- 📊 **Spectral Indices** — NDVI, NDRE, PRI, WBI, PSRI, MCARI with PCA reduction
+- 🤖 **ML Disease Classifier** — Random Forest + SVM ensemble for 6 crop pathologies
+- 🌱 **Early Stress Detection** — Pre-symptomatic moisture deficit and chlorophyll breakdown
+- 📅 **7-Day Risk Forecast** — Spectral trends + Open-Meteo microclimatic data
+- 🧠 **Explainable AI (XAI)** — SHAP band-wise attribution per prediction
+- 📈 **Research Dashboard** — F1-score, confusion matrix, persistent SQLite storage
+
+---
+
+## 🦠 Detectable Diseases
+
+| Disease | Pathogen |
 |---|---|
-| 📡 Hyperspectral Ingestion | Parses ENVI (.hdr/.raw), multi-band GeoTIFF, and NumPy 3D arrays (.npy) |
-| 📊 Spectral Analysis Engine | NDVI, NDRE, PRI, WBI, PSRI, MCARI indices + PCA dimensionality reduction |
-| 🤖 ML Disease Classifier | Random Forest + SVM ensemble detecting 6 crop pathologies |
-| 🌱 Early Stress Detection | Pre-symptomatic moisture deficit & chlorophyll breakdown identification |
-| 📅 7-Day Risk Forecasting | Epidemiological projection using spectral + Open-Meteo microclimatic data |
-| 🧠 Explainable AI (XAI) | SHAP band-wise attribution identifying exact wavelengths driving predictions |
-| 📈 Research Dashboard | Confusion matrix, precision, recall, F1-score with SQLite persistent storage |
-
----
-
-## 🦠 Detectable Crop Diseases
-
-- ✅ Healthy (No Pathogen Detected)
-- 🟡 Stripe Rust — *Puccinia striiformis*
-- ⚪ Powdery Mildew — *Blumeria graminis*
-- 🟤 Septoria Leaf Blotch — *Zymoseptoria tritici*
-- 🔴 Fusarium Head Blight
-- 🟠 Bacterial Leaf Streak — *Xanthomonas translucens*
+| Stripe Rust | *Puccinia striiformis* |
+| Powdery Mildew | *Blumeria graminis* |
+| Septoria Leaf Blotch | *Zymoseptoria tritici* |
+| Fusarium Head Blight | *Fusarium graminearum* |
+| Bacterial Leaf Streak | *Xanthomonas translucens* |
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Backend:** Python 3.12 · FastAPI · Uvicorn · NumPy · SciPy · Scikit-learn · PyTorch · Pydantic · HTTPX  
-**Frontend:** React 18 · Vite · Lucide Icons · Scientific CSS Theme  
-**Storage:** SQLite / PostgreSQL  
-**Deployment:** Docker · Docker Compose  
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, FastAPI, PyTorch, Scikit-learn, NumPy, SciPy |
+| Frontend | React 18, Vite, Lucide Icons |
+| Storage | SQLite / PostgreSQL |
+| Deploy | Docker, Docker Compose |
 
 ---
 
-## 📦 Getting Started
+## 📦 Quick Start
 
-### Prerequisites
-- Python 3.10+
-- Node.js v18+
-- Git
-
-### 1. Clone the Repository
 ```bash
+# 1. Clone
 git clone https://github.com/Krishna8208863439/TerraSpectra-Hyperspectral-Crop-Disease-Forecasting.git
 cd TerraSpectra-Hyperspectral-Crop-Disease-Forecasting
-```
 
-### 2. Backend Setup
-```bash
-cd backend
-pip install -r requirements.txt
+# 2. Backend
+cd backend && pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-```
-API docs available at: `http://localhost:8000/docs`
 
-### 3. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Web dashboard at: `http://localhost:3000`
+# 3. Frontend
+cd frontend && npm install && npm run dev
 
-### 4. Docker (Full Stack)
-```bash
+# 4. Docker (all-in-one)
 docker-compose up --build
-```
-
----
-
-## 🧪 Testing
-
-```bash
-# Unit tests for scientific processing engine
-python -m unittest tests/test_scientific_engine.py
-
-# API integration tests
-python tests/run_integration_tests.py
 ```
 
 ---
@@ -98,35 +69,28 @@ python tests/run_integration_tests.py
 
 ```
 TerraSpectra/
-├── backend/              # FastAPI Python AI & ML engine
-│   ├── app/              # API routes and core logic
-│   ├── models/           # ML classifiers (RF + SVM)
-│   └── tests/            # Unit and integration tests
-├── frontend/             # React + Vite dashboard
-├── datasets/             # Hyperspectral training datasets
-├── docker/               # Docker configs
-└── nginx/                # Reverse proxy config
+├── backend/        # FastAPI ML engine
+├── frontend/       # React + Vite dashboard
+├── datasets/       # Hyperspectral training data
+├── docker/         # Container configs
+└── nginx/          # Reverse proxy
 ```
 
 ---
 
-## 🌐 Deployment
+## 🧪 Testing
 
-Deploy to PythonAnywhere:
 ```bash
-python deploy_all_to_pythonanywhere.py
+python -m unittest tests/test_scientific_engine.py
+python tests/run_integration_tests.py
 ```
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
-
-## 🙌 Contributing
-
-Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
 
 > Built for precision agriculture and early crop disease intervention 🌾🛰️
