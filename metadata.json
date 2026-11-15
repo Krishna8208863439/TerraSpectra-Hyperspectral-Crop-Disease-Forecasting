@@ -1,0 +1,8 @@
+{
+  "name": "SpectralCrop — Day 1 Setup & Dataset Workbench",
+  "description": "Day 1 setup, scope confirmation, Python environment verification, hyperspectral crop disease dataset decision, and repository documentation workbench.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
