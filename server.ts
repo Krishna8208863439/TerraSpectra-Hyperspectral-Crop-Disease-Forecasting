@@ -10,9 +10,11 @@ const PORT = Number(process.env.PORT || 3000);
 
 const DOC_FILES: Record<string, { label: string; relPath: string }> = {
   project_brief: { label: 'One-Page Project Brief', relPath: 'docs/project_brief.md' },
+  data_summary: { label: 'Day 2 Data Summary', relPath: 'docs/data_summary.md' },
   dataset_note: { label: 'Dataset Decision Note', relPath: 'docs/dataset_note.md' },
   mentor_message: { label: 'Mentor Scope Message', relPath: 'docs/mentor_message.md' },
   readme: { label: 'Repository README', relPath: 'README.md' },
+  data_loader: { label: 'Day 2 Loader (src/data.py)', relPath: 'src/data.py' },
   requirements: { label: 'Python Requirements', relPath: 'requirements.txt' },
   verify_env: { label: 'Env Verification Script', relPath: 'src/pipeline/verify_env.py' },
 };
@@ -26,6 +28,7 @@ interface Day1State {
   progressCadence: 'daily_slack' | 'daily_github' | 'midweek_sync';
   selectedDataset: 'primary_zenodo' | 'synthetic_fallback';
   completedBlocks: number[];
+  day2CompletedBlocks: number[];
   updatedAt: string;
 }
 
@@ -36,6 +39,7 @@ const DEFAULT_STATE: Day1State = {
   progressCadence: 'daily_slack',
   selectedDataset: 'primary_zenodo',
   completedBlocks: [1, 2, 3, 4, 5, 6],
+  day2CompletedBlocks: [1, 2, 3, 4, 5, 6],
   updatedAt: new Date().toISOString(),
 };
 
@@ -429,11 +433,17 @@ async function createServer() {
       'requirements.txt',
       'docs/project_brief.md',
       'docs/dataset_note.md',
+      'docs/data_summary.md',
       'docs/mentor_message.md',
+      'src/data.py',
       'src/pipeline/verify_env.py',
-      'src/pipeline/dataset_loader.py',
-      'src/pipeline/generate_synthetic_spectra.py',
+      'src/pipeline/run_day2_eda.py',
       'notebooks/01_day1_env_and_data_check.ipynb',
+      'notebooks/01_eda.ipynb',
+      'reports/figures/01_mean_spectra_variance.png',
+      'reports/figures/02_difference_spectrum_red_edge.png',
+      'reports/figures/03_class_group_and_outliers.png',
+      'reports/figures/04_temporal_spectral_progression.png',
       'data/raw/Multispectral_Reflectance.csv',
       'data/raw/experimental_design.csv',
       'data/raw/synthetic_leaf_disease_spectra_v1.csv',
@@ -539,7 +549,13 @@ async function createServer() {
       res.status(404).json({ error: 'Unknown document key' });
       return;
     }
-    if (key !== 'project_brief' && key !== 'dataset_note' && key !== 'mentor_message' && key !== 'readme') {
+    if (
+      key !== 'project_brief' &&
+      key !== 'data_summary' &&
+      key !== 'dataset_note' &&
+      key !== 'mentor_message' &&
+      key !== 'readme'
+    ) {
       res.status(403).json({ error: 'Document is read-only in workbench' });
       return;
     }
@@ -563,6 +579,48 @@ async function createServer() {
       const message = err instanceof Error ? err.message : 'Failed to parse dataset';
       res.status(500).json({ error: message });
     }
+  });
+
+  app.get('/api/eda/metrics', async (_req, res) => {
+    const metricsPath = path.join(ROOT_DIR, 'reports', 'day2_eda_metrics.json');
+    try {
+      if (!fs.existsSync(metricsPath)) {
+        await execFileAsync('python3', ['src/pipeline/run_day2_eda.py'], {
+          cwd: ROOT_DIR,
+          timeout: 30000,
+        });
+      }
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load Day 2 EDA metrics';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/eda/run', async (_req, res) => {
+    try {
+      const { stdout } = await execFileAsync('python3', ['src/pipeline/run_day2_eda.py'], {
+        cwd: ROOT_DIR,
+        timeout: 30000,
+      });
+      const metricsPath = path.join(ROOT_DIR, 'reports', 'day2_eda_metrics.json');
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json({ ok: true, log: stdout, data: JSON.parse(raw) });
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'EDA run failed' });
+    }
+  });
+
+  app.get('/api/figures/:filename', (req, res) => {
+    const filename = path.basename(req.params.filename);
+    const full = path.join(ROOT_DIR, 'reports', 'figures', filename);
+    if (!filename.endsWith('.png') || !fs.existsSync(full)) {
+      res.status(404).json({ error: 'Figure not found' });
+      return;
+    }
+    res.sendFile(full);
   });
 
   if (process.env.NODE_ENV !== 'production') {

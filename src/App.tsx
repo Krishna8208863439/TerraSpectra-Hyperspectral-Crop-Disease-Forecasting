@@ -10,20 +10,18 @@ import {
   Save,
   Search,
 } from 'lucide-react';
+import { Day2EdaView } from './components/Day2EdaView';
 import { MarkdownViewer } from './components/MarkdownViewer';
-import {
-  SpectralReflectanceChart,
-  TemporalTrajectoryChart,
-} from './components/SpectralCharts';
 import type {
   DatasetSummary,
   Day1State,
+  Day2EdaPayload,
   DocItem,
   EnvVerifyResult,
   RepoStatus,
 } from './types/day1';
 
-type ActiveTab = 'overview' | 'schedule' | 'dataset' | 'brief' | 'repository';
+type ActiveTab = 'overview' | 'day1' | 'day2' | 'brief' | 'repository';
 
 interface ScheduleBlock {
   id: number;
@@ -152,9 +150,10 @@ function formatBytes(bytes: number): string {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('day2');
   const [activeBlockId, setActiveBlockId] = useState<number>(1);
   const [datasetSource, setDatasetSource] = useState<'primary' | 'synthetic'>('primary');
+  const [edaSource, setEdaSource] = useState<'primary' | 'synthetic'>('primary');
 
   const [envResult, setEnvResult] = useState<EnvVerifyResult | null>(null);
   const [envLoading, setEnvLoading] = useState<boolean>(false);
@@ -163,8 +162,12 @@ export default function App() {
   const [datasetSummary, setDatasetSummary] = useState<DatasetSummary | null>(null);
   const [datasetLoading, setDatasetLoading] = useState<boolean>(false);
 
+  const [edaPayload, setEdaPayload] = useState<Day2EdaPayload | null>(null);
+  const [edaLoading, setEdaLoading] = useState<boolean>(false);
+  const [edaRunning, setEdaRunning] = useState<boolean>(false);
+
   const [docs, setDocs] = useState<DocItem[]>([]);
-  const [selectedDocKey, setSelectedDocKey] = useState<string>('project_brief');
+  const [selectedDocKey, setSelectedDocKey] = useState<string>('data_summary');
   const [docEditMode, setDocEditMode] = useState<boolean>(false);
   const [docDraft, setDocDraft] = useState<string>('');
   const [saveFeedback, setSaveFeedback] = useState<string>('');
@@ -216,6 +219,32 @@ export default function App() {
     }
   }, []);
 
+  const loadEdaMetrics = useCallback(async () => {
+    setEdaLoading(true);
+    try {
+      const res = await fetch('/api/eda/metrics');
+      if (res.ok) {
+        setEdaPayload(await res.json());
+      }
+    } finally {
+      setEdaLoading(false);
+    }
+  }, []);
+
+  const handleRunDay2Eda = useCallback(async () => {
+    setEdaRunning(true);
+    try {
+      const res = await fetch('/api/eda/run', { method: 'POST' });
+      if (res.ok) {
+        const payload = await res.json();
+        if (payload.data) setEdaPayload(payload.data);
+        await loadRepoAndDocs();
+      }
+    } finally {
+      setEdaRunning(false);
+    }
+  }, [loadRepoAndDocs]);
+
   const loadDataset = useCallback(async (source: 'primary' | 'synthetic') => {
     setDatasetLoading(true);
     try {
@@ -231,7 +260,8 @@ export default function App() {
   useEffect(() => {
     loadEnv();
     loadRepoAndDocs();
-  }, [loadEnv, loadRepoAndDocs]);
+    loadEdaMetrics();
+  }, [loadEnv, loadRepoAndDocs, loadEdaMetrics]);
 
   useEffect(() => {
     loadDataset(datasetSource);
@@ -269,6 +299,16 @@ export default function App() {
       ? day1State.completedBlocks.filter((id) => id !== blockId)
       : [...day1State.completedBlocks, blockId].sort((a, b) => a - b);
     updateDay1State({ completedBlocks: next });
+  };
+
+  const toggleDay2Block = (blockId: number) => {
+    if (!day1State) return;
+    const current = day1State.day2CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+    const exists = current.includes(blockId);
+    const next = exists
+      ? current.filter((id) => id !== blockId)
+      : [...current, blockId].sort((a, b) => a - b);
+    updateDay1State({ day2CompletedBlocks: next });
   };
 
   const saveDocument = async (key: string, content: string) => {
@@ -314,14 +354,18 @@ export default function App() {
   };
 
   const completedCount = day1State?.completedBlocks.length ?? 0;
+  const day2CompletedBlocks = day1State?.day2CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+  const day2CompletedCount = day2CompletedBlocks.length;
   const passedPackages = envResult?.packages.filter((p) => p.status === 'ok').length ?? 0;
   const totalPackages = envResult?.packages.length ?? 6;
   const presentDirs = repoStatus?.directories.filter((d) => d.exists).length ?? 0;
   const totalDirs = repoStatus?.directories.length ?? 8;
 
   const activeDoc = docs.find((d) => d.key === selectedDocKey);
+  const dataSummaryDoc = docs.find((d) => d.key === 'data_summary')?.content || '';
   const isDocEditable =
     selectedDocKey === 'project_brief' ||
+    selectedDocKey === 'data_summary' ||
     selectedDocKey === 'dataset_note' ||
     selectedDocKey === 'mentor_message' ||
     selectedDocKey === 'readme';
@@ -342,11 +386,17 @@ export default function App() {
 
   const navItems: Array<{ id: ActiveTab; label: string }> = [
     { id: 'overview', label: 'Overview' },
-    { id: 'schedule', label: 'Schedule' },
-    { id: 'dataset', label: 'Dataset' },
-    { id: 'brief', label: 'Project Brief' },
+    { id: 'day1', label: 'Day 1' },
+    { id: 'day2', label: 'Day 2 EDA' },
+    { id: 'brief', label: 'Docs' },
     { id: 'repository', label: 'Repository' },
   ];
+
+  const activeEda = edaPayload
+    ? edaSource === 'synthetic'
+      ? edaPayload.synthetic
+      : edaPayload.primary
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -384,12 +434,12 @@ export default function App() {
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={loadEnv}
-              disabled={envLoading}
+              onClick={handleRunDay2Eda}
+              disabled={edaRunning}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-teal-800 hover:bg-teal-900 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${envLoading ? 'animate-spin' : ''}`} />
-              <span>{envLoading ? 'Checking Stack...' : 'Verify Environment'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${edaRunning ? 'animate-spin' : ''}`} />
+              <span>{edaRunning ? 'Running EDA...' : 'Run Day 2 EDA'}</span>
             </button>
           </div>
         </div>
@@ -416,82 +466,84 @@ export default function App() {
         <section className="space-y-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-mono">
-              <span>Day 1</span>
+              <span>Day 1 &amp; Day 2</span>
               <span aria-hidden="true">·</span>
-              <span>Mon 16 Nov</span>
+              <span>Tue 17 Nov</span>
               <span aria-hidden="true">·</span>
-              <span>Setup, Scope &amp; Data Decision</span>
+              <span>Data Loading, Spectral EDA &amp; Band Audit</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 [text-wrap:balance] max-w-3xl">
-              Crop Stress Detection &amp; Temporal Forecast Setup
+              Crop Stress Detection &amp; Temporal Forecast Workbench
             </h1>
             <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
-              Remove every blocker for the week: confirm mentor scope, initialize the working
-              repository, verify the Python stack, and lock in a licensed multi-temporal spectral
-              dataset with leak-free grouping keys.
+              Load spectral matrices via <code className="font-mono text-slate-800">src/data.py</code>,
+              audit anomalies and outlier scans, inspect red-edge and NIR separability, and document
+              bands to drop on Day 3.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Schedule Completion</div>
+              <div className="text-xs font-medium text-slate-500">Day 2 EDA Blocks</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {completedCount} / 6
+                  {day2CompletedCount} / 6
                 </span>
-                <span className="text-xs font-mono text-slate-400">blocks</span>
+                <span className="text-xs font-mono text-slate-400">
+                  (Day 1: {completedCount}/6)
+                </span>
               </div>
               <div className="mt-2 text-xs text-teal-800 font-medium">
-                {completedCount === 6 ? '● All Day 1 blocks complete' : '▲ In progress · 4 h 45 m plan'}
+                {day2CompletedCount === 6 ? '● All Day 2 tasks complete' : '▲ EDA blocks in progress'}
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Python Core Stack</div>
+              <div className="text-xs font-medium text-slate-500">Labeled Spectra Shape</div>
+              <div className="mt-1.5 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
+                  {activeEda ? activeEda.sanity.labeled_rows.toLocaleString() : '2,280'}
+                </span>
+                <span className="text-xs font-mono text-slate-400">
+                  × {activeEda ? activeEda.sanity.n_bands : 10} bands
+                </span>
+              </div>
+              <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
+                {activeEda
+                  ? `${activeEda.grouping.unique_plants} plants · ${activeEda.sanity.rows_with_missing_spectra ?? 0} NaN rows`
+                  : 'Loading EDA...'}
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-lg p-4">
+              <div className="text-xs font-medium text-slate-500">Outliers &amp; Drop Bands</div>
+              <div className="mt-1.5 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
+                  {activeEda ? activeEda.outliers.outlier_count : '172'}
+                </span>
+                <span className="text-xs font-mono text-slate-400">
+                  outliers ({activeEda ? activeEda.outliers.outlier_percent : '7.57'}%)
+                </span>
+              </div>
+              <div className="mt-2 text-xs text-amber-800 font-medium font-mono">
+                {activeEda
+                  ? `${activeEda.bands_to_drop_day3.length} bands flagged for Day 3`
+                  : 'Auditing bands...'}
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-lg p-4">
+              <div className="text-xs font-medium text-slate-500">Stack &amp; Repository</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
                   {passedPackages} / {totalPackages}
                 </span>
                 <span className="text-xs font-mono text-slate-400">
-                  Py {envResult?.python_version || '3.10'}
+                  {presentDirs}/{totalDirs} dirs
                 </span>
               </div>
-              <div
-                className={`mt-2 text-xs font-medium ${
-                  envResult?.all_ok ? 'text-teal-800' : 'text-amber-700'
-                }`}
-              >
-                {envResult?.all_ok ? '● All 6 libraries import' : '▲ Check missing packages'}
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Selected Dataset</div>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {datasetSummary ? datasetSummary.shape.rows.toLocaleString() : '2,285'}
-                </span>
-                <span className="text-xs font-mono text-slate-400">scans</span>
-              </div>
-              <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
-                {datasetSummary
-                  ? `${datasetSummary.uniquePlants} plants · ${datasetSummary.uniqueDatesCount} dates`
-                  : 'Loading summary...'}
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Repository Structure</div>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {presentDirs} / {totalDirs}
-                </span>
-                <span className="text-xs font-mono text-slate-400">directories</span>
-              </div>
-              <div className="mt-2 text-xs text-slate-600">
-                {repoStatus?.git.initialized
-                  ? `● Git ${repoStatus.git.branch} initialized`
-                  : '▲ Git pending init'}
+              <div className="mt-2 text-xs text-teal-800 font-medium">
+                {envResult?.all_ok ? '● Stack & Git verified' : '▲ Verify Python stack'}
               </div>
             </div>
           </div>
@@ -527,7 +579,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => {
-                        setActiveTab('schedule');
+                        setActiveTab('day1');
                         setActiveBlockId(1);
                       }}
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
@@ -552,7 +604,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => {
-                        setActiveTab('schedule');
+                        setActiveTab('day1');
                         setActiveBlockId(3);
                       }}
                       className={`text-xs font-medium hover:underline whitespace-nowrap shrink-0 cursor-pointer ${
@@ -566,37 +618,35 @@ export default function App() {
                   <div className="py-3 flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium text-slate-900">
-                        3. One dataset chosen and downloaded
+                        3. Day 2 EDA, figures &amp; Day 3 band-drop list generated
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Zenodo Record 22755812 (CC-BY-4.0, 2,285 rows) downloaded to{' '}
-                        <code className="font-mono text-slate-700">data/raw/</code> alongside
-                        synthetic fallback benchmark.
+                        Reproducible summary in{' '}
+                        <code className="font-mono text-slate-700">docs/data_summary.md</code> and 4
+                        figures in <code className="font-mono text-slate-700">reports/figures/</code>.
                       </p>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setActiveTab('dataset')}
+                      onClick={() => setActiveTab('day2')}
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      ● Inspect Spectra
+                      ● Open Day 2 EDA
                     </button>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-200 bg-slate-50 -mx-5 -mb-5 px-5 py-3.5 rounded-b-lg">
                   <div className="text-xs font-semibold text-slate-800">
-                    Carry Forward to Day 2 &amp; Day 5 Leak-Free Splits
+                    Carry Forward to Day 3 &amp; Day 5 Leak-Free Splits
                   </div>
                   <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Primary grouping keys identified:{' '}
-                    <code className="font-mono text-slate-800">Plant_ID</code>,{' '}
-                    <code className="font-mono text-slate-800">Pot_Number</code>,{' '}
-                    <code className="font-mono text-slate-800">date</code>, and{' '}
-                    <code className="font-mono text-slate-800">TimeStamp</code>. All Day 5
-                    cross-validation folds will group by{' '}
-                    <code className="font-mono text-slate-800">Plant_ID</code> to prevent plant
-                    memorization leakage.
+                    Group CV folds by <code className="font-mono text-slate-800">plant_id</code>{' '}
+                    (79 plants) and order forecasts by{' '}
+                    <code className="font-mono text-slate-800">date</code> (31 dates). Drop 8
+                    failed-scan NaN rows and audit edge bands{' '}
+                    <code className="font-mono text-slate-800">Mean_365</code> &amp;{' '}
+                    <code className="font-mono text-slate-800">Mean_970</code> on Day 3.
                   </p>
                 </div>
               </div>
@@ -607,7 +657,7 @@ export default function App() {
                   <h2 className="text-base font-semibold text-slate-900">Day 1 Schedule</h2>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('schedule')}
+                    onClick={() => setActiveTab('day1')}
                     className="text-xs font-medium text-teal-800 hover:underline cursor-pointer"
                   >
                     Open Interactive Blocks
@@ -629,7 +679,7 @@ export default function App() {
                         <tr
                           key={block.id}
                           onClick={() => {
-                            setActiveTab('schedule');
+                            setActiveTab('day1');
                             setActiveBlockId(block.id);
                           }}
                           className="hover:bg-slate-50 cursor-pointer transition-colors"
@@ -743,8 +793,8 @@ export default function App() {
           </div>
         )}
 
-        {/* SCHEDULE VIEW (INTERACTIVE 6-BLOCK WORKFLOW) */}
-        {activeTab === 'schedule' && (
+        {/* DAY 1 SCHEDULE VIEW */}
+        {activeTab === 'day1' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left block list */}
             <aside className="lg:col-span-4 bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
@@ -1071,10 +1121,10 @@ export default function App() {
                         <div className="flex items-center gap-3 pt-2">
                           <button
                             type="button"
-                            onClick={() => setActiveTab('dataset')}
+                            onClick={() => setActiveTab('day2')}
                             className="px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 cursor-pointer"
                           >
-                            Open Spectral Dataset Explorer
+                            Open Day 2 Spectral EDA
                           </button>
                         </div>
                       </div>
@@ -1120,245 +1170,136 @@ export default function App() {
           </div>
         )}
 
-        {/* DATASET & SPECTRAL EXPLORER VIEW */}
-        {activeTab === 'dataset' && (
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg p-4">
-              <div>
-                <div className="text-xs font-mono text-slate-500">
-                  {datasetSummary?.source || 'Zenodo DOI 10.5281/zenodo.22755812'} · Licence:{' '}
-                  {datasetSummary?.licence || 'CC-BY-4.0'}
-                </div>
-                <h2 className="text-lg font-bold text-slate-900 mt-0.5">
-                  {datasetSummary?.title || 'Loading Dataset...'}
-                </h2>
-              </div>
+        {/* DAY 2 DATA LOADING & EDA VIEW */}
+        {activeTab === 'day2' && (
+          <div className="space-y-8">
+            <Day2EdaView
+              edaPayload={edaPayload}
+              edaLoading={edaLoading}
+              edaRunning={edaRunning}
+              edaSource={edaSource}
+              onChangeSource={setEdaSource}
+              onRunEda={handleRunDay2Eda}
+              completedBlocks={day2CompletedBlocks}
+              onToggleBlock={toggleDay2Block}
+              dataSummaryMarkdown={dataSummaryDoc}
+              onOpenDoc={(key) => {
+                setSelectedDocKey(key);
+                setDocEditMode(false);
+                setActiveTab('brief');
+              }}
+            />
 
-              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setDatasetSource('primary')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    datasetSource === 'primary'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Primary: Zenodo CSV (Tier 1)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDatasetSource('synthetic')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    datasetSource === 'synthetic'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Synthetic Fallback (Tier 3)
-                </button>
-              </div>
-            </div>
-
+            {/* Dataset Scan Records Table */}
             {datasetSummary && (
-              <>
-                {/* Limitation & Dataset Metadata Strip */}
-                <div className="bg-white border border-slate-200 rounded-lg p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                  <div className="lg:col-span-7 space-y-1">
-                    <div className="text-xs font-semibold text-amber-800">
-                      ▲ Dataset Scope &amp; Limitation Note ({datasetSummary.fallbackTier})
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {datasetSummary.limitationNote}
+              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      Sample Scan Records &amp; Computed Indices ({datasetSource === 'synthetic' ? 'Synthetic' : 'Zenodo Primary'})
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Interactive preview of matched plant observations with Red (670 nm), NIR (780 nm), NDVI, and NDRE
                     </p>
                   </div>
-                  <div className="lg:col-span-5 grid grid-cols-3 gap-3 text-xs border-t lg:border-t-0 lg:border-l border-slate-200 pt-3 lg:pt-0 lg:pl-4">
-                    <div>
-                      <div className="text-slate-500">Shape</div>
-                      <div className="font-mono tabular-nums font-semibold text-slate-900 mt-0.5">
-                        {datasetSummary.shape.rows} × {datasetSummary.shape.columns}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-slate-500">Plants / Pots</div>
-                      <div className="font-mono tabular-nums font-semibold text-slate-900 mt-0.5">
-                        {datasetSummary.uniquePlants} / {datasetSummary.uniquePots}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-slate-500">Date Span</div>
-                      <div className="font-mono tabular-nums font-semibold text-slate-900 mt-0.5">
-                        {datasetSummary.uniqueDatesCount} dates
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Spectral Curve + Temporal Trajectory */}
-                {datasetLoading ? (
-                  <div className="h-72 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-sm text-slate-500">
-                    Computing spectral summary...
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <SpectralReflectanceChart curves={datasetSummary.curves} />
-                    <TemporalTrajectoryChart
-                      trajectory={datasetSummary.temporalTrajectory}
-                      labels={datasetSummary.curves.map((c) => c.label)}
-                    />
-                  </div>
-                )}
-
-                {/* Grouping Keys & Class Counts */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  <div className="lg:col-span-7 bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-                    <h3 className="text-sm font-semibold text-slate-900">
-                      Grouping Columns for Day 5 Leak-Free Splits
-                    </h3>
-                    <div className="border border-slate-200 rounded-md overflow-hidden">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                            <th className="px-3 py-2 font-medium">Column</th>
-                            <th className="px-3 py-2 font-medium">Biological / Spatial Role</th>
-                            <th className="px-3 py-2 font-medium">Day 5 Split Usage</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {datasetSummary.groupingColumns.map((g) => (
-                            <tr key={g.name}>
-                              <td className="px-3 py-2 font-mono font-semibold text-slate-900">
-                                {g.name}
-                              </td>
-                              <td className="px-3 py-2 text-slate-600">{g.role}</td>
-                              <td className="px-3 py-2 text-teal-800 font-medium">
-                                {g.splitUsage}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-5 bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-                    <h3 className="text-sm font-semibold text-slate-900">Label Distribution</h3>
-                    <div className="space-y-2.5">
-                      {datasetSummary.labelDistribution.map((item) => {
-                        const pct = Math.round(
-                          (item.count / Math.max(1, datasetSummary.shape.rows)) * 100
-                        );
-                        return (
-                          <div key={item.label} className="space-y-1">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-medium text-slate-800">{item.label}</span>
-                              <span className="font-mono tabular-nums text-slate-600">
-                                {item.count.toLocaleString()} ({pct}%)
-                              </span>
-                            </div>
-                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-teal-700 rounded-full"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Searchable Sample Preview Table */}
-                <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900">
-                        Sample Scan Records &amp; Computed Indices
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        First 18 matched observations with Red (670 nm), NIR (780 nm), NDVI, and
-                        Red-Edge NDRE
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="relative">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          value={sampleQuery}
-                          onChange={(e) => setSampleQuery(e.target.value)}
-                          placeholder="Filter Plant ID or date..."
-                          className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
-                        />
-                      </div>
-                      <select
-                        value={sampleLabelFilter}
-                        onChange={(e) => setSampleLabelFilter(e.target.value)}
-                        className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setDatasetSource('primary')}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-md cursor-pointer ${
+                          datasetSource === 'primary' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                        }`}
                       >
-                        <option value="ALL">All Labels</option>
-                        {datasetSummary.curves.map((c) => (
-                          <option key={c.label} value={c.label}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
+                        Primary
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDatasetSource('synthetic')}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-md cursor-pointer ${
+                          datasetSource === 'synthetic' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                        }`}
+                      >
+                        Synthetic
+                      </button>
                     </div>
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={sampleQuery}
+                        onChange={(e) => setSampleQuery(e.target.value)}
+                        placeholder="Filter Plant ID or date..."
+                        className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
+                      />
+                    </div>
+                    <select
+                      value={sampleLabelFilter}
+                      onChange={(e) => setSampleLabelFilter(e.target.value)}
+                      className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
+                    >
+                      <option value="ALL">All Labels</option>
+                      {datasetSummary.curves.map((c) => (
+                        <option key={c.label} value={c.label}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                          <th className="px-3 py-2.5 font-medium">Plant ID</th>
-                          <th className="px-3 py-2.5 font-medium">Pot / Plot</th>
-                          <th className="px-3 py-2.5 font-medium">Date</th>
-                          <th className="px-3 py-2.5 font-medium">Label</th>
-                          <th className="px-3 py-2.5 font-medium text-right">R670 (%)</th>
-                          <th className="px-3 py-2.5 font-medium text-right">R780 (%)</th>
-                          <th className="px-3 py-2.5 font-medium text-right">NDVI</th>
-                          <th className="px-3 py-2.5 font-medium text-right">NDRE</th>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                        <th className="px-3 py-2.5 font-medium">Plant ID</th>
+                        <th className="px-3 py-2.5 font-medium">Pot / Plot</th>
+                        <th className="px-3 py-2.5 font-medium">Date</th>
+                        <th className="px-3 py-2.5 font-medium">Label</th>
+                        <th className="px-3 py-2.5 font-medium text-right">R670 (%)</th>
+                        <th className="px-3 py-2.5 font-medium text-right">R780 (%)</th>
+                        <th className="px-3 py-2.5 font-medium text-right">NDVI</th>
+                        <th className="px-3 py-2.5 font-medium text-right">NDRE</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
+                      {filteredSampleRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-4 py-6 text-center text-slate-500 font-sans">
+                            No matching sample rows for the current filter.
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
-                        {filteredSampleRows.length === 0 ? (
-                          <tr>
-                            <td colSpan={8} className="px-4 py-6 text-center text-slate-500 font-sans">
-                              No matching sample rows for the current filter.
+                      ) : (
+                        filteredSampleRows.map((row) => (
+                          <tr key={row.sampleId} className="hover:bg-slate-50/70">
+                            <td className="px-3 py-2 font-semibold text-slate-900">
+                              {row.plantId}
+                            </td>
+                            <td className="px-3 py-2 text-slate-600">{row.potNumber}</td>
+                            <td className="px-3 py-2 text-slate-600">{row.date}</td>
+                            <td className="px-3 py-2 font-sans text-slate-800">{row.label}</td>
+                            <td className="px-3 py-2 text-right text-slate-700">
+                              {row.r670.toFixed(2)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-slate-700">
+                              {row.r780.toFixed(2)}
+                            </td>
+                            <td className="px-3 py-2 text-right font-semibold text-teal-800">
+                              {row.ndvi.toFixed(3)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-slate-700">
+                              {row.ndre.toFixed(3)}
                             </td>
                           </tr>
-                        ) : (
-                          filteredSampleRows.map((row) => (
-                            <tr key={row.sampleId} className="hover:bg-slate-50/70">
-                              <td className="px-3 py-2 font-semibold text-slate-900">
-                                {row.plantId}
-                              </td>
-                              <td className="px-3 py-2 text-slate-600">{row.potNumber}</td>
-                              <td className="px-3 py-2 text-slate-600">{row.date}</td>
-                              <td className="px-3 py-2 font-sans text-slate-800">{row.label}</td>
-                              <td className="px-3 py-2 text-right text-slate-700">
-                                {row.r670.toFixed(2)}
-                              </td>
-                              <td className="px-3 py-2 text-right text-slate-700">
-                                {row.r780.toFixed(2)}
-                              </td>
-                              <td className="px-3 py-2 text-right font-semibold text-teal-800">
-                                {row.ndvi.toFixed(3)}
-                              </td>
-                              <td className="px-3 py-2 text-right text-slate-700">
-                                {row.ndre.toFixed(3)}
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}
+
 
         {/* PROJECT BRIEF & DOCUMENTATION VIEW */}
         {activeTab === 'brief' && (

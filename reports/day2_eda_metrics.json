@@ -1,0 +1,3787 @@
+{
+  "figures": [
+    "reports/figures/01_mean_spectra_variance.png",
+    "reports/figures/02_difference_spectrum_red_edge.png",
+    "reports/figures/03_class_group_and_outliers.png",
+    "reports/figures/04_temporal_spectral_progression.png"
+  ],
+  "primary": {
+    "source": "primary",
+    "sanity": {
+      "raw_rows": 2285,
+      "labeled_rows": 2280,
+      "unmatched_metadata_rows": 5,
+      "n_bands": 10,
+      "dtype": "float64",
+      "missing_spectral_values": 80,
+      "rows_with_missing_spectra": 8,
+      "missing_label_values": 0,
+      "duplicate_sample_ids": 0,
+      "exact_duplicate_spectra": 0,
+      "wavelength_min_nm": 365.0,
+      "wavelength_max_nm": 970.0,
+      "wavelength_spacings_nm": [
+        25.0,
+        30.0,
+        45.0,
+        65.0,
+        75.0,
+        80.0,
+        95.0,
+        110.0
+      ],
+      "reflectance_min": 0.7623,
+      "reflectance_max": 35.4831
+    },
+    "class_balance": [
+      {
+        "label": "Control (40% Water)",
+        "count": 1178,
+        "percent": 51.67,
+        "plants": 41
+      },
+      {
+        "label": "Drought (10% Water)",
+        "count": 1102,
+        "percent": 48.33,
+        "plants": 38
+      }
+    ],
+    "imbalance_ratio": 1.069,
+    "grouping": {
+      "unique_plants": 79,
+      "unique_plots": 79,
+      "unique_fields": 2,
+      "unique_dates": 31,
+      "scans_per_plant_min": 23,
+      "scans_per_plant_median": 29.0,
+      "scans_per_plant_mean": 28.86,
+      "scans_per_plant_max": 29,
+      "recommended_split_column": "plant_id",
+      "temporal_split_column": "date"
+    },
+    "class_curves": [
+      {
+        "label": "Control (40% Water)",
+        "n_samples": 1178,
+        "points": [
+          {
+            "wavelength_nm": 365.0,
+            "mean": 3.9226,
+            "std": 2.1001
+          },
+          {
+            "wavelength_nm": 460.0,
+            "mean": 3.6682,
+            "std": 2.2396
+          },
+          {
+            "wavelength_nm": 525.0,
+            "mean": 6.5321,
+            "std": 3.7736
+          },
+          {
+            "wavelength_nm": 570.0,
+            "mean": 6.5101,
+            "std": 4.1927
+          },
+          {
+            "wavelength_nm": 645.0,
+            "mean": 7.9163,
+            "std": 7.2988
+          },
+          {
+            "wavelength_nm": 670.0,
+            "mean": 5.5335,
+            "std": 4.8546
+          },
+          {
+            "wavelength_nm": 700.0,
+            "mean": 7.4542,
+            "std": 6.1114
+          },
+          {
+            "wavelength_nm": 780.0,
+            "mean": 20.5792,
+            "std": 5.1984
+          },
+          {
+            "wavelength_nm": 890.0,
+            "mean": 20.3744,
+            "std": 5.1919
+          },
+          {
+            "wavelength_nm": 970.0,
+            "mean": 18.6553,
+            "std": 4.8717
+          }
+        ]
+      },
+      {
+        "label": "Drought (10% Water)",
+        "n_samples": 1102,
+        "points": [
+          {
+            "wavelength_nm": 365.0,
+            "mean": 3.9623,
+            "std": 2.2131
+          },
+          {
+            "wavelength_nm": 460.0,
+            "mean": 3.7437,
+            "std": 2.3577
+          },
+          {
+            "wavelength_nm": 525.0,
+            "mean": 6.7306,
+            "std": 4.011
+          },
+          {
+            "wavelength_nm": 570.0,
+            "mean": 6.7184,
+            "std": 4.4202
+          },
+          {
+            "wavelength_nm": 645.0,
+            "mean": 8.204,
+            "std": 7.6003
+          },
+          {
+            "wavelength_nm": 670.0,
+            "mean": 5.6868,
+            "std": 5.0197
+          },
+          {
+            "wavelength_nm": 700.0,
+            "mean": 7.6806,
+            "std": 6.3707
+          },
+          {
+            "wavelength_nm": 780.0,
+            "mean": 20.8094,
+            "std": 5.6858
+          },
+          {
+            "wavelength_nm": 890.0,
+            "mean": 20.5723,
+            "std": 5.6479
+          },
+          {
+            "wavelength_nm": 970.0,
+            "mean": 18.8093,
+            "std": 5.2725
+          }
+        ]
+      }
+    ],
+    "comparison_pair": {
+      "healthy": "Control (40% Water)",
+      "stressed": "Drought (10% Water)"
+    },
+    "band_diagnostics": [
+      {
+        "band": "Mean_365",
+        "wavelength_nm": 365.0,
+        "region": "UV Edge",
+        "healthy_mean": 3.9226,
+        "stressed_mean": 3.9623,
+        "diff_stressed_minus_healthy": 0.0396,
+        "fisher_ratio": 0.0002,
+        "cohens_d": 0.0184,
+        "cross_sample_cv": 0.5468,
+        "intra_noise_ratio": 0.4903,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "Mean_460",
+        "wavelength_nm": 460.0,
+        "region": "VIS",
+        "healthy_mean": 3.6682,
+        "stressed_mean": 3.7437,
+        "diff_stressed_minus_healthy": 0.0755,
+        "fisher_ratio": 0.0005,
+        "cohens_d": 0.0328,
+        "cross_sample_cv": 0.6202,
+        "intra_noise_ratio": 0.5187,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_525",
+        "wavelength_nm": 525.0,
+        "region": "VIS",
+        "healthy_mean": 6.5321,
+        "stressed_mean": 6.7306,
+        "diff_stressed_minus_healthy": 0.1985,
+        "fisher_ratio": 0.0013,
+        "cohens_d": 0.051,
+        "cross_sample_cv": 0.5871,
+        "intra_noise_ratio": 0.5099,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_570",
+        "wavelength_nm": 570.0,
+        "region": "VIS",
+        "healthy_mean": 6.5101,
+        "stressed_mean": 6.7184,
+        "diff_stressed_minus_healthy": 0.2083,
+        "fisher_ratio": 0.0012,
+        "cohens_d": 0.0484,
+        "cross_sample_cv": 0.6513,
+        "intra_noise_ratio": 0.517,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_645",
+        "wavelength_nm": 645.0,
+        "region": "VIS",
+        "healthy_mean": 7.9163,
+        "stressed_mean": 8.204,
+        "diff_stressed_minus_healthy": 0.2877,
+        "fisher_ratio": 0.0007,
+        "cohens_d": 0.0386,
+        "cross_sample_cv": 0.9245,
+        "intra_noise_ratio": 0.5634,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_670",
+        "wavelength_nm": 670.0,
+        "region": "VIS",
+        "healthy_mean": 5.5335,
+        "stressed_mean": 5.6868,
+        "diff_stressed_minus_healthy": 0.1532,
+        "fisher_ratio": 0.0005,
+        "cohens_d": 0.031,
+        "cross_sample_cv": 0.8802,
+        "intra_noise_ratio": 0.551,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_700",
+        "wavelength_nm": 700.0,
+        "region": "Red Edge",
+        "healthy_mean": 7.4542,
+        "stressed_mean": 7.6806,
+        "diff_stressed_minus_healthy": 0.2265,
+        "fisher_ratio": 0.0007,
+        "cohens_d": 0.0363,
+        "cross_sample_cv": 0.8249,
+        "intra_noise_ratio": 0.5159,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_780",
+        "wavelength_nm": 780.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 20.5792,
+        "stressed_mean": 20.8094,
+        "diff_stressed_minus_healthy": 0.2302,
+        "fisher_ratio": 0.0009,
+        "cohens_d": 0.0423,
+        "cross_sample_cv": 0.263,
+        "intra_noise_ratio": 0.4175,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_890",
+        "wavelength_nm": 890.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 20.3744,
+        "stressed_mean": 20.5723,
+        "diff_stressed_minus_healthy": 0.1979,
+        "fisher_ratio": 0.0007,
+        "cohens_d": 0.0365,
+        "cross_sample_cv": 0.2647,
+        "intra_noise_ratio": 0.4078,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_970",
+        "wavelength_nm": 970.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 18.6553,
+        "stressed_mean": 18.8093,
+        "diff_stressed_minus_healthy": 0.1539,
+        "fisher_ratio": 0.0005,
+        "cohens_d": 0.0303,
+        "cross_sample_cv": 0.2707,
+        "intra_noise_ratio": 0.4045,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      }
+    ],
+    "top_discriminative_bands": [
+      {
+        "band": "Mean_525",
+        "wavelength_nm": 525.0,
+        "region": "VIS",
+        "healthy_mean": 6.5321,
+        "stressed_mean": 6.7306,
+        "diff_stressed_minus_healthy": 0.1985,
+        "fisher_ratio": 0.0013,
+        "cohens_d": 0.051,
+        "cross_sample_cv": 0.5871,
+        "intra_noise_ratio": 0.5099,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_570",
+        "wavelength_nm": 570.0,
+        "region": "VIS",
+        "healthy_mean": 6.5101,
+        "stressed_mean": 6.7184,
+        "diff_stressed_minus_healthy": 0.2083,
+        "fisher_ratio": 0.0012,
+        "cohens_d": 0.0484,
+        "cross_sample_cv": 0.6513,
+        "intra_noise_ratio": 0.517,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_780",
+        "wavelength_nm": 780.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 20.5792,
+        "stressed_mean": 20.8094,
+        "diff_stressed_minus_healthy": 0.2302,
+        "fisher_ratio": 0.0009,
+        "cohens_d": 0.0423,
+        "cross_sample_cv": 0.263,
+        "intra_noise_ratio": 0.4175,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_645",
+        "wavelength_nm": 645.0,
+        "region": "VIS",
+        "healthy_mean": 7.9163,
+        "stressed_mean": 8.204,
+        "diff_stressed_minus_healthy": 0.2877,
+        "fisher_ratio": 0.0007,
+        "cohens_d": 0.0386,
+        "cross_sample_cv": 0.9245,
+        "intra_noise_ratio": 0.5634,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "Mean_700",
+        "wavelength_nm": 700.0,
+        "region": "Red Edge",
+        "healthy_mean": 7.4542,
+        "stressed_mean": 7.6806,
+        "diff_stressed_minus_healthy": 0.2265,
+        "fisher_ratio": 0.0007,
+        "cohens_d": 0.0363,
+        "cross_sample_cv": 0.8249,
+        "intra_noise_ratio": 0.5159,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      }
+    ],
+    "bands_to_drop_day3": [
+      {
+        "band": "Mean_365",
+        "wavelength_nm": 365.0,
+        "region": "UV Edge",
+        "fisher_ratio": 0.0002,
+        "intra_noise_ratio": 0.4903,
+        "reason": "UV spectrum edge (365 nm): high intra-scan relative noise (StDev/Mean=0.490) and low Fisher separation (0.0002)."
+      },
+      {
+        "band": "Mean_970",
+        "wavelength_nm": 970.0,
+        "region": "NIR Plateau",
+        "fisher_ratio": 0.0005,
+        "intra_noise_ratio": 0.4045,
+        "reason": "Water-absorption shoulder / Si-detector edge (970 nm): elevated noise (StDev/Mean=0.405); verify before retaining for moisture indices."
+      }
+    ],
+    "red_edge_slope_pct_per_nm": {
+      "Control (40% Water)": 0.1641,
+      "Drought (10% Water)": 0.1641
+    },
+    "outliers": {
+      "method": "Per-class median L2 distance (MAD robust Z > 3.0)",
+      "median_l2_distance": 10.927,
+      "mad_l2_distance": 5.152,
+      "outlier_count": 172,
+      "outlier_percent": 7.57,
+      "top_outliers": [
+        {
+          "sample_id": "Giant__PlantId_61_2021-08-11 15.18.48.609",
+          "plant_id": "PlantId_61",
+          "date": "08-11-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 50.489,
+          "robust_z": 5.179
+        },
+        {
+          "sample_id": "Giant__PlantId_65_2021-08-11 18.48.49.597",
+          "plant_id": "PlantId_65",
+          "date": "08-11-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 50.475,
+          "robust_z": 5.177
+        },
+        {
+          "sample_id": "Giant__PlantId_65_2021-08-10 09.26.38.656",
+          "plant_id": "PlantId_65",
+          "date": "08-10-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 49.982,
+          "robust_z": 5.113
+        },
+        {
+          "sample_id": "Giant__PlantId_45_2021-08-11 14.08.52.655",
+          "plant_id": "PlantId_45",
+          "date": "08-11-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 49.921,
+          "robust_z": 5.105
+        },
+        {
+          "sample_id": "Giant__PlantId_65_2021-08-09 17.43.17.030",
+          "plant_id": "PlantId_65",
+          "date": "08-09-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 49.638,
+          "robust_z": 5.068
+        },
+        {
+          "sample_id": "Giant__PlantId_61_2021-08-10 12.06.06.808",
+          "plant_id": "PlantId_61",
+          "date": "08-10-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 48.695,
+          "robust_z": 4.944
+        },
+        {
+          "sample_id": "Giant__PlantId_53_2021-08-11 14.44.12.674",
+          "plant_id": "PlantId_53",
+          "date": "08-11-21",
+          "label": "Drought (10% Water)",
+          "l2_distance": 48.2,
+          "robust_z": 4.88
+        },
+        {
+          "sample_id": "Giant__PlantId_73_2021-08-10 10.17.25.498",
+          "plant_id": "PlantId_73",
+          "date": "08-10-21",
+          "label": "Drought (10% Water)",
+          "l2_distance": 48.122,
+          "robust_z": 4.869
+        },
+        {
+          "sample_id": "Giant__PlantId_50_2021-08-11 16.52.40.591",
+          "plant_id": "PlantId_50",
+          "date": "08-11-21",
+          "label": "Control (40% Water)",
+          "l2_distance": 47.621,
+          "robust_z": 4.804
+        },
+        {
+          "sample_id": "Giant__PlantId_33_2021-08-09 15.12.13.960",
+          "plant_id": "PlantId_33",
+          "date": "08-09-21",
+          "label": "Drought (10% Water)",
+          "l2_distance": 47.549,
+          "robust_z": 4.794
+        },
+        {
+          "sample_id": "Giant__PlantId_53_2021-08-10 11.31.03.129",
+          "plant_id": "PlantId_53",
+          "date": "08-10-21",
+          "label": "Drought (10% Water)",
+          "l2_distance": 47.511,
+          "robust_z": 4.789
+        },
+        {
+          "sample_id": "Giant__PlantId_73_2021-08-11 13.30.54.605",
+          "plant_id": "PlantId_73",
+          "date": "08-11-21",
+          "label": "Drought (10% Water)",
+          "l2_distance": 46.957,
+          "robust_z": 4.717
+        }
+      ],
+      "z_scores_histogram": [
+        0,
+        217,
+        481,
+        438,
+        438,
+        256,
+        110,
+        62,
+        49,
+        49,
+        45,
+        67,
+        39,
+        16,
+        5,
+        0
+      ],
+      "z_hist_edges": [
+        -2.0,
+        -1.5,
+        -1.0,
+        -0.5,
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        3.5,
+        4.0,
+        4.5,
+        5.0,
+        5.5,
+        6.0
+      ]
+    },
+    "temporal": {
+      "date_count": 31,
+      "first_date": "07-08-21",
+      "last_date": "08-12-21",
+      "series": [
+        {
+          "date": "07-08-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.8125,
+              "ndre_mean": 0.7351,
+              "r700_mean": 2.962,
+              "r780_mean": 19.393
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.8164,
+              "ndre_mean": 0.7392,
+              "r700_mean": 2.741,
+              "r780_mean": 18.324
+            }
+          }
+        },
+        {
+          "date": "07-09-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.8054,
+              "ndre_mean": 0.7262,
+              "r700_mean": 3.244,
+              "r780_mean": 20.478
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.8117,
+              "ndre_mean": 0.7333,
+              "r700_mean": 2.868,
+              "r780_mean": 18.677
+            }
+          }
+        },
+        {
+          "date": "07-12-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.8003,
+              "ndre_mean": 0.7229,
+              "r700_mean": 3.169,
+              "r780_mean": 19.39
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.8041,
+              "ndre_mean": 0.7289,
+              "r700_mean": 3.012,
+              "r780_mean": 19.025
+            }
+          }
+        },
+        {
+          "date": "07-13-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.8,
+              "ndre_mean": 0.7222,
+              "r700_mean": 3.201,
+              "r780_mean": 19.678
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.8023,
+              "ndre_mean": 0.7292,
+              "r700_mean": 3.257,
+              "r780_mean": 20.675
+            }
+          }
+        },
+        {
+          "date": "07-14-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 22,
+              "ndvi_mean": 0.7831,
+              "ndre_mean": 0.7043,
+              "r700_mean": 3.668,
+              "r780_mean": 21.082
+            },
+            "Drought (10% Water)": {
+              "n": 19,
+              "ndvi_mean": 0.7899,
+              "ndre_mean": 0.7179,
+              "r700_mean": 3.697,
+              "r780_mean": 22.45
+            }
+          }
+        },
+        {
+          "date": "07-15-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 60,
+              "ndvi_mean": 0.7839,
+              "ndre_mean": 0.7106,
+              "r700_mean": 3.806,
+              "r780_mean": 22.562
+            },
+            "Drought (10% Water)": {
+              "n": 57,
+              "ndvi_mean": 0.7861,
+              "ndre_mean": 0.7167,
+              "r700_mean": 3.787,
+              "r780_mean": 22.913
+            }
+          }
+        },
+        {
+          "date": "07-16-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7814,
+              "ndre_mean": 0.706,
+              "r700_mean": 2.693,
+              "r780_mean": 15.882
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7836,
+              "ndre_mean": 0.712,
+              "r700_mean": 2.537,
+              "r780_mean": 15.06
+            }
+          }
+        },
+        {
+          "date": "07-17-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7761,
+              "ndre_mean": 0.7018,
+              "r700_mean": 2.709,
+              "r780_mean": 15.68
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7733,
+              "ndre_mean": 0.6999,
+              "r700_mean": 2.652,
+              "r780_mean": 14.981
+            }
+          }
+        },
+        {
+          "date": "07-18-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7737,
+              "ndre_mean": 0.6991,
+              "r700_mean": 2.785,
+              "r780_mean": 15.831
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7741,
+              "ndre_mean": 0.6973,
+              "r700_mean": 2.734,
+              "r780_mean": 15.198
+            }
+          }
+        },
+        {
+          "date": "07-19-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7736,
+              "ndre_mean": 0.6944,
+              "r700_mean": 4.145,
+              "r780_mean": 22.963
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7759,
+              "ndre_mean": 0.6977,
+              "r700_mean": 4.359,
+              "r780_mean": 24.365
+            }
+          }
+        },
+        {
+          "date": "07-20-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7671,
+              "ndre_mean": 0.6887,
+              "r700_mean": 4.24,
+              "r780_mean": 23.014
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7687,
+              "ndre_mean": 0.6904,
+              "r700_mean": 4.414,
+              "r780_mean": 23.99
+            }
+          }
+        },
+        {
+          "date": "07-21-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 23,
+              "ndvi_mean": 0.7822,
+              "ndre_mean": 0.6955,
+              "r700_mean": 4.094,
+              "r780_mean": 22.813
+            },
+            "Drought (10% Water)": {
+              "n": 19,
+              "ndvi_mean": 0.7817,
+              "ndre_mean": 0.6947,
+              "r700_mean": 4.305,
+              "r780_mean": 24.056
+            }
+          }
+        },
+        {
+          "date": "07-22-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 18,
+              "ndvi_mean": 0.7403,
+              "ndre_mean": 0.6524,
+              "r700_mean": 4.68,
+              "r780_mean": 22.051
+            },
+            "Drought (10% Water)": {
+              "n": 19,
+              "ndvi_mean": 0.7486,
+              "ndre_mean": 0.6581,
+              "r700_mean": 5.114,
+              "r780_mean": 24.579
+            }
+          }
+        },
+        {
+          "date": "07-23-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.746,
+              "ndre_mean": 0.6453,
+              "r700_mean": 3.43,
+              "r780_mean": 15.77
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.747,
+              "ndre_mean": 0.6435,
+              "r700_mean": 3.283,
+              "r780_mean": 14.745
+            }
+          }
+        },
+        {
+          "date": "07-24-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7361,
+              "ndre_mean": 0.6327,
+              "r700_mean": 3.519,
+              "r780_mean": 15.51
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7303,
+              "ndre_mean": 0.6227,
+              "r700_mean": 3.57,
+              "r780_mean": 14.958
+            }
+          }
+        },
+        {
+          "date": "07-25-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.7166,
+              "ndre_mean": 0.6061,
+              "r700_mean": 3.793,
+              "r780_mean": 15.317
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.7116,
+              "ndre_mean": 0.5974,
+              "r700_mean": 3.802,
+              "r780_mean": 14.612
+            }
+          }
+        },
+        {
+          "date": "07-26-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.6729,
+              "ndre_mean": 0.5568,
+              "r700_mean": 6.992,
+              "r780_mean": 23.586
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.6684,
+              "ndre_mean": 0.5464,
+              "r700_mean": 7.387,
+              "r780_mean": 24.165
+            }
+          }
+        },
+        {
+          "date": "07-27-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 41,
+              "ndvi_mean": 0.6467,
+              "ndre_mean": 0.5318,
+              "r700_mean": 7.466,
+              "r780_mean": 23.429
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.6394,
+              "ndre_mean": 0.518,
+              "r700_mean": 7.97,
+              "r780_mean": 24.043
+            }
+          }
+        },
+        {
+          "date": "07-28-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 33,
+              "ndvi_mean": 0.6107,
+              "ndre_mean": 0.4877,
+              "r700_mean": 8.549,
+              "r780_mean": 23.781
+            },
+            "Drought (10% Water)": {
+              "n": 34,
+              "ndvi_mean": 0.5876,
+              "ndre_mean": 0.4608,
+              "r700_mean": 9.298,
+              "r780_mean": 24.114
+            }
+          }
+        },
+        {
+          "date": "07-29-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 48,
+              "ndvi_mean": 0.5702,
+              "ndre_mean": 0.4487,
+              "r700_mean": 9.068,
+              "r780_mean": 22.838
+            },
+            "Drought (10% Water)": {
+              "n": 42,
+              "ndvi_mean": 0.5554,
+              "ndre_mean": 0.4294,
+              "r700_mean": 9.951,
+              "r780_mean": 24.241
+            }
+          }
+        },
+        {
+          "date": "07-30-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.5392,
+              "ndre_mean": 0.4198,
+              "r700_mean": 6.534,
+              "r780_mean": 15.375
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.5202,
+              "ndre_mean": 0.3974,
+              "r700_mean": 6.841,
+              "r780_mean": 14.955
+            }
+          }
+        },
+        {
+          "date": "07-31-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.5106,
+              "ndre_mean": 0.3921,
+              "r700_mean": 7.075,
+              "r780_mean": 15.498
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.4902,
+              "ndre_mean": 0.3698,
+              "r700_mean": 7.446,
+              "r780_mean": 15.204
+            }
+          }
+        },
+        {
+          "date": "08-01-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.4753,
+              "ndre_mean": 0.3609,
+              "r700_mean": 7.748,
+              "r780_mean": 15.648
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.4611,
+              "ndre_mean": 0.3452,
+              "r700_mean": 8.072,
+              "r780_mean": 15.487
+            }
+          }
+        },
+        {
+          "date": "08-02-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.4254,
+              "ndre_mean": 0.3075,
+              "r700_mean": 12.633,
+              "r780_mean": 23.033
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.4203,
+              "ndre_mean": 0.3006,
+              "r700_mean": 13.364,
+              "r780_mean": 23.941
+            }
+          }
+        },
+        {
+          "date": "08-03-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.4065,
+              "ndre_mean": 0.2894,
+              "r700_mean": 13.191,
+              "r780_mean": 23.108
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.4046,
+              "ndre_mean": 0.287,
+              "r700_mean": 13.914,
+              "r780_mean": 24.2
+            }
+          }
+        },
+        {
+          "date": "08-04-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.3816,
+              "ndre_mean": 0.2661,
+              "r700_mean": 13.955,
+              "r780_mean": 23.252
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.376,
+              "ndre_mean": 0.2606,
+              "r700_mean": 15.135,
+              "r780_mean": 24.835
+            }
+          }
+        },
+        {
+          "date": "08-05-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.3606,
+              "ndre_mean": 0.2455,
+              "r700_mean": 14.593,
+              "r780_mean": 23.326
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.362,
+              "ndre_mean": 0.2465,
+              "r700_mean": 15.455,
+              "r780_mean": 24.503
+            }
+          }
+        },
+        {
+          "date": "08-09-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.2858,
+              "ndre_mean": 0.1686,
+              "r700_mean": 18.462,
+              "r780_mean": 25.374
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.3141,
+              "ndre_mean": 0.1941,
+              "r700_mean": 18.291,
+              "r780_mean": 25.862
+            }
+          }
+        },
+        {
+          "date": "08-10-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.2818,
+              "ndre_mean": 0.1625,
+              "r700_mean": 19.099,
+              "r780_mean": 25.963
+            },
+            "Drought (10% Water)": {
+              "n": 38,
+              "ndvi_mean": 0.3097,
+              "ndre_mean": 0.189,
+              "r700_mean": 18.689,
+              "r780_mean": 26.132
+            }
+          }
+        },
+        {
+          "date": "08-11-21",
+          "classes": {
+            "Control (40% Water)": {
+              "n": 40,
+              "ndvi_mean": 0.2728,
+              "ndre_mean": 0.1504,
+              "r700_mean": 20.336,
+              "r780_mean": 27.141
+            },
+            "Drought (10% Water)": {
+              "n": 36,
+              "ndvi_mean": 0.3096,
+              "ndre_mean": 0.1875,
+              "r700_mean": 19.081,
+              "r780_mean": 26.598
+            }
+          }
+        },
+        {
+          "date": "08-12-21",
+          "classes": {
+            "Drought (10% Water)": {
+              "n": 2,
+              "ndvi_mean": 0.2546,
+              "ndre_mean": 0.11,
+              "r700_mean": 24.583,
+              "r780_mean": 30.642
+            }
+          }
+        }
+      ],
+      "early_vs_late_ndvi": {
+        "Control (40% Water)": {
+          "early_ndvi": 0.7788,
+          "late_ndvi": 0.4775,
+          "delta_ndvi": -0.3013
+        },
+        "Drought (10% Water)": {
+          "early_ndvi": 0.7805,
+          "late_ndvi": 0.4748,
+          "delta_ndvi": -0.3056
+        }
+      }
+    }
+  },
+  "synthetic": {
+    "source": "synthetic",
+    "sanity": {
+      "raw_rows": 120,
+      "labeled_rows": 120,
+      "unmatched_metadata_rows": 0,
+      "n_bands": 61,
+      "dtype": "float64",
+      "missing_spectral_values": 0,
+      "rows_with_missing_spectra": 0,
+      "missing_label_values": 0,
+      "duplicate_sample_ids": 0,
+      "exact_duplicate_spectra": 0,
+      "wavelength_min_nm": 400.0,
+      "wavelength_max_nm": 1000.0,
+      "wavelength_spacings_nm": [
+        10.0
+      ],
+      "reflectance_min": 1.0,
+      "reflectance_max": 53.849
+    },
+    "class_balance": [
+      {
+        "label": "Early_Chlorosis",
+        "count": 18,
+        "percent": 15.0,
+        "plants": 6
+      },
+      {
+        "label": "Healthy",
+        "count": 30,
+        "percent": 25.0,
+        "plants": 6
+      },
+      {
+        "label": "Moderate_Blight",
+        "count": 30,
+        "percent": 25.0,
+        "plants": 12
+      },
+      {
+        "label": "Severe_Necrosis",
+        "count": 42,
+        "percent": 35.0,
+        "plants": 12
+      }
+    ],
+    "imbalance_ratio": 2.333,
+    "grouping": {
+      "unique_plants": 24,
+      "unique_plots": 6,
+      "unique_fields": 2,
+      "unique_dates": 5,
+      "scans_per_plant_min": 5,
+      "scans_per_plant_median": 5.0,
+      "scans_per_plant_mean": 5.0,
+      "scans_per_plant_max": 5,
+      "recommended_split_column": "plant_id",
+      "temporal_split_column": "date"
+    },
+    "class_curves": [
+      {
+        "label": "Early_Chlorosis",
+        "n_samples": 18,
+        "points": [
+          {
+            "wavelength_nm": 400.0,
+            "mean": 4.4434,
+            "std": 1.2942
+          },
+          {
+            "wavelength_nm": 410.0,
+            "mean": 4.1469,
+            "std": 1.3164
+          },
+          {
+            "wavelength_nm": 420.0,
+            "mean": 4.1087,
+            "std": 1.2853
+          },
+          {
+            "wavelength_nm": 430.0,
+            "mean": 4.0828,
+            "std": 1.3806
+          },
+          {
+            "wavelength_nm": 440.0,
+            "mean": 4.3646,
+            "std": 1.4622
+          },
+          {
+            "wavelength_nm": 450.0,
+            "mean": 4.2866,
+            "std": 1.2731
+          },
+          {
+            "wavelength_nm": 460.0,
+            "mean": 4.49,
+            "std": 1.0557
+          },
+          {
+            "wavelength_nm": 470.0,
+            "mean": 5.0897,
+            "std": 1.1061
+          },
+          {
+            "wavelength_nm": 480.0,
+            "mean": 5.6557,
+            "std": 1.4425
+          },
+          {
+            "wavelength_nm": 490.0,
+            "mean": 6.65,
+            "std": 1.5013
+          },
+          {
+            "wavelength_nm": 500.0,
+            "mean": 8.1573,
+            "std": 1.3447
+          },
+          {
+            "wavelength_nm": 510.0,
+            "mean": 10.3248,
+            "std": 1.1124
+          },
+          {
+            "wavelength_nm": 520.0,
+            "mean": 12.8692,
+            "std": 1.261
+          },
+          {
+            "wavelength_nm": 530.0,
+            "mean": 15.3661,
+            "std": 1.3938
+          },
+          {
+            "wavelength_nm": 540.0,
+            "mean": 17.3218,
+            "std": 1.5382
+          },
+          {
+            "wavelength_nm": 550.0,
+            "mean": 18.2543,
+            "std": 1.3411
+          },
+          {
+            "wavelength_nm": 560.0,
+            "mean": 18.0324,
+            "std": 1.3477
+          },
+          {
+            "wavelength_nm": 570.0,
+            "mean": 16.5648,
+            "std": 1.451
+          },
+          {
+            "wavelength_nm": 580.0,
+            "mean": 14.426,
+            "std": 1.4721
+          },
+          {
+            "wavelength_nm": 590.0,
+            "mean": 12.0784,
+            "std": 1.5173
+          },
+          {
+            "wavelength_nm": 600.0,
+            "mean": 9.5394,
+            "std": 1.4779
+          },
+          {
+            "wavelength_nm": 610.0,
+            "mean": 7.8168,
+            "std": 1.4131
+          },
+          {
+            "wavelength_nm": 620.0,
+            "mean": 5.7226,
+            "std": 1.2836
+          },
+          {
+            "wavelength_nm": 630.0,
+            "mean": 4.1497,
+            "std": 1.3781
+          },
+          {
+            "wavelength_nm": 640.0,
+            "mean": 2.1268,
+            "std": 1.1095
+          },
+          {
+            "wavelength_nm": 650.0,
+            "mean": 1.1981,
+            "std": 0.5826
+          },
+          {
+            "wavelength_nm": 660.0,
+            "mean": 1.0133,
+            "std": 0.055
+          },
+          {
+            "wavelength_nm": 670.0,
+            "mean": 1.0915,
+            "std": 0.3096
+          },
+          {
+            "wavelength_nm": 680.0,
+            "mean": 1.4104,
+            "std": 0.8268
+          },
+          {
+            "wavelength_nm": 690.0,
+            "mean": 4.5074,
+            "std": 1.4078
+          },
+          {
+            "wavelength_nm": 700.0,
+            "mean": 11.1996,
+            "std": 1.6538
+          },
+          {
+            "wavelength_nm": 710.0,
+            "mean": 17.4672,
+            "std": 1.2866
+          },
+          {
+            "wavelength_nm": 720.0,
+            "mean": 26.363,
+            "std": 1.6225
+          },
+          {
+            "wavelength_nm": 730.0,
+            "mean": 34.5531,
+            "std": 1.3173
+          },
+          {
+            "wavelength_nm": 740.0,
+            "mean": 40.2868,
+            "std": 1.3071
+          },
+          {
+            "wavelength_nm": 750.0,
+            "mean": 43.4339,
+            "std": 1.5619
+          },
+          {
+            "wavelength_nm": 760.0,
+            "mean": 45.3597,
+            "std": 1.2518
+          },
+          {
+            "wavelength_nm": 770.0,
+            "mean": 46.2385,
+            "std": 1.2035
+          },
+          {
+            "wavelength_nm": 780.0,
+            "mean": 46.7589,
+            "std": 1.6321
+          },
+          {
+            "wavelength_nm": 790.0,
+            "mean": 46.9951,
+            "std": 1.3283
+          },
+          {
+            "wavelength_nm": 800.0,
+            "mean": 47.1916,
+            "std": 1.2315
+          },
+          {
+            "wavelength_nm": 810.0,
+            "mean": 47.1174,
+            "std": 1.1844
+          },
+          {
+            "wavelength_nm": 820.0,
+            "mean": 47.0612,
+            "std": 1.3248
+          },
+          {
+            "wavelength_nm": 830.0,
+            "mean": 47.3528,
+            "std": 1.5272
+          },
+          {
+            "wavelength_nm": 840.0,
+            "mean": 47.4172,
+            "std": 1.4405
+          },
+          {
+            "wavelength_nm": 850.0,
+            "mean": 47.3941,
+            "std": 1.4043
+          },
+          {
+            "wavelength_nm": 860.0,
+            "mean": 47.559,
+            "std": 1.3674
+          },
+          {
+            "wavelength_nm": 870.0,
+            "mean": 47.3594,
+            "std": 1.4678
+          },
+          {
+            "wavelength_nm": 880.0,
+            "mean": 47.3266,
+            "std": 1.2531
+          },
+          {
+            "wavelength_nm": 890.0,
+            "mean": 47.239,
+            "std": 1.3878
+          },
+          {
+            "wavelength_nm": 900.0,
+            "mean": 47.1082,
+            "std": 1.5482
+          },
+          {
+            "wavelength_nm": 910.0,
+            "mean": 47.3173,
+            "std": 1.423
+          },
+          {
+            "wavelength_nm": 920.0,
+            "mean": 46.8576,
+            "std": 1.6324
+          },
+          {
+            "wavelength_nm": 930.0,
+            "mean": 46.6787,
+            "std": 1.3359
+          },
+          {
+            "wavelength_nm": 940.0,
+            "mean": 45.9011,
+            "std": 1.4425
+          },
+          {
+            "wavelength_nm": 950.0,
+            "mean": 45.4163,
+            "std": 1.3232
+          },
+          {
+            "wavelength_nm": 960.0,
+            "mean": 44.5683,
+            "std": 1.4705
+          },
+          {
+            "wavelength_nm": 970.0,
+            "mean": 44.2124,
+            "std": 1.1856
+          },
+          {
+            "wavelength_nm": 980.0,
+            "mean": 44.2649,
+            "std": 1.458
+          },
+          {
+            "wavelength_nm": 990.0,
+            "mean": 45.356,
+            "std": 1.3629
+          },
+          {
+            "wavelength_nm": 1000.0,
+            "mean": 45.9706,
+            "std": 1.303
+          }
+        ]
+      },
+      {
+        "label": "Healthy",
+        "n_samples": 30,
+        "points": [
+          {
+            "wavelength_nm": 400.0,
+            "mean": 4.0692,
+            "std": 1.1613
+          },
+          {
+            "wavelength_nm": 410.0,
+            "mean": 3.7927,
+            "std": 1.0579
+          },
+          {
+            "wavelength_nm": 420.0,
+            "mean": 3.8561,
+            "std": 1.063
+          },
+          {
+            "wavelength_nm": 430.0,
+            "mean": 3.7158,
+            "std": 1.2724
+          },
+          {
+            "wavelength_nm": 440.0,
+            "mean": 3.8677,
+            "std": 1.055
+          },
+          {
+            "wavelength_nm": 450.0,
+            "mean": 3.9645,
+            "std": 1.1268
+          },
+          {
+            "wavelength_nm": 460.0,
+            "mean": 4.2249,
+            "std": 1.0302
+          },
+          {
+            "wavelength_nm": 470.0,
+            "mean": 4.4001,
+            "std": 1.1903
+          },
+          {
+            "wavelength_nm": 480.0,
+            "mean": 5.0728,
+            "std": 1.1243
+          },
+          {
+            "wavelength_nm": 490.0,
+            "mean": 6.0612,
+            "std": 1.0637
+          },
+          {
+            "wavelength_nm": 500.0,
+            "mean": 7.5953,
+            "std": 1.1395
+          },
+          {
+            "wavelength_nm": 510.0,
+            "mean": 9.9461,
+            "std": 1.1149
+          },
+          {
+            "wavelength_nm": 520.0,
+            "mean": 12.3123,
+            "std": 1.0976
+          },
+          {
+            "wavelength_nm": 530.0,
+            "mean": 14.9648,
+            "std": 1.1334
+          },
+          {
+            "wavelength_nm": 540.0,
+            "mean": 16.9514,
+            "std": 1.1977
+          },
+          {
+            "wavelength_nm": 550.0,
+            "mean": 17.902,
+            "std": 1.1818
+          },
+          {
+            "wavelength_nm": 560.0,
+            "mean": 17.5803,
+            "std": 1.2543
+          },
+          {
+            "wavelength_nm": 570.0,
+            "mean": 15.89,
+            "std": 1.1066
+          },
+          {
+            "wavelength_nm": 580.0,
+            "mean": 13.6462,
+            "std": 1.2985
+          },
+          {
+            "wavelength_nm": 590.0,
+            "mean": 10.9736,
+            "std": 1.2188
+          },
+          {
+            "wavelength_nm": 600.0,
+            "mean": 8.3397,
+            "std": 1.0949
+          },
+          {
+            "wavelength_nm": 610.0,
+            "mean": 6.2424,
+            "std": 1.1306
+          },
+          {
+            "wavelength_nm": 620.0,
+            "mean": 4.2035,
+            "std": 1.0395
+          },
+          {
+            "wavelength_nm": 630.0,
+            "mean": 2.1469,
+            "std": 0.9456
+          },
+          {
+            "wavelength_nm": 640.0,
+            "mean": 1.0822,
+            "std": 0.2493
+          },
+          {
+            "wavelength_nm": 650.0,
+            "mean": 1.0,
+            "std": 0.0
+          },
+          {
+            "wavelength_nm": 660.0,
+            "mean": 1.0,
+            "std": 0.0
+          },
+          {
+            "wavelength_nm": 670.0,
+            "mean": 1.0,
+            "std": 0.0
+          },
+          {
+            "wavelength_nm": 680.0,
+            "mean": 1.0,
+            "std": 0.0
+          },
+          {
+            "wavelength_nm": 690.0,
+            "mean": 1.159,
+            "std": 0.3468
+          },
+          {
+            "wavelength_nm": 700.0,
+            "mean": 6.7777,
+            "std": 1.2407
+          },
+          {
+            "wavelength_nm": 710.0,
+            "mean": 14.8553,
+            "std": 1.1494
+          },
+          {
+            "wavelength_nm": 720.0,
+            "mean": 24.6707,
+            "std": 1.0301
+          },
+          {
+            "wavelength_nm": 730.0,
+            "mean": 33.9395,
+            "std": 1.1583
+          },
+          {
+            "wavelength_nm": 740.0,
+            "mean": 40.943,
+            "std": 1.0257
+          },
+          {
+            "wavelength_nm": 750.0,
+            "mean": 45.4215,
+            "std": 0.9961
+          },
+          {
+            "wavelength_nm": 760.0,
+            "mean": 48.1326,
+            "std": 1.1556
+          },
+          {
+            "wavelength_nm": 770.0,
+            "mean": 49.5148,
+            "std": 1.1382
+          },
+          {
+            "wavelength_nm": 780.0,
+            "mean": 50.0278,
+            "std": 1.1534
+          },
+          {
+            "wavelength_nm": 790.0,
+            "mean": 50.3772,
+            "std": 1.1688
+          },
+          {
+            "wavelength_nm": 800.0,
+            "mean": 50.4165,
+            "std": 1.1398
+          },
+          {
+            "wavelength_nm": 810.0,
+            "mean": 50.6537,
+            "std": 1.0918
+          },
+          {
+            "wavelength_nm": 820.0,
+            "mean": 50.6499,
+            "std": 1.069
+          },
+          {
+            "wavelength_nm": 830.0,
+            "mean": 50.7606,
+            "std": 1.0849
+          },
+          {
+            "wavelength_nm": 840.0,
+            "mean": 50.6556,
+            "std": 1.1936
+          },
+          {
+            "wavelength_nm": 850.0,
+            "mean": 50.7985,
+            "std": 1.0761
+          },
+          {
+            "wavelength_nm": 860.0,
+            "mean": 50.767,
+            "std": 1.025
+          },
+          {
+            "wavelength_nm": 870.0,
+            "mean": 50.5541,
+            "std": 1.0232
+          },
+          {
+            "wavelength_nm": 880.0,
+            "mean": 50.614,
+            "std": 1.0642
+          },
+          {
+            "wavelength_nm": 890.0,
+            "mean": 50.6225,
+            "std": 1.062
+          },
+          {
+            "wavelength_nm": 900.0,
+            "mean": 50.7577,
+            "std": 0.9947
+          },
+          {
+            "wavelength_nm": 910.0,
+            "mean": 50.4036,
+            "std": 1.176
+          },
+          {
+            "wavelength_nm": 920.0,
+            "mean": 50.3978,
+            "std": 0.9782
+          },
+          {
+            "wavelength_nm": 930.0,
+            "mean": 49.8396,
+            "std": 1.1104
+          },
+          {
+            "wavelength_nm": 940.0,
+            "mean": 49.3415,
+            "std": 1.1379
+          },
+          {
+            "wavelength_nm": 950.0,
+            "mean": 48.2222,
+            "std": 1.1155
+          },
+          {
+            "wavelength_nm": 960.0,
+            "mean": 47.3775,
+            "std": 0.9293
+          },
+          {
+            "wavelength_nm": 970.0,
+            "mean": 47.1464,
+            "std": 1.1559
+          },
+          {
+            "wavelength_nm": 980.0,
+            "mean": 47.4432,
+            "std": 1.1256
+          },
+          {
+            "wavelength_nm": 990.0,
+            "mean": 48.4098,
+            "std": 0.9164
+          },
+          {
+            "wavelength_nm": 1000.0,
+            "mean": 49.2631,
+            "std": 0.9323
+          }
+        ]
+      },
+      {
+        "label": "Moderate_Blight",
+        "n_samples": 30,
+        "points": [
+          {
+            "wavelength_nm": 400.0,
+            "mean": 3.8701,
+            "std": 1.4014
+          },
+          {
+            "wavelength_nm": 410.0,
+            "mean": 3.7203,
+            "std": 1.4779
+          },
+          {
+            "wavelength_nm": 420.0,
+            "mean": 3.6883,
+            "std": 1.3364
+          },
+          {
+            "wavelength_nm": 430.0,
+            "mean": 3.752,
+            "std": 1.0982
+          },
+          {
+            "wavelength_nm": 440.0,
+            "mean": 3.7151,
+            "std": 1.4197
+          },
+          {
+            "wavelength_nm": 450.0,
+            "mean": 3.8258,
+            "std": 1.3053
+          },
+          {
+            "wavelength_nm": 460.0,
+            "mean": 4.0145,
+            "std": 1.2721
+          },
+          {
+            "wavelength_nm": 470.0,
+            "mean": 4.6558,
+            "std": 1.4768
+          },
+          {
+            "wavelength_nm": 480.0,
+            "mean": 5.2572,
+            "std": 1.1531
+          },
+          {
+            "wavelength_nm": 490.0,
+            "mean": 6.4739,
+            "std": 1.3767
+          },
+          {
+            "wavelength_nm": 500.0,
+            "mean": 7.9459,
+            "std": 1.3248
+          },
+          {
+            "wavelength_nm": 510.0,
+            "mean": 9.9935,
+            "std": 1.2226
+          },
+          {
+            "wavelength_nm": 520.0,
+            "mean": 12.4762,
+            "std": 1.3549
+          },
+          {
+            "wavelength_nm": 530.0,
+            "mean": 14.7385,
+            "std": 1.3525
+          },
+          {
+            "wavelength_nm": 540.0,
+            "mean": 16.8697,
+            "std": 1.3342
+          },
+          {
+            "wavelength_nm": 550.0,
+            "mean": 17.6608,
+            "std": 1.2653
+          },
+          {
+            "wavelength_nm": 560.0,
+            "mean": 17.9522,
+            "std": 1.1845
+          },
+          {
+            "wavelength_nm": 570.0,
+            "mean": 16.3927,
+            "std": 1.2786
+          },
+          {
+            "wavelength_nm": 580.0,
+            "mean": 14.5145,
+            "std": 1.306
+          },
+          {
+            "wavelength_nm": 590.0,
+            "mean": 12.3485,
+            "std": 1.3845
+          },
+          {
+            "wavelength_nm": 600.0,
+            "mean": 10.5393,
+            "std": 1.4944
+          },
+          {
+            "wavelength_nm": 610.0,
+            "mean": 9.057,
+            "std": 1.3976
+          },
+          {
+            "wavelength_nm": 620.0,
+            "mean": 7.7532,
+            "std": 1.4346
+          },
+          {
+            "wavelength_nm": 630.0,
+            "mean": 6.4418,
+            "std": 1.4331
+          },
+          {
+            "wavelength_nm": 640.0,
+            "mean": 5.2163,
+            "std": 1.561
+          },
+          {
+            "wavelength_nm": 650.0,
+            "mean": 3.9225,
+            "std": 1.6229
+          },
+          {
+            "wavelength_nm": 660.0,
+            "mean": 3.3804,
+            "std": 1.5484
+          },
+          {
+            "wavelength_nm": 670.0,
+            "mean": 3.9517,
+            "std": 1.6064
+          },
+          {
+            "wavelength_nm": 680.0,
+            "mean": 6.1715,
+            "std": 1.9196
+          },
+          {
+            "wavelength_nm": 690.0,
+            "mean": 10.7275,
+            "std": 2.0659
+          },
+          {
+            "wavelength_nm": 700.0,
+            "mean": 17.1893,
+            "std": 1.9534
+          },
+          {
+            "wavelength_nm": 710.0,
+            "mean": 19.661,
+            "std": 1.3839
+          },
+          {
+            "wavelength_nm": 720.0,
+            "mean": 27.2286,
+            "std": 1.399
+          },
+          {
+            "wavelength_nm": 730.0,
+            "mean": 32.8696,
+            "std": 1.315
+          },
+          {
+            "wavelength_nm": 740.0,
+            "mean": 36.3654,
+            "std": 1.4145
+          },
+          {
+            "wavelength_nm": 750.0,
+            "mean": 38.5336,
+            "std": 1.7677
+          },
+          {
+            "wavelength_nm": 760.0,
+            "mean": 39.558,
+            "std": 1.6849
+          },
+          {
+            "wavelength_nm": 770.0,
+            "mean": 40.0951,
+            "std": 1.7628
+          },
+          {
+            "wavelength_nm": 780.0,
+            "mean": 40.2712,
+            "std": 1.6586
+          },
+          {
+            "wavelength_nm": 790.0,
+            "mean": 40.442,
+            "std": 1.7483
+          },
+          {
+            "wavelength_nm": 800.0,
+            "mean": 40.5449,
+            "std": 1.7103
+          },
+          {
+            "wavelength_nm": 810.0,
+            "mean": 40.6171,
+            "std": 1.8237
+          },
+          {
+            "wavelength_nm": 820.0,
+            "mean": 40.5538,
+            "std": 1.6801
+          },
+          {
+            "wavelength_nm": 830.0,
+            "mean": 40.6825,
+            "std": 1.7454
+          },
+          {
+            "wavelength_nm": 840.0,
+            "mean": 40.6148,
+            "std": 1.7508
+          },
+          {
+            "wavelength_nm": 850.0,
+            "mean": 40.6004,
+            "std": 1.6885
+          },
+          {
+            "wavelength_nm": 860.0,
+            "mean": 40.5448,
+            "std": 1.6621
+          },
+          {
+            "wavelength_nm": 870.0,
+            "mean": 40.5167,
+            "std": 1.6872
+          },
+          {
+            "wavelength_nm": 880.0,
+            "mean": 40.6748,
+            "std": 1.6332
+          },
+          {
+            "wavelength_nm": 890.0,
+            "mean": 40.3959,
+            "std": 1.77
+          },
+          {
+            "wavelength_nm": 900.0,
+            "mean": 40.6444,
+            "std": 1.6312
+          },
+          {
+            "wavelength_nm": 910.0,
+            "mean": 40.6556,
+            "std": 1.7439
+          },
+          {
+            "wavelength_nm": 920.0,
+            "mean": 40.509,
+            "std": 1.822
+          },
+          {
+            "wavelength_nm": 930.0,
+            "mean": 40.0689,
+            "std": 1.676
+          },
+          {
+            "wavelength_nm": 940.0,
+            "mean": 39.5992,
+            "std": 1.6347
+          },
+          {
+            "wavelength_nm": 950.0,
+            "mean": 38.8896,
+            "std": 1.6579
+          },
+          {
+            "wavelength_nm": 960.0,
+            "mean": 38.4389,
+            "std": 1.6419
+          },
+          {
+            "wavelength_nm": 970.0,
+            "mean": 38.0812,
+            "std": 1.6981
+          },
+          {
+            "wavelength_nm": 980.0,
+            "mean": 38.2068,
+            "std": 1.6937
+          },
+          {
+            "wavelength_nm": 990.0,
+            "mean": 38.9319,
+            "std": 1.6563
+          },
+          {
+            "wavelength_nm": 1000.0,
+            "mean": 39.5386,
+            "std": 1.5835
+          }
+        ]
+      },
+      {
+        "label": "Severe_Necrosis",
+        "n_samples": 42,
+        "points": [
+          {
+            "wavelength_nm": 400.0,
+            "mean": 3.9109,
+            "std": 1.15
+          },
+          {
+            "wavelength_nm": 410.0,
+            "mean": 3.9668,
+            "std": 1.0722
+          },
+          {
+            "wavelength_nm": 420.0,
+            "mean": 4.0849,
+            "std": 1.2074
+          },
+          {
+            "wavelength_nm": 430.0,
+            "mean": 3.8919,
+            "std": 1.1585
+          },
+          {
+            "wavelength_nm": 440.0,
+            "mean": 4.021,
+            "std": 1.0921
+          },
+          {
+            "wavelength_nm": 450.0,
+            "mean": 4.1665,
+            "std": 1.2648
+          },
+          {
+            "wavelength_nm": 460.0,
+            "mean": 4.6766,
+            "std": 1.1182
+          },
+          {
+            "wavelength_nm": 470.0,
+            "mean": 5.0169,
+            "std": 1.209
+          },
+          {
+            "wavelength_nm": 480.0,
+            "mean": 5.8548,
+            "std": 1.1776
+          },
+          {
+            "wavelength_nm": 490.0,
+            "mean": 7.0393,
+            "std": 1.1277
+          },
+          {
+            "wavelength_nm": 500.0,
+            "mean": 8.5931,
+            "std": 1.0265
+          },
+          {
+            "wavelength_nm": 510.0,
+            "mean": 10.4992,
+            "std": 1.103
+          },
+          {
+            "wavelength_nm": 520.0,
+            "mean": 12.8388,
+            "std": 1.0485
+          },
+          {
+            "wavelength_nm": 530.0,
+            "mean": 15.2311,
+            "std": 1.171
+          },
+          {
+            "wavelength_nm": 540.0,
+            "mean": 17.2025,
+            "std": 1.1066
+          },
+          {
+            "wavelength_nm": 550.0,
+            "mean": 18.1315,
+            "std": 1.1213
+          },
+          {
+            "wavelength_nm": 560.0,
+            "mean": 18.0701,
+            "std": 1.0662
+          },
+          {
+            "wavelength_nm": 570.0,
+            "mean": 17.2312,
+            "std": 1.1857
+          },
+          {
+            "wavelength_nm": 580.0,
+            "mean": 15.4394,
+            "std": 1.0962
+          },
+          {
+            "wavelength_nm": 590.0,
+            "mean": 13.7292,
+            "std": 0.9914
+          },
+          {
+            "wavelength_nm": 600.0,
+            "mean": 12.1867,
+            "std": 1.0264
+          },
+          {
+            "wavelength_nm": 610.0,
+            "mean": 10.8127,
+            "std": 1.1795
+          },
+          {
+            "wavelength_nm": 620.0,
+            "mean": 9.7398,
+            "std": 1.1914
+          },
+          {
+            "wavelength_nm": 630.0,
+            "mean": 8.8936,
+            "std": 1.1749
+          },
+          {
+            "wavelength_nm": 640.0,
+            "mean": 8.354,
+            "std": 1.2945
+          },
+          {
+            "wavelength_nm": 650.0,
+            "mean": 7.7788,
+            "std": 1.1656
+          },
+          {
+            "wavelength_nm": 660.0,
+            "mean": 7.7171,
+            "std": 1.2663
+          },
+          {
+            "wavelength_nm": 670.0,
+            "mean": 8.9128,
+            "std": 1.4335
+          },
+          {
+            "wavelength_nm": 680.0,
+            "mean": 11.4701,
+            "std": 1.4163
+          },
+          {
+            "wavelength_nm": 690.0,
+            "mean": 15.8437,
+            "std": 1.4529
+          },
+          {
+            "wavelength_nm": 700.0,
+            "mean": 22.2681,
+            "std": 1.3878
+          },
+          {
+            "wavelength_nm": 710.0,
+            "mean": 21.4525,
+            "std": 1.141
+          },
+          {
+            "wavelength_nm": 720.0,
+            "mean": 27.1788,
+            "std": 1.0872
+          },
+          {
+            "wavelength_nm": 730.0,
+            "mean": 31.3226,
+            "std": 0.9979
+          },
+          {
+            "wavelength_nm": 740.0,
+            "mean": 33.9805,
+            "std": 1.2034
+          },
+          {
+            "wavelength_nm": 750.0,
+            "mean": 34.8315,
+            "std": 1.2626
+          },
+          {
+            "wavelength_nm": 760.0,
+            "mean": 35.668,
+            "std": 1.185
+          },
+          {
+            "wavelength_nm": 770.0,
+            "mean": 36.0963,
+            "std": 1.2713
+          },
+          {
+            "wavelength_nm": 780.0,
+            "mean": 36.1993,
+            "std": 1.1723
+          },
+          {
+            "wavelength_nm": 790.0,
+            "mean": 36.2114,
+            "std": 1.33
+          },
+          {
+            "wavelength_nm": 800.0,
+            "mean": 36.2906,
+            "std": 1.1037
+          },
+          {
+            "wavelength_nm": 810.0,
+            "mean": 36.4278,
+            "std": 1.1647
+          },
+          {
+            "wavelength_nm": 820.0,
+            "mean": 36.354,
+            "std": 1.2784
+          },
+          {
+            "wavelength_nm": 830.0,
+            "mean": 36.3767,
+            "std": 1.2758
+          },
+          {
+            "wavelength_nm": 840.0,
+            "mean": 36.3466,
+            "std": 1.1943
+          },
+          {
+            "wavelength_nm": 850.0,
+            "mean": 36.4192,
+            "std": 1.3275
+          },
+          {
+            "wavelength_nm": 860.0,
+            "mean": 36.1971,
+            "std": 1.3168
+          },
+          {
+            "wavelength_nm": 870.0,
+            "mean": 36.2691,
+            "std": 1.2859
+          },
+          {
+            "wavelength_nm": 880.0,
+            "mean": 36.4887,
+            "std": 1.3135
+          },
+          {
+            "wavelength_nm": 890.0,
+            "mean": 36.46,
+            "std": 1.2439
+          },
+          {
+            "wavelength_nm": 900.0,
+            "mean": 36.422,
+            "std": 1.3099
+          },
+          {
+            "wavelength_nm": 910.0,
+            "mean": 36.2649,
+            "std": 1.2523
+          },
+          {
+            "wavelength_nm": 920.0,
+            "mean": 36.0922,
+            "std": 1.2649
+          },
+          {
+            "wavelength_nm": 930.0,
+            "mean": 35.8257,
+            "std": 1.2635
+          },
+          {
+            "wavelength_nm": 940.0,
+            "mean": 35.44,
+            "std": 1.2447
+          },
+          {
+            "wavelength_nm": 950.0,
+            "mean": 34.854,
+            "std": 1.3206
+          },
+          {
+            "wavelength_nm": 960.0,
+            "mean": 34.3486,
+            "std": 1.2598
+          },
+          {
+            "wavelength_nm": 970.0,
+            "mean": 34.1358,
+            "std": 1.3573
+          },
+          {
+            "wavelength_nm": 980.0,
+            "mean": 34.3939,
+            "std": 1.2019
+          },
+          {
+            "wavelength_nm": 990.0,
+            "mean": 34.9142,
+            "std": 1.3754
+          },
+          {
+            "wavelength_nm": 1000.0,
+            "mean": 35.4985,
+            "std": 1.1765
+          }
+        ]
+      }
+    ],
+    "comparison_pair": {
+      "healthy": "Healthy",
+      "stressed": "Severe_Necrosis"
+    },
+    "band_diagnostics": [
+      {
+        "band": "band_400nm",
+        "wavelength_nm": 400.0,
+        "region": "VIS",
+        "healthy_mean": 4.0692,
+        "stressed_mean": 3.9109,
+        "diff_stressed_minus_healthy": -0.1584,
+        "fisher_ratio": 0.0094,
+        "cohens_d": -0.137,
+        "cross_sample_cv": 0.3126,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "band_410nm",
+        "wavelength_nm": 410.0,
+        "region": "VIS",
+        "healthy_mean": 3.7927,
+        "stressed_mean": 3.9668,
+        "diff_stressed_minus_healthy": 0.1741,
+        "fisher_ratio": 0.0134,
+        "cohens_d": 0.1634,
+        "cross_sample_cv": 0.316,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "band_420nm",
+        "wavelength_nm": 420.0,
+        "region": "VIS",
+        "healthy_mean": 3.8561,
+        "stressed_mean": 4.0849,
+        "diff_stressed_minus_healthy": 0.2288,
+        "fisher_ratio": 0.0202,
+        "cohens_d": 0.2012,
+        "cross_sample_cv": 0.3131,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_430nm",
+        "wavelength_nm": 430.0,
+        "region": "VIS",
+        "healthy_mean": 3.7158,
+        "stressed_mean": 3.8919,
+        "diff_stressed_minus_healthy": 0.1761,
+        "fisher_ratio": 0.0105,
+        "cohens_d": 0.1447,
+        "cross_sample_cv": 0.3164,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_440nm",
+        "wavelength_nm": 440.0,
+        "region": "VIS",
+        "healthy_mean": 3.8677,
+        "stressed_mean": 4.021,
+        "diff_stressed_minus_healthy": 0.1533,
+        "fisher_ratio": 0.0102,
+        "cohens_d": 0.1428,
+        "cross_sample_cv": 0.3159,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_450nm",
+        "wavelength_nm": 450.0,
+        "region": "VIS",
+        "healthy_mean": 3.9645,
+        "stressed_mean": 4.1665,
+        "diff_stressed_minus_healthy": 0.202,
+        "fisher_ratio": 0.0142,
+        "cohens_d": 0.1686,
+        "cross_sample_cv": 0.3099,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_460nm",
+        "wavelength_nm": 460.0,
+        "region": "VIS",
+        "healthy_mean": 4.2249,
+        "stressed_mean": 4.6766,
+        "diff_stressed_minus_healthy": 0.4517,
+        "fisher_ratio": 0.0883,
+        "cohens_d": 0.4201,
+        "cross_sample_cv": 0.2655,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_470nm",
+        "wavelength_nm": 470.0,
+        "region": "VIS",
+        "healthy_mean": 4.4001,
+        "stressed_mean": 5.0169,
+        "diff_stressed_minus_healthy": 0.6167,
+        "fisher_ratio": 0.1321,
+        "cohens_d": 0.5141,
+        "cross_sample_cv": 0.27,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_480nm",
+        "wavelength_nm": 480.0,
+        "region": "VIS",
+        "healthy_mean": 5.0728,
+        "stressed_mean": 5.8548,
+        "diff_stressed_minus_healthy": 0.782,
+        "fisher_ratio": 0.2307,
+        "cohens_d": 0.6792,
+        "cross_sample_cv": 0.2274,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_490nm",
+        "wavelength_nm": 490.0,
+        "region": "VIS",
+        "healthy_mean": 6.0612,
+        "stressed_mean": 7.0393,
+        "diff_stressed_minus_healthy": 0.9781,
+        "fisher_ratio": 0.3981,
+        "cohens_d": 0.8924,
+        "cross_sample_cv": 0.1968,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_500nm",
+        "wavelength_nm": 500.0,
+        "region": "VIS",
+        "healthy_mean": 7.5953,
+        "stressed_mean": 8.5931,
+        "diff_stressed_minus_healthy": 0.9979,
+        "fisher_ratio": 0.4233,
+        "cohens_d": 0.9201,
+        "cross_sample_cv": 0.1538,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_510nm",
+        "wavelength_nm": 510.0,
+        "region": "VIS",
+        "healthy_mean": 9.9461,
+        "stressed_mean": 10.4992,
+        "diff_stressed_minus_healthy": 0.5531,
+        "fisher_ratio": 0.1244,
+        "cohens_d": 0.4987,
+        "cross_sample_cv": 0.1141,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_520nm",
+        "wavelength_nm": 520.0,
+        "region": "VIS",
+        "healthy_mean": 12.3123,
+        "stressed_mean": 12.8388,
+        "diff_stressed_minus_healthy": 0.5265,
+        "fisher_ratio": 0.1203,
+        "cohens_d": 0.4905,
+        "cross_sample_cv": 0.095,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_530nm",
+        "wavelength_nm": 530.0,
+        "region": "VIS",
+        "healthy_mean": 14.9648,
+        "stressed_mean": 15.2311,
+        "diff_stressed_minus_healthy": 0.2663,
+        "fisher_ratio": 0.0267,
+        "cohens_d": 0.2311,
+        "cross_sample_cv": 0.084,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_540nm",
+        "wavelength_nm": 540.0,
+        "region": "VIS",
+        "healthy_mean": 16.9514,
+        "stressed_mean": 17.2025,
+        "diff_stressed_minus_healthy": 0.2511,
+        "fisher_ratio": 0.0237,
+        "cohens_d": 0.2178,
+        "cross_sample_cv": 0.0745,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_550nm",
+        "wavelength_nm": 550.0,
+        "region": "VIS",
+        "healthy_mean": 17.902,
+        "stressed_mean": 18.1315,
+        "diff_stressed_minus_healthy": 0.2295,
+        "fisher_ratio": 0.0198,
+        "cohens_d": 0.1992,
+        "cross_sample_cv": 0.0683,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_560nm",
+        "wavelength_nm": 560.0,
+        "region": "VIS",
+        "healthy_mean": 17.5803,
+        "stressed_mean": 18.0701,
+        "diff_stressed_minus_healthy": 0.4898,
+        "fisher_ratio": 0.0885,
+        "cohens_d": 0.4208,
+        "cross_sample_cv": 0.0673,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_570nm",
+        "wavelength_nm": 570.0,
+        "region": "VIS",
+        "healthy_mean": 15.89,
+        "stressed_mean": 17.2312,
+        "diff_stressed_minus_healthy": 1.3412,
+        "fisher_ratio": 0.6838,
+        "cohens_d": 1.1695,
+        "cross_sample_cv": 0.0809,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_580nm",
+        "wavelength_nm": 580.0,
+        "region": "VIS",
+        "healthy_mean": 13.6462,
+        "stressed_mean": 15.4394,
+        "diff_stressed_minus_healthy": 1.7932,
+        "fisher_ratio": 1.1136,
+        "cohens_d": 1.4924,
+        "cross_sample_cv": 0.0986,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_590nm",
+        "wavelength_nm": 590.0,
+        "region": "VIS",
+        "healthy_mean": 10.9736,
+        "stressed_mean": 13.7292,
+        "diff_stressed_minus_healthy": 2.7556,
+        "fisher_ratio": 3.0763,
+        "cohens_d": 2.4805,
+        "cross_sample_cv": 0.1315,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_600nm",
+        "wavelength_nm": 600.0,
+        "region": "VIS",
+        "healthy_mean": 8.3397,
+        "stressed_mean": 12.1867,
+        "diff_stressed_minus_healthy": 3.847,
+        "fisher_ratio": 6.5711,
+        "cohens_d": 3.6252,
+        "cross_sample_cv": 0.1883,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_610nm",
+        "wavelength_nm": 610.0,
+        "region": "VIS",
+        "healthy_mean": 6.2424,
+        "stressed_mean": 10.8127,
+        "diff_stressed_minus_healthy": 4.5703,
+        "fisher_ratio": 7.825,
+        "cohens_d": 3.956,
+        "cross_sample_cv": 0.2497,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_620nm",
+        "wavelength_nm": 620.0,
+        "region": "VIS",
+        "healthy_mean": 4.2035,
+        "stressed_mean": 9.7398,
+        "diff_stressed_minus_healthy": 5.5363,
+        "fisher_ratio": 12.2604,
+        "cohens_d": 4.9518,
+        "cross_sample_cv": 0.3495,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_630nm",
+        "wavelength_nm": 630.0,
+        "region": "VIS",
+        "healthy_mean": 2.1469,
+        "stressed_mean": 8.8936,
+        "diff_stressed_minus_healthy": 6.7467,
+        "fisher_ratio": 20.0121,
+        "cohens_d": 6.3265,
+        "cross_sample_cv": 0.5013,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_640nm",
+        "wavelength_nm": 640.0,
+        "region": "VIS",
+        "healthy_mean": 1.0822,
+        "stressed_mean": 8.354,
+        "diff_stressed_minus_healthy": 7.2718,
+        "fisher_ratio": 30.4292,
+        "cohens_d": 7.8012,
+        "cross_sample_cv": 0.669,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_650nm",
+        "wavelength_nm": 650.0,
+        "region": "VIS",
+        "healthy_mean": 1.0,
+        "stressed_mean": 7.7788,
+        "diff_stressed_minus_healthy": 6.7788,
+        "fisher_ratio": 33.8233,
+        "cohens_d": 8.2248,
+        "cross_sample_cv": 0.7495,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_660nm",
+        "wavelength_nm": 660.0,
+        "region": "VIS",
+        "healthy_mean": 1.0,
+        "stressed_mean": 7.7171,
+        "diff_stressed_minus_healthy": 6.7171,
+        "fisher_ratio": 28.1391,
+        "cohens_d": 7.5019,
+        "cross_sample_cv": 0.788,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_670nm",
+        "wavelength_nm": 670.0,
+        "region": "VIS",
+        "healthy_mean": 1.0,
+        "stressed_mean": 8.9128,
+        "diff_stressed_minus_healthy": 7.9128,
+        "fisher_ratio": 30.4716,
+        "cohens_d": 7.8066,
+        "cross_sample_cv": 0.7998,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_680nm",
+        "wavelength_nm": 680.0,
+        "region": "VIS",
+        "healthy_mean": 1.0,
+        "stressed_mean": 11.4701,
+        "diff_stressed_minus_healthy": 10.4701,
+        "fisher_ratio": 54.6533,
+        "cohens_d": 10.455,
+        "cross_sample_cv": 0.7724,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_690nm",
+        "wavelength_nm": 690.0,
+        "region": "Red Edge",
+        "healthy_mean": 1.159,
+        "stressed_mean": 15.8437,
+        "diff_stressed_minus_healthy": 14.6847,
+        "fisher_ratio": 96.6485,
+        "cohens_d": 13.9031,
+        "cross_sample_cv": 0.6673,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_700nm",
+        "wavelength_nm": 700.0,
+        "region": "Red Edge",
+        "healthy_mean": 6.7777,
+        "stressed_mean": 22.2681,
+        "diff_stressed_minus_healthy": 15.4905,
+        "fisher_ratio": 69.2414,
+        "cohens_d": 11.7679,
+        "cross_sample_cv": 0.4138,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_710nm",
+        "wavelength_nm": 710.0,
+        "region": "Red Edge",
+        "healthy_mean": 14.8553,
+        "stressed_mean": 21.4525,
+        "diff_stressed_minus_healthy": 6.5972,
+        "fisher_ratio": 16.5933,
+        "cohens_d": 5.7608,
+        "cross_sample_cv": 0.1537,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_720nm",
+        "wavelength_nm": 720.0,
+        "region": "Red Edge",
+        "healthy_mean": 24.6707,
+        "stressed_mean": 27.1788,
+        "diff_stressed_minus_healthy": 2.5081,
+        "fisher_ratio": 2.8043,
+        "cohens_d": 2.3682,
+        "cross_sample_cv": 0.0621,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_730nm",
+        "wavelength_nm": 730.0,
+        "region": "Red Edge",
+        "healthy_mean": 33.9395,
+        "stressed_mean": 31.3226,
+        "diff_stressed_minus_healthy": -2.6169,
+        "fisher_ratio": 2.9296,
+        "cohens_d": -2.4206,
+        "cross_sample_cv": 0.0521,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_740nm",
+        "wavelength_nm": 740.0,
+        "region": "Red Edge",
+        "healthy_mean": 40.943,
+        "stressed_mean": 33.9805,
+        "diff_stressed_minus_healthy": -6.9625,
+        "fisher_ratio": 19.3892,
+        "cohens_d": -6.2272,
+        "cross_sample_cv": 0.0859,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_750nm",
+        "wavelength_nm": 750.0,
+        "region": "Red Edge",
+        "healthy_mean": 45.4215,
+        "stressed_mean": 34.8315,
+        "diff_stressed_minus_healthy": -10.59,
+        "fisher_ratio": 43.3638,
+        "cohens_d": -9.3128,
+        "cross_sample_cv": 0.1151,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_760nm",
+        "wavelength_nm": 760.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 48.1326,
+        "stressed_mean": 35.668,
+        "diff_stressed_minus_healthy": -12.4645,
+        "fisher_ratio": 56.7104,
+        "cohens_d": -10.6499,
+        "cross_sample_cv": 0.1279,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_770nm",
+        "wavelength_nm": 770.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 49.5148,
+        "stressed_mean": 36.0963,
+        "diff_stressed_minus_healthy": -13.4185,
+        "fisher_ratio": 61.8414,
+        "cohens_d": -11.1213,
+        "cross_sample_cv": 0.1344,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_780nm",
+        "wavelength_nm": 780.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.0278,
+        "stressed_mean": 36.1993,
+        "diff_stressed_minus_healthy": -13.8285,
+        "fisher_ratio": 70.7019,
+        "cohens_d": -11.8913,
+        "cross_sample_cv": 0.1377,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_790nm",
+        "wavelength_nm": 790.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.3772,
+        "stressed_mean": 36.2114,
+        "diff_stressed_minus_healthy": -14.1658,
+        "fisher_ratio": 64.0113,
+        "cohens_d": -11.3147,
+        "cross_sample_cv": 0.1403,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_800nm",
+        "wavelength_nm": 800.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.4165,
+        "stressed_mean": 36.2906,
+        "diff_stressed_minus_healthy": -14.1259,
+        "fisher_ratio": 79.2644,
+        "cohens_d": -12.5908,
+        "cross_sample_cv": 0.1394,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_810nm",
+        "wavelength_nm": 810.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.6537,
+        "stressed_mean": 36.4278,
+        "diff_stressed_minus_healthy": -14.2259,
+        "fisher_ratio": 79.4078,
+        "cohens_d": -12.6022,
+        "cross_sample_cv": 0.1396,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_820nm",
+        "wavelength_nm": 820.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.6499,
+        "stressed_mean": 36.354,
+        "diff_stressed_minus_healthy": -14.2959,
+        "fisher_ratio": 73.5878,
+        "cohens_d": -12.1316,
+        "cross_sample_cv": 0.1403,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_830nm",
+        "wavelength_nm": 830.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.7606,
+        "stressed_mean": 36.3767,
+        "diff_stressed_minus_healthy": -14.384,
+        "fisher_ratio": 73.7678,
+        "cohens_d": -12.1464,
+        "cross_sample_cv": 0.1415,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_840nm",
+        "wavelength_nm": 840.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.6556,
+        "stressed_mean": 36.3466,
+        "diff_stressed_minus_healthy": -14.309,
+        "fisher_ratio": 71.8153,
+        "cohens_d": -11.9846,
+        "cross_sample_cv": 0.1413,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_850nm",
+        "wavelength_nm": 850.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.7985,
+        "stressed_mean": 36.4192,
+        "diff_stressed_minus_healthy": -14.3793,
+        "fisher_ratio": 70.7997,
+        "cohens_d": -11.8996,
+        "cross_sample_cv": 0.1415,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_860nm",
+        "wavelength_nm": 860.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.767,
+        "stressed_mean": 36.1971,
+        "diff_stressed_minus_healthy": -14.5698,
+        "fisher_ratio": 76.2344,
+        "cohens_d": -12.3478,
+        "cross_sample_cv": 0.1439,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_870nm",
+        "wavelength_nm": 870.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.5541,
+        "stressed_mean": 36.2691,
+        "diff_stressed_minus_healthy": -14.285,
+        "fisher_ratio": 75.5638,
+        "cohens_d": -12.2934,
+        "cross_sample_cv": 0.1414,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_880nm",
+        "wavelength_nm": 880.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.614,
+        "stressed_mean": 36.4887,
+        "diff_stressed_minus_healthy": -14.1254,
+        "fisher_ratio": 69.8173,
+        "cohens_d": -11.8167,
+        "cross_sample_cv": 0.1389,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_890nm",
+        "wavelength_nm": 890.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.6225,
+        "stressed_mean": 36.46,
+        "diff_stressed_minus_healthy": -14.1624,
+        "fisher_ratio": 74.9817,
+        "cohens_d": -12.246,
+        "cross_sample_cv": 0.1401,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_900nm",
+        "wavelength_nm": 900.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.7577,
+        "stressed_mean": 36.422,
+        "diff_stressed_minus_healthy": -14.3357,
+        "fisher_ratio": 75.9681,
+        "cohens_d": -12.3262,
+        "cross_sample_cv": 0.1404,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_910nm",
+        "wavelength_nm": 910.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.4036,
+        "stressed_mean": 36.2649,
+        "diff_stressed_minus_healthy": -14.1387,
+        "fisher_ratio": 67.7338,
+        "cohens_d": -11.6391,
+        "cross_sample_cv": 0.14,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_920nm",
+        "wavelength_nm": 920.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.3978,
+        "stressed_mean": 36.0922,
+        "diff_stressed_minus_healthy": -14.3056,
+        "fisher_ratio": 80.0354,
+        "cohens_d": -12.6519,
+        "cross_sample_cv": 0.1412,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_930nm",
+        "wavelength_nm": 930.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 49.8396,
+        "stressed_mean": 35.8257,
+        "diff_stressed_minus_healthy": -14.0139,
+        "fisher_ratio": 69.4116,
+        "cohens_d": -11.7823,
+        "cross_sample_cv": 0.1403,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_940nm",
+        "wavelength_nm": 940.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 49.3415,
+        "stressed_mean": 35.44,
+        "diff_stressed_minus_healthy": -13.9015,
+        "fisher_ratio": 67.9464,
+        "cohens_d": -11.6573,
+        "cross_sample_cv": 0.1402,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_950nm",
+        "wavelength_nm": 950.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 48.2222,
+        "stressed_mean": 34.854,
+        "diff_stressed_minus_healthy": -13.3682,
+        "fisher_ratio": 59.8026,
+        "cohens_d": -10.9364,
+        "cross_sample_cv": 0.139,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_960nm",
+        "wavelength_nm": 960.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 47.3775,
+        "stressed_mean": 34.3486,
+        "diff_stressed_minus_healthy": -13.0288,
+        "fisher_ratio": 69.2621,
+        "cohens_d": -11.7696,
+        "cross_sample_cv": 0.137,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_970nm",
+        "wavelength_nm": 970.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 47.1464,
+        "stressed_mean": 34.1358,
+        "diff_stressed_minus_healthy": -13.0105,
+        "fisher_ratio": 53.2573,
+        "cohens_d": -10.3206,
+        "cross_sample_cv": 0.138,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "band_980nm",
+        "wavelength_nm": 980.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 47.4432,
+        "stressed_mean": 34.3939,
+        "diff_stressed_minus_healthy": -13.0493,
+        "fisher_ratio": 62.8013,
+        "cohens_d": -11.2073,
+        "cross_sample_cv": 0.1372,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "band_990nm",
+        "wavelength_nm": 990.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 48.4098,
+        "stressed_mean": 34.9142,
+        "diff_stressed_minus_healthy": -13.4956,
+        "fisher_ratio": 66.6744,
+        "cohens_d": -11.5477,
+        "cross_sample_cv": 0.1394,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "band_1000nm",
+        "wavelength_nm": 1000.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 49.2631,
+        "stressed_mean": 35.4985,
+        "diff_stressed_minus_healthy": -13.7646,
+        "fisher_ratio": 84.0872,
+        "cohens_d": -12.9682,
+        "cross_sample_cv": 0.1388,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      }
+    ],
+    "top_discriminative_bands": [
+      {
+        "band": "band_690nm",
+        "wavelength_nm": 690.0,
+        "region": "Red Edge",
+        "healthy_mean": 1.159,
+        "stressed_mean": 15.8437,
+        "diff_stressed_minus_healthy": 14.6847,
+        "fisher_ratio": 96.6485,
+        "cohens_d": 13.9031,
+        "cross_sample_cv": 0.6673,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_1000nm",
+        "wavelength_nm": 1000.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 49.2631,
+        "stressed_mean": 35.4985,
+        "diff_stressed_minus_healthy": -13.7646,
+        "fisher_ratio": 84.0872,
+        "cohens_d": -12.9682,
+        "cross_sample_cv": 0.1388,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": true
+      },
+      {
+        "band": "band_920nm",
+        "wavelength_nm": 920.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.3978,
+        "stressed_mean": 36.0922,
+        "diff_stressed_minus_healthy": -14.3056,
+        "fisher_ratio": 80.0354,
+        "cohens_d": -12.6519,
+        "cross_sample_cv": 0.1412,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_810nm",
+        "wavelength_nm": 810.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.6537,
+        "stressed_mean": 36.4278,
+        "diff_stressed_minus_healthy": -14.2259,
+        "fisher_ratio": 79.4078,
+        "cohens_d": -12.6022,
+        "cross_sample_cv": 0.1396,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      },
+      {
+        "band": "band_800nm",
+        "wavelength_nm": 800.0,
+        "region": "NIR Plateau",
+        "healthy_mean": 50.4165,
+        "stressed_mean": 36.2906,
+        "diff_stressed_minus_healthy": -14.1259,
+        "fisher_ratio": 79.2644,
+        "cohens_d": -12.5908,
+        "cross_sample_cv": 0.1394,
+        "intra_noise_ratio": null,
+        "zero_or_neg_count": 0,
+        "saturated_count": 0,
+        "drop_candidate": false
+      }
+    ],
+    "bands_to_drop_day3": [
+      {
+        "band": "band_400nm",
+        "wavelength_nm": 400.0,
+        "region": "VIS",
+        "fisher_ratio": 0.0094,
+        "intra_noise_ratio": null,
+        "reason": "Blue/UV spectrum edge (400 nm): low chlorophyll signal-to-noise."
+      },
+      {
+        "band": "band_410nm",
+        "wavelength_nm": 410.0,
+        "region": "VIS",
+        "fisher_ratio": 0.0134,
+        "intra_noise_ratio": null,
+        "reason": "Blue/UV spectrum edge (410 nm): low chlorophyll signal-to-noise."
+      },
+      {
+        "band": "band_970nm",
+        "wavelength_nm": 970.0,
+        "region": "NIR Plateau",
+        "fisher_ratio": 53.2573,
+        "intra_noise_ratio": null,
+        "reason": "Water-absorption edge (970 nm): edge band candidate for removal."
+      },
+      {
+        "band": "band_980nm",
+        "wavelength_nm": 980.0,
+        "region": "NIR Plateau",
+        "fisher_ratio": 62.8013,
+        "intra_noise_ratio": null,
+        "reason": "Water-absorption edge (980 nm): edge band candidate for removal."
+      },
+      {
+        "band": "band_990nm",
+        "wavelength_nm": 990.0,
+        "region": "NIR Plateau",
+        "fisher_ratio": 66.6744,
+        "intra_noise_ratio": null,
+        "reason": "Water-absorption edge (990 nm): edge band candidate for removal."
+      },
+      {
+        "band": "band_1000nm",
+        "wavelength_nm": 1000.0,
+        "region": "NIR Plateau",
+        "fisher_ratio": 84.0872,
+        "intra_noise_ratio": null,
+        "reason": "Water-absorption edge (1000 nm): edge band candidate for removal."
+      }
+    ],
+    "red_edge_slope_pct_per_nm": {
+      "Early_Chlorosis": 0.4445,
+      "Healthy": 0.5406,
+      "Moderate_Blight": 0.2885,
+      "Severe_Necrosis": 0.1741
+    },
+    "outliers": {
+      "method": "Per-class median L2 distance (MAD robust Z > 3.0)",
+      "median_l2_distance": 7.601,
+      "mad_l2_distance": 2.806,
+      "outlier_count": 3,
+      "outlier_percent": 2.5,
+      "top_outliers": [
+        {
+          "sample_id": "SYN_0055",
+          "plant_id": "PLANT_1_3_03",
+          "date": "2026-11-14",
+          "label": "Severe_Necrosis",
+          "l2_distance": 22.295,
+          "robust_z": 3.532
+        },
+        {
+          "sample_id": "SYN_0108",
+          "plant_id": "PLANT_2_3_02",
+          "date": "2026-11-08",
+          "label": "Early_Chlorosis",
+          "l2_distance": 21.69,
+          "robust_z": 3.387
+        },
+        {
+          "sample_id": "SYN_0078",
+          "plant_id": "PLANT_2_1_04",
+          "date": "2026-11-08",
+          "label": "Early_Chlorosis",
+          "l2_distance": 20.675,
+          "robust_z": 3.143
+        }
+      ],
+      "z_scores_histogram": [
+        0,
+        2,
+        27,
+        31,
+        15,
+        17,
+        11,
+        4,
+        6,
+        4,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "z_hist_edges": [
+        -2.0,
+        -1.5,
+        -1.0,
+        -0.5,
+        0.0,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        3.5,
+        4.0,
+        4.5,
+        5.0,
+        5.5,
+        6.0
+      ]
+    },
+    "temporal": {
+      "date_count": 5,
+      "first_date": "2026-11-02",
+      "last_date": "2026-11-14",
+      "series": [
+        {
+          "date": "2026-11-02",
+          "classes": {
+            "Early_Chlorosis": {
+              "n": 6,
+              "ndvi_mean": 0.9592,
+              "ndre_mean": 0.641,
+              "r700_mean": 10.517,
+              "r780_mean": 48.008
+            },
+            "Healthy": {
+              "n": 6,
+              "ndvi_mean": 0.9607,
+              "ndre_mean": 0.7871,
+              "r700_mean": 5.994,
+              "r780_mean": 49.98
+            },
+            "Moderate_Blight": {
+              "n": 6,
+              "ndvi_mean": 0.8898,
+              "ndre_mean": 0.4684,
+              "r700_mean": 14.993,
+              "r780_mean": 41.33
+            },
+            "Severe_Necrosis": {
+              "n": 6,
+              "ndvi_mean": 0.6635,
+              "ndre_mean": 0.2747,
+              "r700_mean": 21.173,
+              "r780_mean": 37.188
+            }
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "classes": {
+            "Early_Chlorosis": {
+              "n": 6,
+              "ndvi_mean": 0.9573,
+              "ndre_mean": 0.628,
+              "r700_mean": 10.498,
+              "r780_mean": 45.836
+            },
+            "Healthy": {
+              "n": 6,
+              "ndvi_mean": 0.961,
+              "ndre_mean": 0.7728,
+              "r700_mean": 6.525,
+              "r780_mean": 50.326
+            },
+            "Moderate_Blight": {
+              "n": 6,
+              "ndvi_mean": 0.873,
+              "ndre_mean": 0.4471,
+              "r700_mean": 15.605,
+              "r780_mean": 40.79
+            },
+            "Severe_Necrosis": {
+              "n": 6,
+              "ndvi_mean": 0.6305,
+              "ndre_mean": 0.2567,
+              "r700_mean": 21.649,
+              "r780_mean": 36.592
+            }
+          }
+        },
+        {
+          "date": "2026-11-08",
+          "classes": {
+            "Early_Chlorosis": {
+              "n": 6,
+              "ndvi_mean": 0.9472,
+              "ndre_mean": 0.576,
+              "r700_mean": 12.585,
+              "r780_mean": 46.433
+            },
+            "Healthy": {
+              "n": 6,
+              "ndvi_mean": 0.9608,
+              "ndre_mean": 0.7586,
+              "r700_mean": 6.893,
+              "r780_mean": 50.014
+            },
+            "Moderate_Blight": {
+              "n": 6,
+              "ndvi_mean": 0.81,
+              "ndre_mean": 0.3908,
+              "r700_mean": 17.91,
+              "r780_mean": 40.882
+            },
+            "Severe_Necrosis": {
+              "n": 6,
+              "ndvi_mean": 0.6165,
+              "ndre_mean": 0.2537,
+              "r700_mean": 21.826,
+              "r780_mean": 36.658
+            }
+          }
+        },
+        {
+          "date": "2026-11-11",
+          "classes": {
+            "Healthy": {
+              "n": 6,
+              "ndvi_mean": 0.9609,
+              "ndre_mean": 0.7455,
+              "r700_mean": 7.343,
+              "r780_mean": 50.123
+            },
+            "Moderate_Blight": {
+              "n": 6,
+              "ndvi_mean": 0.7815,
+              "ndre_mean": 0.3685,
+              "r700_mean": 18.552,
+              "r780_mean": 40.083
+            },
+            "Severe_Necrosis": {
+              "n": 12,
+              "ndvi_mean": 0.61,
+              "ndre_mean": 0.2368,
+              "r700_mean": 22.034,
+              "r780_mean": 35.678
+            }
+          }
+        },
+        {
+          "date": "2026-11-14",
+          "classes": {
+            "Healthy": {
+              "n": 6,
+              "ndvi_mean": 0.9605,
+              "ndre_mean": 0.7491,
+              "r700_mean": 7.134,
+              "r780_mean": 49.695
+            },
+            "Moderate_Blight": {
+              "n": 6,
+              "ndvi_mean": 0.7643,
+              "ndre_mean": 0.3393,
+              "r700_mean": 18.887,
+              "r780_mean": 38.272
+            },
+            "Severe_Necrosis": {
+              "n": 12,
+              "ndvi_mean": 0.5577,
+              "ndre_mean": 0.2062,
+              "r700_mean": 23.58,
+              "r780_mean": 35.801
+            }
+          }
+        }
+      ],
+      "early_vs_late_ndvi": {
+        "Early_Chlorosis": {
+          "early_ndvi": 0.9582,
+          "late_ndvi": 0.9472,
+          "delta_ndvi": -0.011
+        },
+        "Healthy": {
+          "early_ndvi": 0.9609,
+          "late_ndvi": 0.9607,
+          "delta_ndvi": -0.0001
+        },
+        "Moderate_Blight": {
+          "early_ndvi": 0.8814,
+          "late_ndvi": 0.7853,
+          "delta_ndvi": -0.0961
+        },
+        "Severe_Necrosis": {
+          "early_ndvi": 0.647,
+          "late_ndvi": 0.5904,
+          "delta_ndvi": -0.0566
+        }
+      }
+    }
+  }
+}
