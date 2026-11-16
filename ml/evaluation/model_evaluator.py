@@ -109,3 +109,4 @@ if __name__ == "__main__":
     print("Evaluation Results Summary:")
     print(f"Accuracy: {results['overall_accuracy'] * 100:.2f}% | Weighted F1: {results['weighted_f1']:.4f}")
     print(f"Latency: {results['latency_ms_per_patch']} ms/patch")
+
