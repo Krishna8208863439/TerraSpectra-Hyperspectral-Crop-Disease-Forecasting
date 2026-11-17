@@ -1,0 +1,1538 @@
+{
+  "figures": [
+    "reports/figures/07_pca_variance_and_band_importance.png",
+    "reports/figures/08_feature_sets_and_indices.png"
+  ],
+  "primary": {
+    "source": "primary",
+    "manifest": {
+      "source": "primary",
+      "dropped_nan_rows": 8,
+      "aligned_wavelengths_nm": [
+        460.0,
+        525.0,
+        570.0,
+        645.0,
+        670.0,
+        700.0,
+        780.0,
+        890.0,
+        970.0
+      ],
+      "band_matches": [
+        {
+          "index_name": "NDVI",
+          "role": "NIR_800",
+          "requested_nm": 800.0,
+          "band_index": 6,
+          "matched_nm": 780.0,
+          "delta_nm": 20.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "NDVI",
+          "role": "Red_670",
+          "requested_nm": 670.0,
+          "band_index": 4,
+          "matched_nm": 670.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "NDRE",
+          "role": "NIR_800",
+          "requested_nm": 800.0,
+          "band_index": 6,
+          "matched_nm": 780.0,
+          "delta_nm": 20.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "NDRE",
+          "role": "RedEdge_720",
+          "requested_nm": 720.0,
+          "band_index": 5,
+          "matched_nm": 700.0,
+          "delta_nm": 20.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "PRI",
+          "role": "R531",
+          "requested_nm": 531.0,
+          "band_index": 1,
+          "matched_nm": 525.0,
+          "delta_nm": 6.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "PRI",
+          "role": "R570",
+          "requested_nm": 570.0,
+          "band_index": 2,
+          "matched_nm": 570.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "REP_nm",
+          "role": "Red_670",
+          "requested_nm": 670.0,
+          "band_index": 4,
+          "matched_nm": 670.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "REP_nm",
+          "role": "RedEdge_700",
+          "requested_nm": 700.0,
+          "band_index": 5,
+          "matched_nm": 700.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "REP_nm",
+          "role": "NIR_780",
+          "requested_nm": 780.0,
+          "band_index": 6,
+          "matched_nm": 780.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "MCARI",
+          "role": "R700",
+          "requested_nm": 700.0,
+          "band_index": 5,
+          "matched_nm": 700.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "MCARI",
+          "role": "R670",
+          "requested_nm": 670.0,
+          "band_index": 4,
+          "matched_nm": 670.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "MCARI",
+          "role": "R550",
+          "requested_nm": 550.0,
+          "band_index": 2,
+          "matched_nm": 570.0,
+          "delta_nm": 20.0,
+          "within_tolerance": true
+        }
+      ],
+      "skipped_indices": [],
+      "feature_sets": [
+        {
+          "key": "A_full_spectrum",
+          "code": "Set A",
+          "description": "Preprocessed full spectrum",
+          "n_features": 9,
+          "feature_names": [
+            "Band_460nm",
+            "Band_525nm",
+            "Band_570nm",
+            "Band_645nm",
+            "Band_670nm",
+            "Band_700nm",
+            "Band_780nm",
+            "Band_890nm",
+            "Band_970nm"
+          ],
+          "train_shape": [
+            1809,
+            9
+          ],
+          "test_shape": [
+            463,
+            9
+          ],
+          "cv_macro_f1_lr": 0.4425,
+          "cv_macro_f1_rf": 0.4828,
+          "cv_roc_auc_lr": 0.4855,
+          "saved_path": "data/processed/primary_feature_set_Set_A.npz"
+        },
+        {
+          "key": "B_veg_indices",
+          "code": "Set B",
+          "description": "Vegetation indices only (NDVI, NDRE, PRI, REP, MCARI)",
+          "n_features": 5,
+          "feature_names": [
+            "NDVI",
+            "NDRE",
+            "PRI",
+            "REP_nm",
+            "MCARI"
+          ],
+          "train_shape": [
+            1809,
+            5
+          ],
+          "test_shape": [
+            463,
+            5
+          ],
+          "cv_macro_f1_lr": 0.4341,
+          "cv_macro_f1_rf": 0.4847,
+          "cv_roc_auc_lr": 0.4412,
+          "saved_path": "data/processed/primary_feature_set_Set_B.npz"
+        },
+        {
+          "key": "C_pca",
+          "code": "Set C",
+          "description": "PCA components (fit on train split only)",
+          "n_features": 3,
+          "feature_names": [
+            "PC1",
+            "PC2",
+            "PC3"
+          ],
+          "train_shape": [
+            1809,
+            3
+          ],
+          "test_shape": [
+            463,
+            3
+          ],
+          "cv_macro_f1_lr": 0.4498,
+          "cv_macro_f1_rf": 0.4563,
+          "cv_roc_auc_lr": 0.503,
+          "saved_path": "data/processed/primary_feature_set_Set_C.npz"
+        },
+        {
+          "key": "D_selected_bands",
+          "code": "Set D",
+          "description": "Selected bands (RF importance + Mutual Info on train only)",
+          "n_features": 5,
+          "feature_names": [
+            "Band_460nm",
+            "Band_570nm",
+            "Band_645nm",
+            "Band_700nm",
+            "Band_890nm"
+          ],
+          "train_shape": [
+            1809,
+            5
+          ],
+          "test_shape": [
+            463,
+            5
+          ],
+          "cv_macro_f1_lr": 0.412,
+          "cv_macro_f1_rf": 0.4894,
+          "cv_roc_auc_lr": 0.4839,
+          "saved_path": "data/processed/primary_feature_set_Set_D.npz"
+        },
+        {
+          "key": "E_indices_plus_selected",
+          "code": "Set E",
+          "description": "Indices plus selected bands",
+          "n_features": 10,
+          "feature_names": [
+            "NDVI",
+            "NDRE",
+            "PRI",
+            "REP_nm",
+            "MCARI",
+            "Band_460nm",
+            "Band_570nm",
+            "Band_645nm",
+            "Band_700nm",
+            "Band_890nm"
+          ],
+          "train_shape": [
+            1809,
+            10
+          ],
+          "test_shape": [
+            463,
+            10
+          ],
+          "cv_macro_f1_lr": 0.4398,
+          "cv_macro_f1_rf": 0.4945,
+          "cv_roc_auc_lr": 0.4544,
+          "saved_path": "data/processed/primary_feature_set_Set_E.npz"
+        }
+      ]
+    },
+    "pca": {
+      "selected_components": 3,
+      "variance_captured": 0.993,
+      "components": [
+        {
+          "component": "PC1",
+          "explained_variance_ratio": 0.8954,
+          "cumulative_variance": 0.8954
+        },
+        {
+          "component": "PC2",
+          "explained_variance_ratio": 0.0772,
+          "cumulative_variance": 0.9725
+        },
+        {
+          "component": "PC3",
+          "explained_variance_ratio": 0.0205,
+          "cumulative_variance": 0.993
+        },
+        {
+          "component": "PC4",
+          "explained_variance_ratio": 0.0052,
+          "cumulative_variance": 0.9982
+        },
+        {
+          "component": "PC5",
+          "explained_variance_ratio": 0.0012,
+          "cumulative_variance": 0.9994
+        },
+        {
+          "component": "PC6",
+          "explained_variance_ratio": 0.0006,
+          "cumulative_variance": 1.0
+        },
+        {
+          "component": "PC7",
+          "explained_variance_ratio": 0.0,
+          "cumulative_variance": 1.0
+        },
+        {
+          "component": "PC8",
+          "explained_variance_ratio": 0.0,
+          "cumulative_variance": 1.0
+        },
+        {
+          "component": "PC9",
+          "explained_variance_ratio": 0.0,
+          "cumulative_variance": 1.0
+        }
+      ]
+    },
+    "band_selection": {
+      "top_k": 5,
+      "selected_wavelengths_nm": [
+        460.0,
+        570.0,
+        645.0,
+        700.0,
+        890.0
+      ],
+      "rankings": [
+        {
+          "wavelength_nm": 460.0,
+          "rf_importance": 0.09523,
+          "mutual_info": 0.01395,
+          "consensus_score": 0.5682,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 525.0,
+          "rf_importance": 0.11323,
+          "mutual_info": 0.00757,
+          "consensus_score": 0.5225,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 570.0,
+          "rf_importance": 0.14373,
+          "mutual_info": 0.00457,
+          "consensus_score": 0.5777,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 645.0,
+          "rf_importance": 0.134,
+          "mutual_info": 0.01575,
+          "consensus_score": 0.7337,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 670.0,
+          "rf_importance": 0.12791,
+          "mutual_info": 0.00218,
+          "consensus_score": 0.482,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 700.0,
+          "rf_importance": 0.08927,
+          "mutual_info": 0.02943,
+          "consensus_score": 0.8106,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 780.0,
+          "rf_importance": 0.0973,
+          "mutual_info": 0.0,
+          "consensus_score": 0.3385,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 890.0,
+          "rf_importance": 0.11579,
+          "mutual_info": 0.01795,
+          "consensus_score": 0.7078,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 970.0,
+          "rf_importance": 0.08354,
+          "mutual_info": 0.0,
+          "consensus_score": 0.2906,
+          "selected": false
+        }
+      ]
+    },
+    "index_distributions": [
+      {
+        "index": "NDVI",
+        "classes": {
+          "Control (40% Water)": {
+            "mean": 0.4725,
+            "std": 0.2205,
+            "median": 0.5753,
+            "q25": 0.2607,
+            "q75": 0.667
+          },
+          "Drought (10% Water)": {
+            "mean": 0.4789,
+            "std": 0.2131,
+            "median": 0.5643,
+            "q25": 0.2887,
+            "q75": 0.6629
+          }
+        }
+      },
+      {
+        "index": "NDRE",
+        "classes": {
+          "Control (40% Water)": {
+            "mean": 0.1968,
+            "std": 0.0689,
+            "median": 0.2305,
+            "q25": 0.1356,
+            "q75": 0.2539
+          },
+          "Drought (10% Water)": {
+            "mean": 0.1993,
+            "std": 0.0663,
+            "median": 0.2283,
+            "q25": 0.1451,
+            "q75": 0.2535
+          }
+        }
+      },
+      {
+        "index": "PRI",
+        "classes": {
+          "Control (40% Water)": {
+            "mean": -0.0804,
+            "std": 0.055,
+            "median": -0.0586,
+            "q25": -0.1324,
+            "q75": -0.0298
+          },
+          "Drought (10% Water)": {
+            "mean": -0.0802,
+            "std": 0.0536,
+            "median": -0.0604,
+            "q25": -0.1317,
+            "q75": -0.0327
+          }
+        }
+      },
+      {
+        "index": "REP_nm",
+        "classes": {
+          "Control (40% Water)": {
+            "mean": 707.4694,
+            "std": 9.1189,
+            "median": 702.4536,
+            "q25": 701.345,
+            "q75": 709.9066
+          },
+          "Drought (10% Water)": {
+            "mean": 707.1576,
+            "std": 8.9102,
+            "median": 702.4213,
+            "q25": 701.3986,
+            "q75": 709.8401
+          }
+        }
+      },
+      {
+        "index": "MCARI",
+        "classes": {
+          "Control (40% Water)": {
+            "mean": 8.3759,
+            "std": 5.8825,
+            "median": 8.3416,
+            "q25": 2.6407,
+            "q75": 13.258
+          },
+          "Drought (10% Water)": {
+            "mean": 8.6228,
+            "std": 5.9423,
+            "median": 8.4289,
+            "q25": 3.1333,
+            "q75": 13.1889
+          }
+        }
+      }
+    ],
+    "mcari_citation": "Daughtry et al. (2000), Remote Sensing of Environment 74(2):229-239"
+  },
+  "synthetic": {
+    "source": "synthetic",
+    "manifest": {
+      "source": "synthetic",
+      "dropped_nan_rows": 0,
+      "aligned_wavelengths_nm": [
+        400.0,
+        410.0,
+        420.0,
+        430.0,
+        440.0,
+        450.0,
+        460.0,
+        470.0,
+        480.0,
+        490.0,
+        500.0,
+        510.0,
+        520.0,
+        530.0,
+        540.0,
+        550.0,
+        560.0,
+        570.0,
+        580.0,
+        590.0,
+        600.0,
+        610.0,
+        620.0,
+        630.0,
+        640.0,
+        650.0,
+        660.0,
+        670.0,
+        680.0,
+        690.0,
+        700.0,
+        710.0,
+        720.0,
+        730.0,
+        740.0,
+        750.0,
+        760.0,
+        770.0,
+        780.0,
+        790.0,
+        800.0,
+        810.0,
+        820.0,
+        830.0,
+        840.0,
+        850.0,
+        860.0,
+        870.0,
+        880.0,
+        890.0,
+        900.0,
+        910.0,
+        920.0,
+        930.0,
+        940.0,
+        950.0,
+        960.0,
+        970.0,
+        980.0,
+        990.0,
+        1000.0
+      ],
+      "band_matches": [
+        {
+          "index_name": "NDVI",
+          "role": "NIR_800",
+          "requested_nm": 800.0,
+          "band_index": 40,
+          "matched_nm": 800.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "NDVI",
+          "role": "Red_670",
+          "requested_nm": 670.0,
+          "band_index": 27,
+          "matched_nm": 670.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "NDRE",
+          "role": "NIR_800",
+          "requested_nm": 800.0,
+          "band_index": 40,
+          "matched_nm": 800.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "NDRE",
+          "role": "RedEdge_720",
+          "requested_nm": 720.0,
+          "band_index": 32,
+          "matched_nm": 720.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "PRI",
+          "role": "R531",
+          "requested_nm": 531.0,
+          "band_index": 13,
+          "matched_nm": 530.0,
+          "delta_nm": 1.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "PRI",
+          "role": "R570",
+          "requested_nm": 570.0,
+          "band_index": 17,
+          "matched_nm": 570.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "REP_nm",
+          "role": "Red_670",
+          "requested_nm": 670.0,
+          "band_index": 27,
+          "matched_nm": 670.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "REP_nm",
+          "role": "RedEdge_700",
+          "requested_nm": 700.0,
+          "band_index": 30,
+          "matched_nm": 700.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "REP_nm",
+          "role": "NIR_780",
+          "requested_nm": 780.0,
+          "band_index": 38,
+          "matched_nm": 780.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "MCARI",
+          "role": "R700",
+          "requested_nm": 700.0,
+          "band_index": 30,
+          "matched_nm": 700.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "MCARI",
+          "role": "R670",
+          "requested_nm": 670.0,
+          "band_index": 27,
+          "matched_nm": 670.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        },
+        {
+          "index_name": "MCARI",
+          "role": "R550",
+          "requested_nm": 550.0,
+          "band_index": 15,
+          "matched_nm": 550.0,
+          "delta_nm": 0.0,
+          "within_tolerance": true
+        }
+      ],
+      "skipped_indices": [],
+      "feature_sets": [
+        {
+          "key": "A_full_spectrum",
+          "code": "Set A",
+          "description": "Preprocessed full spectrum",
+          "n_features": 61,
+          "feature_names": [
+            "Band_400nm",
+            "Band_410nm",
+            "Band_420nm",
+            "Band_430nm",
+            "Band_440nm",
+            "Band_450nm",
+            "Band_460nm",
+            "Band_470nm",
+            "Band_480nm",
+            "Band_490nm",
+            "Band_500nm",
+            "Band_510nm",
+            "Band_520nm",
+            "Band_530nm",
+            "Band_540nm",
+            "Band_550nm",
+            "Band_560nm",
+            "Band_570nm",
+            "Band_580nm",
+            "Band_590nm",
+            "Band_600nm",
+            "Band_610nm",
+            "Band_620nm",
+            "Band_630nm",
+            "Band_640nm",
+            "Band_650nm",
+            "Band_660nm",
+            "Band_670nm",
+            "Band_680nm",
+            "Band_690nm",
+            "Band_700nm",
+            "Band_710nm",
+            "Band_720nm",
+            "Band_730nm",
+            "Band_740nm",
+            "Band_750nm",
+            "Band_760nm",
+            "Band_770nm",
+            "Band_780nm",
+            "Band_790nm",
+            "Band_800nm",
+            "Band_810nm",
+            "Band_820nm",
+            "Band_830nm",
+            "Band_840nm",
+            "Band_850nm",
+            "Band_860nm",
+            "Band_870nm",
+            "Band_880nm",
+            "Band_890nm",
+            "Band_900nm",
+            "Band_910nm",
+            "Band_920nm",
+            "Band_930nm",
+            "Band_940nm",
+            "Band_950nm",
+            "Band_960nm",
+            "Band_970nm",
+            "Band_980nm",
+            "Band_990nm",
+            "Band_1000nm"
+          ],
+          "train_shape": [
+            95,
+            61
+          ],
+          "test_shape": [
+            25,
+            61
+          ],
+          "cv_macro_f1_lr": 0.9718,
+          "cv_macro_f1_rf": 1.0,
+          "cv_roc_auc_lr": null,
+          "saved_path": "data/processed/synthetic_feature_set_Set_A.npz"
+        },
+        {
+          "key": "B_veg_indices",
+          "code": "Set B",
+          "description": "Vegetation indices only (NDVI, NDRE, PRI, REP, MCARI)",
+          "n_features": 5,
+          "feature_names": [
+            "NDVI",
+            "NDRE",
+            "PRI",
+            "REP_nm",
+            "MCARI"
+          ],
+          "train_shape": [
+            95,
+            5
+          ],
+          "test_shape": [
+            25,
+            5
+          ],
+          "cv_macro_f1_lr": 0.9163,
+          "cv_macro_f1_rf": 0.9606,
+          "cv_roc_auc_lr": null,
+          "saved_path": "data/processed/synthetic_feature_set_Set_B.npz"
+        },
+        {
+          "key": "C_pca",
+          "code": "Set C",
+          "description": "PCA components (fit on train split only)",
+          "n_features": 8,
+          "feature_names": [
+            "PC1",
+            "PC2",
+            "PC3",
+            "PC4",
+            "PC5",
+            "PC6",
+            "PC7",
+            "PC8"
+          ],
+          "train_shape": [
+            95,
+            8
+          ],
+          "test_shape": [
+            25,
+            8
+          ],
+          "cv_macro_f1_lr": 0.8332,
+          "cv_macro_f1_rf": 0.9763,
+          "cv_roc_auc_lr": null,
+          "saved_path": "data/processed/synthetic_feature_set_Set_C.npz"
+        },
+        {
+          "key": "D_selected_bands",
+          "code": "Set D",
+          "description": "Selected bands (RF importance + Mutual Info on train only)",
+          "n_features": 5,
+          "feature_names": [
+            "Band_450nm",
+            "Band_690nm",
+            "Band_700nm",
+            "Band_710nm",
+            "Band_720nm"
+          ],
+          "train_shape": [
+            95,
+            5
+          ],
+          "test_shape": [
+            25,
+            5
+          ],
+          "cv_macro_f1_lr": 1.0,
+          "cv_macro_f1_rf": 1.0,
+          "cv_roc_auc_lr": null,
+          "saved_path": "data/processed/synthetic_feature_set_Set_D.npz"
+        },
+        {
+          "key": "E_indices_plus_selected",
+          "code": "Set E",
+          "description": "Indices plus selected bands",
+          "n_features": 10,
+          "feature_names": [
+            "NDVI",
+            "NDRE",
+            "PRI",
+            "REP_nm",
+            "MCARI",
+            "Band_450nm",
+            "Band_690nm",
+            "Band_700nm",
+            "Band_710nm",
+            "Band_720nm"
+          ],
+          "train_shape": [
+            95,
+            10
+          ],
+          "test_shape": [
+            25,
+            10
+          ],
+          "cv_macro_f1_lr": 0.9601,
+          "cv_macro_f1_rf": 1.0,
+          "cv_roc_auc_lr": null,
+          "saved_path": "data/processed/synthetic_feature_set_Set_E.npz"
+        }
+      ]
+    },
+    "pca": {
+      "selected_components": 8,
+      "variance_captured": 0.8699,
+      "components": [
+        {
+          "component": "PC1",
+          "explained_variance_ratio": 0.7031,
+          "cumulative_variance": 0.7031
+        },
+        {
+          "component": "PC2",
+          "explained_variance_ratio": 0.0373,
+          "cumulative_variance": 0.7404
+        },
+        {
+          "component": "PC3",
+          "explained_variance_ratio": 0.0311,
+          "cumulative_variance": 0.7715
+        },
+        {
+          "component": "PC4",
+          "explained_variance_ratio": 0.0254,
+          "cumulative_variance": 0.7969
+        },
+        {
+          "component": "PC5",
+          "explained_variance_ratio": 0.0219,
+          "cumulative_variance": 0.8188
+        },
+        {
+          "component": "PC6",
+          "explained_variance_ratio": 0.0184,
+          "cumulative_variance": 0.8372
+        },
+        {
+          "component": "PC7",
+          "explained_variance_ratio": 0.0177,
+          "cumulative_variance": 0.8549
+        },
+        {
+          "component": "PC8",
+          "explained_variance_ratio": 0.015,
+          "cumulative_variance": 0.8699
+        },
+        {
+          "component": "PC9",
+          "explained_variance_ratio": 0.0134,
+          "cumulative_variance": 0.8832
+        },
+        {
+          "component": "PC10",
+          "explained_variance_ratio": 0.0124,
+          "cumulative_variance": 0.8957
+        },
+        {
+          "component": "PC11",
+          "explained_variance_ratio": 0.0112,
+          "cumulative_variance": 0.9069
+        },
+        {
+          "component": "PC12",
+          "explained_variance_ratio": 0.0107,
+          "cumulative_variance": 0.9176
+        }
+      ]
+    },
+    "band_selection": {
+      "top_k": 5,
+      "selected_wavelengths_nm": [
+        450.0,
+        690.0,
+        700.0,
+        710.0,
+        720.0
+      ],
+      "rankings": [
+        {
+          "wavelength_nm": 400.0,
+          "rf_importance": 0.04223,
+          "mutual_info": 1.0321,
+          "consensus_score": 0.6274,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 410.0,
+          "rf_importance": 0.06171,
+          "mutual_info": 1.25445,
+          "consensus_score": 0.8231,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 420.0,
+          "rf_importance": 0.04114,
+          "mutual_info": 1.20964,
+          "consensus_score": 0.6866,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 430.0,
+          "rf_importance": 0.03621,
+          "mutual_info": 1.23236,
+          "consensus_score": 0.6662,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 440.0,
+          "rf_importance": 0.05756,
+          "mutual_info": 1.18119,
+          "consensus_score": 0.7719,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 450.0,
+          "rf_importance": 0.07213,
+          "mutual_info": 1.2235,
+          "consensus_score": 0.8725,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 460.0,
+          "rf_importance": 0.04122,
+          "mutual_info": 1.22709,
+          "consensus_score": 0.6935,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 470.0,
+          "rf_importance": 0.03569,
+          "mutual_info": 1.18064,
+          "consensus_score": 0.644,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 480.0,
+          "rf_importance": 0.03136,
+          "mutual_info": 1.1138,
+          "consensus_score": 0.5941,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 490.0,
+          "rf_importance": 0.00583,
+          "mutual_info": 0.93213,
+          "consensus_score": 0.3781,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 500.0,
+          "rf_importance": 0.0096,
+          "mutual_info": 0.8715,
+          "consensus_score": 0.3777,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 510.0,
+          "rf_importance": 0.0063,
+          "mutual_info": 0.741,
+          "consensus_score": 0.3103,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 520.0,
+          "rf_importance": 0.0,
+          "mutual_info": 0.34033,
+          "consensus_score": 0.1256,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 530.0,
+          "rf_importance": 0.00048,
+          "mutual_info": 0.0,
+          "consensus_score": 0.0028,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 540.0,
+          "rf_importance": 0.00059,
+          "mutual_info": 0.20758,
+          "consensus_score": 0.0801,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 550.0,
+          "rf_importance": 0.00162,
+          "mutual_info": 0.50425,
+          "consensus_score": 0.1955,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 560.0,
+          "rf_importance": 0.00511,
+          "mutual_info": 0.68072,
+          "consensus_score": 0.2811,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 570.0,
+          "rf_importance": 0.00635,
+          "mutual_info": 0.72593,
+          "consensus_score": 0.305,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 580.0,
+          "rf_importance": 0.0063,
+          "mutual_info": 0.68816,
+          "consensus_score": 0.2908,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 590.0,
+          "rf_importance": 0.00051,
+          "mutual_info": 0.60146,
+          "consensus_score": 0.225,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 600.0,
+          "rf_importance": 0.00391,
+          "mutual_info": 0.66506,
+          "consensus_score": 0.2683,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 610.0,
+          "rf_importance": 0.00123,
+          "mutual_info": 0.6523,
+          "consensus_score": 0.248,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 620.0,
+          "rf_importance": 0.0039,
+          "mutual_info": 0.67744,
+          "consensus_score": 0.2728,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 630.0,
+          "rf_importance": 0.00846,
+          "mutual_info": 0.8768,
+          "consensus_score": 0.373,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 640.0,
+          "rf_importance": 0.01416,
+          "mutual_info": 0.80279,
+          "consensus_score": 0.3789,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 650.0,
+          "rf_importance": 0.00616,
+          "mutual_info": 0.63631,
+          "consensus_score": 0.2708,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 660.0,
+          "rf_importance": 0.00764,
+          "mutual_info": 0.65821,
+          "consensus_score": 0.2875,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 670.0,
+          "rf_importance": 0.02899,
+          "mutual_info": 0.7882,
+          "consensus_score": 0.4601,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 680.0,
+          "rf_importance": 0.06815,
+          "mutual_info": 1.0183,
+          "consensus_score": 0.7735,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 690.0,
+          "rf_importance": 0.0632,
+          "mutual_info": 1.34847,
+          "consensus_score": 0.8665,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 700.0,
+          "rf_importance": 0.08569,
+          "mutual_info": 1.35461,
+          "consensus_score": 1.0,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 710.0,
+          "rf_importance": 0.07,
+          "mutual_info": 1.3418,
+          "consensus_score": 0.9037,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 720.0,
+          "rf_importance": 0.05983,
+          "mutual_info": 1.2987,
+          "consensus_score": 0.8285,
+          "selected": true
+        },
+        {
+          "wavelength_nm": 730.0,
+          "rf_importance": 0.04274,
+          "mutual_info": 1.2663,
+          "consensus_score": 0.7168,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 740.0,
+          "rf_importance": 0.04784,
+          "mutual_info": 1.11296,
+          "consensus_score": 0.69,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 750.0,
+          "rf_importance": 0.00707,
+          "mutual_info": 0.50531,
+          "consensus_score": 0.2278,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 760.0,
+          "rf_importance": 0.00037,
+          "mutual_info": 0.0,
+          "consensus_score": 0.0022,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 770.0,
+          "rf_importance": 0.0,
+          "mutual_info": 0.11007,
+          "consensus_score": 0.0406,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 780.0,
+          "rf_importance": 0.00014,
+          "mutual_info": 0.34359,
+          "consensus_score": 0.1276,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 790.0,
+          "rf_importance": 0.00046,
+          "mutual_info": 0.46855,
+          "consensus_score": 0.1756,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 800.0,
+          "rf_importance": 0.00026,
+          "mutual_info": 0.52119,
+          "consensus_score": 0.1939,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 810.0,
+          "rf_importance": 0.00109,
+          "mutual_info": 0.4599,
+          "consensus_score": 0.1761,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 820.0,
+          "rf_importance": 0.00116,
+          "mutual_info": 0.50739,
+          "consensus_score": 0.1941,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 830.0,
+          "rf_importance": 0.00061,
+          "mutual_info": 0.5038,
+          "consensus_score": 0.1895,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 840.0,
+          "rf_importance": 0.00202,
+          "mutual_info": 0.54122,
+          "consensus_score": 0.2116,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 850.0,
+          "rf_importance": 0.00027,
+          "mutual_info": 0.58278,
+          "consensus_score": 0.2167,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 860.0,
+          "rf_importance": 0.00312,
+          "mutual_info": 0.67291,
+          "consensus_score": 0.2666,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 870.0,
+          "rf_importance": 0.0014,
+          "mutual_info": 0.54026,
+          "consensus_score": 0.2076,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 880.0,
+          "rf_importance": 0.0,
+          "mutual_info": 0.38044,
+          "consensus_score": 0.1404,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 890.0,
+          "rf_importance": 0.00027,
+          "mutual_info": 0.36242,
+          "consensus_score": 0.1354,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 900.0,
+          "rf_importance": 0.00028,
+          "mutual_info": 0.48071,
+          "consensus_score": 0.1791,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 910.0,
+          "rf_importance": 0.00014,
+          "mutual_info": 0.39631,
+          "consensus_score": 0.1471,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 920.0,
+          "rf_importance": 0.00023,
+          "mutual_info": 0.38226,
+          "consensus_score": 0.1425,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 930.0,
+          "rf_importance": 0.00096,
+          "mutual_info": 0.62091,
+          "consensus_score": 0.2348,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 940.0,
+          "rf_importance": 0.0007,
+          "mutual_info": 0.58059,
+          "consensus_score": 0.2184,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 950.0,
+          "rf_importance": 0.0,
+          "mutual_info": 0.5954,
+          "consensus_score": 0.2198,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 960.0,
+          "rf_importance": 0.00121,
+          "mutual_info": 0.49603,
+          "consensus_score": 0.1901,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 970.0,
+          "rf_importance": 0.00249,
+          "mutual_info": 0.58557,
+          "consensus_score": 0.2307,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 980.0,
+          "rf_importance": 0.00025,
+          "mutual_info": 0.47166,
+          "consensus_score": 0.1756,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 990.0,
+          "rf_importance": 0.00164,
+          "mutual_info": 0.62328,
+          "consensus_score": 0.2396,
+          "selected": false
+        },
+        {
+          "wavelength_nm": 1000.0,
+          "rf_importance": 0.0,
+          "mutual_info": 0.29379,
+          "consensus_score": 0.1084,
+          "selected": false
+        }
+      ]
+    },
+    "index_distributions": [
+      {
+        "index": "NDVI",
+        "classes": {
+          "Early_Chlorosis": {
+            "mean": 0.9631,
+            "std": 0.0127,
+            "median": 0.9659,
+            "q25": 0.9641,
+            "q75": 0.9682
+          },
+          "Healthy": {
+            "mean": 0.9618,
+            "std": 0.0014,
+            "median": 0.9614,
+            "q25": 0.9612,
+            "q75": 0.9619
+          },
+          "Moderate_Blight": {
+            "mean": 0.8325,
+            "std": 0.0692,
+            "median": 0.8203,
+            "q25": 0.7867,
+            "q75": 0.8969
+          },
+          "Severe_Necrosis": {
+            "mean": 0.6076,
+            "std": 0.0479,
+            "median": 0.6074,
+            "q25": 0.5726,
+            "q75": 0.6439
+          }
+        }
+      },
+      {
+        "index": "NDRE",
+        "classes": {
+          "Early_Chlorosis": {
+            "mean": 0.2863,
+            "std": 0.0187,
+            "median": 0.2914,
+            "q25": 0.2818,
+            "q75": 0.2983
+          },
+          "Healthy": {
+            "mean": 0.3427,
+            "std": 0.0109,
+            "median": 0.3433,
+            "q25": 0.3353,
+            "q75": 0.3481
+          },
+          "Moderate_Blight": {
+            "mean": 0.2089,
+            "std": 0.0195,
+            "median": 0.2039,
+            "q25": 0.1937,
+            "q75": 0.2247
+          },
+          "Severe_Necrosis": {
+            "mean": 0.157,
+            "std": 0.012,
+            "median": 0.1605,
+            "q25": 0.1466,
+            "q75": 0.1662
+          }
+        }
+      },
+      {
+        "index": "PRI",
+        "classes": {
+          "Early_Chlorosis": {
+            "mean": -0.0402,
+            "std": 0.0154,
+            "median": -0.0447,
+            "q25": -0.0533,
+            "q75": -0.0304
+          },
+          "Healthy": {
+            "mean": -0.0351,
+            "std": 0.0123,
+            "median": -0.0396,
+            "q25": -0.0437,
+            "q75": -0.0263
+          },
+          "Moderate_Blight": {
+            "mean": -0.0558,
+            "std": 0.017,
+            "median": -0.0573,
+            "q25": -0.0661,
+            "q75": -0.045
+          },
+          "Severe_Necrosis": {
+            "mean": -0.0585,
+            "std": 0.017,
+            "median": -0.0584,
+            "q25": -0.0711,
+            "q75": -0.0441
+          }
+        }
+      },
+      {
+        "index": "REP_nm",
+        "classes": {
+          "Early_Chlorosis": {
+            "mean": 717.5721,
+            "std": 0.9989,
+            "median": 717.5797,
+            "q25": 717.2389,
+            "q75": 718.3222
+          },
+          "Healthy": {
+            "mean": 717.0397,
+            "std": 1.2545,
+            "median": 716.8179,
+            "q25": 716.1041,
+            "q75": 717.5666
+          },
+          "Moderate_Blight": {
+            "mean": 718.4604,
+            "std": 1.291,
+            "median": 718.6629,
+            "q25": 717.2476,
+            "q75": 719.7542
+          },
+          "Severe_Necrosis": {
+            "mean": 697.3336,
+            "std": 13.1125,
+            "median": 690.0,
+            "q25": 690.0,
+            "q75": 691.3527
+          }
+        }
+      },
+      {
+        "index": "MCARI",
+        "classes": {
+          "Early_Chlorosis": {
+            "mean": 139.7989,
+            "std": 34.4591,
+            "median": 144.3054,
+            "q25": 107.3739,
+            "q75": 156.9494
+          },
+          "Healthy": {
+            "mean": 55.5943,
+            "std": 12.1203,
+            "median": 54.7477,
+            "q25": 49.5043,
+            "q75": 60.0151
+          },
+          "Moderate_Blight": {
+            "mean": 64.3049,
+            "std": 32.332,
+            "median": 49.8998,
+            "q25": 41.0916,
+            "q75": 76.4781
+          },
+          "Severe_Necrosis": {
+            "mean": 25.3579,
+            "std": 3.803,
+            "median": 24.6782,
+            "q25": 23.4215,
+            "q75": 26.7945
+          }
+        }
+      }
+    ],
+    "mcari_citation": "Daughtry et al. (2000), Remote Sensing of Environment 74(2):229-239"
+  }
+}

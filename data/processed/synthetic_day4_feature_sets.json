@@ -1,0 +1,369 @@
+{
+  "source": "synthetic",
+  "dropped_nan_rows": 0,
+  "aligned_wavelengths_nm": [
+    400.0,
+    410.0,
+    420.0,
+    430.0,
+    440.0,
+    450.0,
+    460.0,
+    470.0,
+    480.0,
+    490.0,
+    500.0,
+    510.0,
+    520.0,
+    530.0,
+    540.0,
+    550.0,
+    560.0,
+    570.0,
+    580.0,
+    590.0,
+    600.0,
+    610.0,
+    620.0,
+    630.0,
+    640.0,
+    650.0,
+    660.0,
+    670.0,
+    680.0,
+    690.0,
+    700.0,
+    710.0,
+    720.0,
+    730.0,
+    740.0,
+    750.0,
+    760.0,
+    770.0,
+    780.0,
+    790.0,
+    800.0,
+    810.0,
+    820.0,
+    830.0,
+    840.0,
+    850.0,
+    860.0,
+    870.0,
+    880.0,
+    890.0,
+    900.0,
+    910.0,
+    920.0,
+    930.0,
+    940.0,
+    950.0,
+    960.0,
+    970.0,
+    980.0,
+    990.0,
+    1000.0
+  ],
+  "band_matches": [
+    {
+      "index_name": "NDVI",
+      "role": "NIR_800",
+      "requested_nm": 800.0,
+      "band_index": 40,
+      "matched_nm": 800.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "NDVI",
+      "role": "Red_670",
+      "requested_nm": 670.0,
+      "band_index": 27,
+      "matched_nm": 670.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "NDRE",
+      "role": "NIR_800",
+      "requested_nm": 800.0,
+      "band_index": 40,
+      "matched_nm": 800.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "NDRE",
+      "role": "RedEdge_720",
+      "requested_nm": 720.0,
+      "band_index": 32,
+      "matched_nm": 720.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "PRI",
+      "role": "R531",
+      "requested_nm": 531.0,
+      "band_index": 13,
+      "matched_nm": 530.0,
+      "delta_nm": 1.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "PRI",
+      "role": "R570",
+      "requested_nm": 570.0,
+      "band_index": 17,
+      "matched_nm": 570.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "REP_nm",
+      "role": "Red_670",
+      "requested_nm": 670.0,
+      "band_index": 27,
+      "matched_nm": 670.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "REP_nm",
+      "role": "RedEdge_700",
+      "requested_nm": 700.0,
+      "band_index": 30,
+      "matched_nm": 700.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "REP_nm",
+      "role": "NIR_780",
+      "requested_nm": 780.0,
+      "band_index": 38,
+      "matched_nm": 780.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "MCARI",
+      "role": "R700",
+      "requested_nm": 700.0,
+      "band_index": 30,
+      "matched_nm": 700.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "MCARI",
+      "role": "R670",
+      "requested_nm": 670.0,
+      "band_index": 27,
+      "matched_nm": 670.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "index_name": "MCARI",
+      "role": "R550",
+      "requested_nm": 550.0,
+      "band_index": 15,
+      "matched_nm": 550.0,
+      "delta_nm": 0.0,
+      "within_tolerance": true
+    }
+  ],
+  "skipped_indices": [],
+  "feature_sets": [
+    {
+      "key": "A_full_spectrum",
+      "code": "Set A",
+      "description": "Preprocessed full spectrum",
+      "n_features": 61,
+      "feature_names": [
+        "Band_400nm",
+        "Band_410nm",
+        "Band_420nm",
+        "Band_430nm",
+        "Band_440nm",
+        "Band_450nm",
+        "Band_460nm",
+        "Band_470nm",
+        "Band_480nm",
+        "Band_490nm",
+        "Band_500nm",
+        "Band_510nm",
+        "Band_520nm",
+        "Band_530nm",
+        "Band_540nm",
+        "Band_550nm",
+        "Band_560nm",
+        "Band_570nm",
+        "Band_580nm",
+        "Band_590nm",
+        "Band_600nm",
+        "Band_610nm",
+        "Band_620nm",
+        "Band_630nm",
+        "Band_640nm",
+        "Band_650nm",
+        "Band_660nm",
+        "Band_670nm",
+        "Band_680nm",
+        "Band_690nm",
+        "Band_700nm",
+        "Band_710nm",
+        "Band_720nm",
+        "Band_730nm",
+        "Band_740nm",
+        "Band_750nm",
+        "Band_760nm",
+        "Band_770nm",
+        "Band_780nm",
+        "Band_790nm",
+        "Band_800nm",
+        "Band_810nm",
+        "Band_820nm",
+        "Band_830nm",
+        "Band_840nm",
+        "Band_850nm",
+        "Band_860nm",
+        "Band_870nm",
+        "Band_880nm",
+        "Band_890nm",
+        "Band_900nm",
+        "Band_910nm",
+        "Band_920nm",
+        "Band_930nm",
+        "Band_940nm",
+        "Band_950nm",
+        "Band_960nm",
+        "Band_970nm",
+        "Band_980nm",
+        "Band_990nm",
+        "Band_1000nm"
+      ],
+      "train_shape": [
+        95,
+        61
+      ],
+      "test_shape": [
+        25,
+        61
+      ],
+      "cv_macro_f1_lr": 0.9718,
+      "cv_macro_f1_rf": 1.0,
+      "cv_roc_auc_lr": null,
+      "saved_path": "data/processed/synthetic_feature_set_Set_A.npz"
+    },
+    {
+      "key": "B_veg_indices",
+      "code": "Set B",
+      "description": "Vegetation indices only (NDVI, NDRE, PRI, REP, MCARI)",
+      "n_features": 5,
+      "feature_names": [
+        "NDVI",
+        "NDRE",
+        "PRI",
+        "REP_nm",
+        "MCARI"
+      ],
+      "train_shape": [
+        95,
+        5
+      ],
+      "test_shape": [
+        25,
+        5
+      ],
+      "cv_macro_f1_lr": 0.9163,
+      "cv_macro_f1_rf": 0.9606,
+      "cv_roc_auc_lr": null,
+      "saved_path": "data/processed/synthetic_feature_set_Set_B.npz"
+    },
+    {
+      "key": "C_pca",
+      "code": "Set C",
+      "description": "PCA components (fit on train split only)",
+      "n_features": 8,
+      "feature_names": [
+        "PC1",
+        "PC2",
+        "PC3",
+        "PC4",
+        "PC5",
+        "PC6",
+        "PC7",
+        "PC8"
+      ],
+      "train_shape": [
+        95,
+        8
+      ],
+      "test_shape": [
+        25,
+        8
+      ],
+      "cv_macro_f1_lr": 0.8332,
+      "cv_macro_f1_rf": 0.9763,
+      "cv_roc_auc_lr": null,
+      "saved_path": "data/processed/synthetic_feature_set_Set_C.npz"
+    },
+    {
+      "key": "D_selected_bands",
+      "code": "Set D",
+      "description": "Selected bands (RF importance + Mutual Info on train only)",
+      "n_features": 5,
+      "feature_names": [
+        "Band_450nm",
+        "Band_690nm",
+        "Band_700nm",
+        "Band_710nm",
+        "Band_720nm"
+      ],
+      "train_shape": [
+        95,
+        5
+      ],
+      "test_shape": [
+        25,
+        5
+      ],
+      "cv_macro_f1_lr": 1.0,
+      "cv_macro_f1_rf": 1.0,
+      "cv_roc_auc_lr": null,
+      "saved_path": "data/processed/synthetic_feature_set_Set_D.npz"
+    },
+    {
+      "key": "E_indices_plus_selected",
+      "code": "Set E",
+      "description": "Indices plus selected bands",
+      "n_features": 10,
+      "feature_names": [
+        "NDVI",
+        "NDRE",
+        "PRI",
+        "REP_nm",
+        "MCARI",
+        "Band_450nm",
+        "Band_690nm",
+        "Band_700nm",
+        "Band_710nm",
+        "Band_720nm"
+      ],
+      "train_shape": [
+        95,
+        10
+      ],
+      "test_shape": [
+        25,
+        10
+      ],
+      "cv_macro_f1_lr": 0.9601,
+      "cv_macro_f1_rf": 1.0,
+      "cv_roc_auc_lr": null,
+      "saved_path": "data/processed/synthetic_feature_set_Set_E.npz"
+    }
+  ]
+}

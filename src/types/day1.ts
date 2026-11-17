@@ -106,6 +106,8 @@ export interface Day1State {
   selectedDataset: 'primary_zenodo' | 'synthetic_fallback';
   completedBlocks: number[];
   day2CompletedBlocks?: number[];
+  day3CompletedBlocks?: number[];
+  day4CompletedBlocks?: number[];
   updatedAt: string;
 }
 
@@ -224,4 +226,144 @@ export interface Day2EdaPayload {
   primary: Day2DatasetEda;
   synthetic: Day2DatasetEda;
 }
+
+export interface PreprocessingConfigDto {
+  drop_bad_bands: boolean;
+  drop_wavelengths: number[];
+  drop_water_bands: boolean;
+  clip_min: number;
+  clip_max: number;
+  scale_mode: 'none' | 'unit_0_1' | 'standard';
+  use_savgol: boolean;
+  savgol_window: number;
+  savgol_polyorder: number;
+  normalization: 'none' | 'snv' | 'msc';
+  use_first_derivative: boolean;
+}
+
+export interface PreprocessingStepResult {
+  key: string;
+  label: string;
+  config: PreprocessingConfigDto;
+  n_bands: number;
+  wavelengths_nm: number[];
+  mean_fisher_ratio: number;
+  max_fisher_ratio: number;
+  holdout_macro_f1: number;
+  class_curves: Array<{
+    label: string;
+    n_samples: number;
+    points: Array<{ wavelength_nm: number; mean: number; std: number }>;
+  }>;
+}
+
+export interface Day3DatasetPreprocessing {
+  source: 'primary' | 'synthetic';
+  dropped_nan_rows: number;
+  manifest: {
+    source: string;
+    config: PreprocessingConfigDto;
+    raw_labeled_rows: number;
+    dropped_nan_rows: number;
+    clean_rows: number;
+    train_rows: number;
+    test_rows: number;
+    train_plants: number;
+    test_plants: number;
+    wavelengths_in_nm: number[];
+    wavelengths_out_nm: number[];
+    dropped_wavelengths_nm: number[];
+    effective_savgol_window: number;
+    effective_savgol_polyorder: number;
+    output_npz: string;
+  };
+  active_metrics: Omit<PreprocessingStepResult, 'key' | 'label'>;
+  ablation: PreprocessingStepResult[];
+  savgol_comparison: Array<{
+    name: string;
+    requested_window: number;
+    effective_window: number;
+    effective_polyorder: number;
+    mean_fisher_ratio: number;
+    holdout_macro_f1: number;
+    class_curves: PreprocessingStepResult['class_curves'];
+  }>;
+}
+
+export interface Day3PreprocessingPayload {
+  figures: string[];
+  primary: Day3DatasetPreprocessing;
+  synthetic: Day3DatasetPreprocessing;
+}
+
+export interface FeatureSetEntry {
+  key: string;
+  code: string;
+  description: string;
+  n_features: number;
+  feature_names: string[];
+  train_shape: [number, number];
+  test_shape: [number, number];
+  cv_macro_f1_lr: number;
+  cv_macro_f1_rf: number;
+  cv_roc_auc_lr: number | null;
+  saved_path: string;
+}
+
+export interface BandMatchEntry {
+  index_name: string;
+  role: string;
+  requested_nm: number;
+  band_index: number;
+  matched_nm: number;
+  delta_nm: number;
+  within_tolerance: boolean;
+}
+
+export interface Day4DatasetFeatures {
+  source: 'primary' | 'synthetic';
+  manifest: {
+    source: string;
+    dropped_nan_rows: number;
+    aligned_wavelengths_nm: number[];
+    band_matches: BandMatchEntry[];
+    skipped_indices: Array<{ index: string; reason: string }>;
+    feature_sets: FeatureSetEntry[];
+  };
+  pca: {
+    selected_components: number;
+    variance_captured: number;
+    components: Array<{
+      component: string;
+      explained_variance_ratio: number;
+      cumulative_variance: number;
+    }>;
+  };
+  band_selection: {
+    top_k: number;
+    selected_wavelengths_nm: number[];
+    rankings: Array<{
+      wavelength_nm: number;
+      rf_importance: number;
+      mutual_info: number;
+      consensus_score: number;
+      selected: boolean;
+    }>;
+  };
+  index_distributions: Array<{
+    index: string;
+    classes: Record<
+      string,
+      { mean: number; std: number; median: number; q25: number; q75: number }
+    >;
+  }>;
+  mcari_citation: string;
+}
+
+export interface Day4FeaturesPayload {
+  figures: string[];
+  primary: Day4DatasetFeatures;
+  synthetic: Day4DatasetFeatures;
+}
+
 

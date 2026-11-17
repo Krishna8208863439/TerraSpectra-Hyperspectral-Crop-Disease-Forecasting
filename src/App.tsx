@@ -11,17 +11,22 @@ import {
   Search,
 } from 'lucide-react';
 import { Day2EdaView } from './components/Day2EdaView';
+import { Day3PreprocessingView } from './components/Day3PreprocessingView';
+import { Day4FeaturesView } from './components/Day4FeaturesView';
 import { MarkdownViewer } from './components/MarkdownViewer';
 import type {
   DatasetSummary,
   Day1State,
   Day2EdaPayload,
+  Day3PreprocessingPayload,
+  Day4FeaturesPayload,
   DocItem,
   EnvVerifyResult,
+  PreprocessingConfigDto,
   RepoStatus,
 } from './types/day1';
 
-type ActiveTab = 'overview' | 'day1' | 'day2' | 'brief' | 'repository';
+type ActiveTab = 'overview' | 'day1' | 'day2' | 'day3' | 'day4' | 'brief';
 
 interface ScheduleBlock {
   id: number;
@@ -150,10 +155,12 @@ function formatBytes(bytes: number): string {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('day2');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('day3');
+  const [workspaceSub, setWorkspaceSub] = useState<'docs' | 'repo'>('docs');
   const [activeBlockId, setActiveBlockId] = useState<number>(1);
   const [datasetSource, setDatasetSource] = useState<'primary' | 'synthetic'>('primary');
   const [edaSource, setEdaSource] = useState<'primary' | 'synthetic'>('primary');
+  const [pipelineSource, setPipelineSource] = useState<'primary' | 'synthetic'>('primary');
 
   const [envResult, setEnvResult] = useState<EnvVerifyResult | null>(null);
   const [envLoading, setEnvLoading] = useState<boolean>(false);
@@ -166,8 +173,16 @@ export default function App() {
   const [edaLoading, setEdaLoading] = useState<boolean>(false);
   const [edaRunning, setEdaRunning] = useState<boolean>(false);
 
+  const [prepPayload, setPrepPayload] = useState<Day3PreprocessingPayload | null>(null);
+  const [prepLoading, setPrepLoading] = useState<boolean>(false);
+  const [prepRunning, setPrepRunning] = useState<boolean>(false);
+
+  const [featuresPayload, setFeaturesPayload] = useState<Day4FeaturesPayload | null>(null);
+  const [featuresLoading, setFeaturesLoading] = useState<boolean>(false);
+  const [featuresRunning, setFeaturesRunning] = useState<boolean>(false);
+
   const [docs, setDocs] = useState<DocItem[]>([]);
-  const [selectedDocKey, setSelectedDocKey] = useState<string>('data_summary');
+  const [selectedDocKey, setSelectedDocKey] = useState<string>('preprocessing_note');
   const [docEditMode, setDocEditMode] = useState<boolean>(false);
   const [docDraft, setDocDraft] = useState<string>('');
   const [saveFeedback, setSaveFeedback] = useState<string>('');
@@ -245,6 +260,78 @@ export default function App() {
     }
   }, [loadRepoAndDocs]);
 
+  const loadPreprocessingMetrics = useCallback(async () => {
+    setPrepLoading(true);
+    try {
+      const res = await fetch('/api/preprocessing/metrics');
+      if (res.ok) setPrepPayload(await res.json());
+    } finally {
+      setPrepLoading(false);
+    }
+  }, []);
+
+  const handleRunDay3Preprocessing = useCallback(
+    async (config?: Partial<PreprocessingConfigDto>) => {
+      setPrepRunning(true);
+      try {
+        const res = await fetch('/api/preprocessing/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config || {}),
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) setPrepPayload(payload.data);
+          await loadRepoAndDocs();
+        }
+      } finally {
+        setPrepRunning(false);
+      }
+    },
+    [loadRepoAndDocs]
+  );
+
+  const loadFeaturesMetrics = useCallback(async () => {
+    setFeaturesLoading(true);
+    try {
+      const res = await fetch('/api/features/metrics');
+      if (res.ok) setFeaturesPayload(await res.json());
+    } finally {
+      setFeaturesLoading(false);
+    }
+  }, []);
+
+  const handleRunDay4Features = useCallback(
+    async (params?: { topK: number; normalization: 'none' | 'snv' | 'msc' }) => {
+      setFeaturesRunning(true);
+      try {
+        const res = await fetch('/api/features/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params || { topK: 5, normalization: 'snv' }),
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) setFeaturesPayload(payload.data);
+          await loadRepoAndDocs();
+        }
+      } finally {
+        setFeaturesRunning(false);
+      }
+    },
+    [loadRepoAndDocs]
+  );
+
+  const handleRunHeaderCta = useCallback(async () => {
+    if (activeTab === 'day2') {
+      await handleRunDay2Eda();
+    } else if (activeTab === 'day4') {
+      await handleRunDay4Features({ topK: 5, normalization: 'snv' });
+    } else {
+      await handleRunDay3Preprocessing();
+    }
+  }, [activeTab, handleRunDay2Eda, handleRunDay3Preprocessing, handleRunDay4Features]);
+
   const loadDataset = useCallback(async (source: 'primary' | 'synthetic') => {
     setDatasetLoading(true);
     try {
@@ -261,7 +348,9 @@ export default function App() {
     loadEnv();
     loadRepoAndDocs();
     loadEdaMetrics();
-  }, [loadEnv, loadRepoAndDocs, loadEdaMetrics]);
+    loadPreprocessingMetrics();
+    loadFeaturesMetrics();
+  }, [loadEnv, loadRepoAndDocs, loadEdaMetrics, loadPreprocessingMetrics, loadFeaturesMetrics]);
 
   useEffect(() => {
     loadDataset(datasetSource);
@@ -311,6 +400,26 @@ export default function App() {
     updateDay1State({ day2CompletedBlocks: next });
   };
 
+  const toggleDay3Block = (blockId: number) => {
+    if (!day1State) return;
+    const current = day1State.day3CompletedBlocks ?? [1, 2, 3, 4, 5, 6, 7];
+    const exists = current.includes(blockId);
+    const next = exists
+      ? current.filter((id) => id !== blockId)
+      : [...current, blockId].sort((a, b) => a - b);
+    updateDay1State({ day3CompletedBlocks: next });
+  };
+
+  const toggleDay4Block = (blockId: number) => {
+    if (!day1State) return;
+    const current = day1State.day4CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+    const exists = current.includes(blockId);
+    const next = exists
+      ? current.filter((id) => id !== blockId)
+      : [...current, blockId].sort((a, b) => a - b);
+    updateDay1State({ day4CompletedBlocks: next });
+  };
+
   const saveDocument = async (key: string, content: string) => {
     setSaveFeedback('Saving...');
     try {
@@ -355,7 +464,8 @@ export default function App() {
 
   const completedCount = day1State?.completedBlocks.length ?? 0;
   const day2CompletedBlocks = day1State?.day2CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-  const day2CompletedCount = day2CompletedBlocks.length;
+  const day3CompletedBlocks = day1State?.day3CompletedBlocks ?? [1, 2, 3, 4, 5, 6, 7];
+  const day4CompletedBlocks = day1State?.day4CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
   const passedPackages = envResult?.packages.filter((p) => p.status === 'ok').length ?? 0;
   const totalPackages = envResult?.packages.length ?? 6;
   const presentDirs = repoStatus?.directories.filter((d) => d.exists).length ?? 0;
@@ -363,9 +473,13 @@ export default function App() {
 
   const activeDoc = docs.find((d) => d.key === selectedDocKey);
   const dataSummaryDoc = docs.find((d) => d.key === 'data_summary')?.content || '';
+  const preprocessingNoteDoc = docs.find((d) => d.key === 'preprocessing_note')?.content || '';
+  const featureNoteDoc = docs.find((d) => d.key === 'feature_engineering_note')?.content || '';
   const isDocEditable =
     selectedDocKey === 'project_brief' ||
     selectedDocKey === 'data_summary' ||
+    selectedDocKey === 'preprocessing_note' ||
+    selectedDocKey === 'feature_engineering_note' ||
     selectedDocKey === 'dataset_note' ||
     selectedDocKey === 'mentor_message' ||
     selectedDocKey === 'readme';
@@ -388,8 +502,9 @@ export default function App() {
     { id: 'overview', label: 'Overview' },
     { id: 'day1', label: 'Day 1' },
     { id: 'day2', label: 'Day 2 EDA' },
-    { id: 'brief', label: 'Docs' },
-    { id: 'repository', label: 'Repository' },
+    { id: 'day3', label: 'Day 3 Prep' },
+    { id: 'day4', label: 'Day 4 Features' },
+    { id: 'brief', label: 'Docs & Repo' },
   ];
 
   const activeEda = edaPayload
@@ -397,6 +512,26 @@ export default function App() {
       ? edaPayload.synthetic
       : edaPayload.primary
     : null;
+
+  const activePrep = prepPayload
+    ? pipelineSource === 'synthetic'
+      ? prepPayload.synthetic
+      : prepPayload.primary
+    : null;
+
+  const activeFeatures = featuresPayload
+    ? pipelineSource === 'synthetic'
+      ? featuresPayload.synthetic
+      : featuresPayload.primary
+    : null;
+
+  const bestFeatureSet = activeFeatures
+    ? [...activeFeatures.manifest.feature_sets].sort(
+        (a, b) => Math.max(b.cv_macro_f1_lr, b.cv_macro_f1_rf) - Math.max(a.cv_macro_f1_lr, a.cv_macro_f1_rf)
+      )[0]
+    : null;
+
+  const headerRunning = edaRunning || prepRunning || featuresRunning;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -411,7 +546,7 @@ export default function App() {
             SpectralCrop
           </button>
 
-          <nav className="hidden md:flex items-center gap-7" aria-label="Primary navigation">
+          <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
@@ -434,12 +569,20 @@ export default function App() {
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={handleRunDay2Eda}
-              disabled={edaRunning}
+              onClick={handleRunHeaderCta}
+              disabled={headerRunning}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-teal-800 hover:bg-teal-900 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${edaRunning ? 'animate-spin' : ''}`} />
-              <span>{edaRunning ? 'Running EDA...' : 'Run Day 2 EDA'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${headerRunning ? 'animate-spin' : ''}`} />
+              <span>
+                {headerRunning
+                  ? 'Running...'
+                  : activeTab === 'day2'
+                    ? 'Run Day 2 EDA'
+                    : activeTab === 'day4'
+                      ? 'Run Day 4 Features'
+                      : 'Run Day 3 Prep'}
+              </span>
             </button>
           </div>
         </div>
@@ -466,69 +609,70 @@ export default function App() {
         <section className="space-y-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-mono">
-              <span>Day 1 &amp; Day 2</span>
+              <span>Day 1 – Day 4</span>
               <span aria-hidden="true">·</span>
-              <span>Tue 17 Nov</span>
+              <span>Mon 16 Nov – Thu 19 Nov</span>
               <span aria-hidden="true">·</span>
-              <span>Data Loading, Spectral EDA &amp; Band Audit</span>
+              <span>EDA, Preprocessing &amp; Leak-Free Feature Sets A–E</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 [text-wrap:balance] max-w-3xl">
               Crop Stress Detection &amp; Temporal Forecast Workbench
             </h1>
             <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
-              Load spectral matrices via <code className="font-mono text-slate-800">src/data.py</code>,
-              audit anomalies and outlier scans, inspect red-edge and NIR separability, and document
-              bands to drop on Day 3.
+              Execute modular scikit-learn spectral preprocessing (<code className="font-mono text-slate-800">src/preprocessing.py</code>)
+              and build leak-free vegetation index, PCA, and RF/MI Feature Sets A–E (<code className="font-mono text-slate-800">src/features.py</code>).
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Day 2 EDA Blocks</div>
+              <div className="text-xs font-medium text-slate-500">Pipeline Progress</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {day2CompletedCount} / 6
+                  Day 1–4
                 </span>
                 <span className="text-xs font-mono text-slate-400">
-                  (Day 1: {completedCount}/6)
+                  {completedCount + day2CompletedBlocks.length + day3CompletedBlocks.length + day4CompletedBlocks.length} / 25 blocks
                 </span>
               </div>
               <div className="mt-2 text-xs text-teal-800 font-medium">
-                {day2CompletedCount === 6 ? '● All Day 2 tasks complete' : '▲ EDA blocks in progress'}
+                ● Ready for Day 5 Baseline &amp; XGBoost
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Labeled Spectra Shape</div>
+              <div className="text-xs font-medium text-slate-500">Day 3 Aligned Bands</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {activeEda ? activeEda.sanity.labeled_rows.toLocaleString() : '2,280'}
+                  {activePrep ? activePrep.manifest.wavelengths_out_nm.length : 9} bands
                 </span>
                 <span className="text-xs font-mono text-slate-400">
-                  × {activeEda ? activeEda.sanity.n_bands : 10} bands
+                  ({activePrep ? activePrep.manifest.train_rows : 1815} tr / {activePrep ? activePrep.manifest.test_rows : 457} te)
                 </span>
               </div>
               <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
-                {activeEda
-                  ? `${activeEda.grouping.unique_plants} plants · ${activeEda.sanity.rows_with_missing_spectra ?? 0} NaN rows`
-                  : 'Loading EDA...'}
+                {activePrep
+                  ? `Dropped ${activePrep.manifest.dropped_wavelengths_nm.join(', ') || 'none'} nm · ${activePrep.dropped_nan_rows} NaN rows`
+                  : 'Loading preprocessing...'}
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Outliers &amp; Drop Bands</div>
+              <div className="text-xs font-medium text-slate-500">Day 4 Best Feature Set</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {activeEda ? activeEda.outliers.outlier_count : '172'}
+                  {bestFeatureSet ? bestFeatureSet.code : 'Set E'}
                 </span>
-                <span className="text-xs font-mono text-slate-400">
-                  outliers ({activeEda ? activeEda.outliers.outlier_percent : '7.57'}%)
+                <span className="text-xs font-mono text-teal-800 font-semibold">
+                  {bestFeatureSet
+                    ? `F1 ${Math.max(bestFeatureSet.cv_macro_f1_lr, bestFeatureSet.cv_macro_f1_rf).toFixed(3)}`
+                    : 'Computing CV...'}
                 </span>
               </div>
-              <div className="mt-2 text-xs text-amber-800 font-medium font-mono">
-                {activeEda
-                  ? `${activeEda.bands_to_drop_day3.length} bands flagged for Day 3`
-                  : 'Auditing bands...'}
+              <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
+                {bestFeatureSet
+                  ? `${bestFeatureSet.n_features} features · Plant-Grouped CV`
+                  : 'Auditing sets A–E...'}
               </div>
             </div>
 
@@ -557,10 +701,10 @@ export default function App() {
               <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-base font-semibold text-slate-900">
-                    Day 1 Done-When Verification
+                    Day 1 – Day 4 Done-When Verification
                   </h2>
                   <span className="text-xs font-mono text-slate-500">
-                    Carry forward to Day 2 &amp; Day 5
+                    Ready for Day 5 Modeling
                   </span>
                 </div>
 
@@ -568,62 +712,29 @@ export default function App() {
                   <div className="py-3 flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium text-slate-900">
-                        1. Mentor messaged and scope written down
+                        1. Day 1 Environment, Git Repo &amp; Dataset Scope Locked
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Detection baseline + temporal forecast scope drafted in{' '}
-                        <code className="font-mono text-slate-700">docs/mentor_message.md</code> and{' '}
-                        <code className="font-mono text-slate-700">docs/project_brief.md</code>.
+                        Zenodo 22755812 + Synthetic fallback verified via{' '}
+                        <code className="font-mono text-slate-700">verify_env.py</code>.
                       </p>
                     </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        setActiveTab('day1');
-                        setActiveBlockId(1);
-                      }}
+                      onClick={() => setActiveTab('day1')}
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      {day1State?.mentorMessaged ? '● Ready' : 'Review'}
+                      ● Open Day 1
                     </button>
                   </div>
 
                   <div className="py-3 flex items-start justify-between gap-4">
                     <div>
                       <div className="text-sm font-medium text-slate-900">
-                        2. Environment runs and test import of every library works
+                        2. Day 2 Data Loading &amp; Spectral EDA ({activeEda ? activeEda.sanity.labeled_rows : 2280} scans)
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Verified via{' '}
-                        <code className="font-mono text-slate-700">
-                          python3 src/pipeline/verify_env.py
-                        </code>{' '}
-                        across all 6 stack libraries.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveTab('day1');
-                        setActiveBlockId(3);
-                      }}
-                      className={`text-xs font-medium hover:underline whitespace-nowrap shrink-0 cursor-pointer ${
-                        envResult?.all_ok ? 'text-teal-800' : 'text-amber-700'
-                      }`}
-                    >
-                      {envResult?.all_ok ? '● Verified' : '▲ Inspect'}
-                    </button>
-                  </div>
-
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        3. Day 2 EDA, figures &amp; Day 3 band-drop list generated
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Reproducible summary in{' '}
-                        <code className="font-mono text-slate-700">docs/data_summary.md</code> and 4
-                        figures in <code className="font-mono text-slate-700">reports/figures/</code>.
+                        <code className="font-mono text-slate-700">src/data.py</code>, 4 EDA figures, outlier audit &amp; <code className="font-mono text-slate-700">docs/data_summary.md</code>.
                       </p>
                     </div>
                     <button
@@ -632,6 +743,42 @@ export default function App() {
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                     >
                       ● Open Day 2 EDA
+                    </button>
+                  </div>
+
+                  <div className="py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">
+                        3. Day 3 Preprocessing Pipeline (SavGol, SNV, MSC, 1st Deriv)
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Leak-free <code className="font-mono text-slate-700">src/preprocessing.py</code> &amp; <code className="font-mono text-slate-700">notebooks/02_preprocessing.ipynb</code> with aligned wavelengths.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('day3')}
+                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      ● Open Day 3 Prep
+                    </button>
+                  </div>
+
+                  <div className="py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">
+                        4. Day 4 Feature Sets A–E, VIs &amp; Train-Only PCA / RF+MI Selection
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        <code className="font-mono text-slate-700">src/features.py</code>, MCARI (Daughtry et al. 2000), &amp; saved `.npz` sets in <code className="font-mono text-slate-700">data/processed/</code>.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('day4')}
+                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      ● Open Day 4 Features
                     </button>
                   </div>
                 </div>
@@ -1186,6 +1333,7 @@ export default function App() {
               onOpenDoc={(key) => {
                 setSelectedDocKey(key);
                 setDocEditMode(false);
+                setWorkspaceSub('docs');
                 setActiveTab('brief');
               }}
             />
@@ -1300,10 +1448,84 @@ export default function App() {
           </div>
         )}
 
+        {/* DAY 3 PREPROCESSING & SPECTRAL TRANSFORMS VIEW */}
+        {activeTab === 'day3' && (
+          <Day3PreprocessingView
+            prepPayload={prepPayload}
+            prepLoading={prepLoading}
+            prepRunning={prepRunning}
+            source={pipelineSource}
+            onChangeSource={setPipelineSource}
+            onRunPreprocessing={handleRunDay3Preprocessing}
+            completedBlocks={day3CompletedBlocks}
+            onToggleBlock={toggleDay3Block}
+            noteMarkdown={preprocessingNoteDoc}
+            onOpenDoc={(key) => {
+              setSelectedDocKey(key);
+              setDocEditMode(false);
+              setWorkspaceSub('docs');
+              setActiveTab('brief');
+            }}
+          />
+        )}
 
-        {/* PROJECT BRIEF & DOCUMENTATION VIEW */}
+        {/* DAY 4 FEATURE ENGINEERING VIEW */}
+        {activeTab === 'day4' && (
+          <Day4FeaturesView
+            featuresPayload={featuresPayload}
+            featuresLoading={featuresLoading}
+            featuresRunning={featuresRunning}
+            source={pipelineSource}
+            onChangeSource={setPipelineSource}
+            onRunFeatures={handleRunDay4Features}
+            completedBlocks={day4CompletedBlocks}
+            onToggleBlock={toggleDay4Block}
+            noteMarkdown={featureNoteDoc}
+            onOpenDoc={(key) => {
+              setSelectedDocKey(key);
+              setDocEditMode(false);
+              setWorkspaceSub('docs');
+              setActiveTab('brief');
+            }}
+          />
+        )}
+
+        {/* DOCS & REPOSITORY UNIFIED VIEW */}
         {activeTab === 'brief' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg px-5 py-3">
+              <div>
+                <h2 className="text-base font-semibold text-slate-900">
+                  Project Documentation, Scripts &amp; Repository Manifest
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Inspect/edit markdown notes, review Python source modules, and audit Git commit status
+                </p>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceSub('docs')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${
+                    workspaceSub === 'docs' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                  }`}
+                >
+                  Documentation &amp; Code ({docs.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceSub('repo')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${
+                    workspaceSub === 'repo' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                  }`}
+                >
+                  Repository &amp; Git ({repoStatus?.files.filter((f) => f.exists).length ?? 0}/{repoStatus?.files.length ?? 0})
+                </button>
+              </div>
+            </div>
+
+            {workspaceSub === 'docs' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <aside className="lg:col-span-3 bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
               {docs.map((doc) => (
                 <button
@@ -1392,12 +1614,11 @@ export default function App() {
                 <MarkdownViewer content={activeDoc?.content || ''} />
               )}
             </div>
-          </div>
-        )}
+            </div>
+            )}
 
-        {/* REPOSITORY & GIT AUDIT VIEW */}
-        {activeTab === 'repository' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {workspaceSub === 'repo' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-7 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-semibold text-slate-900">
@@ -1491,6 +1712,8 @@ git push -u origin main`}
                 </pre>
               </div>
             </div>
+          </div>
+            )}
           </div>
         )}
       </main>

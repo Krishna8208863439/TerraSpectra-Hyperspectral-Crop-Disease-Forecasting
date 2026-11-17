@@ -11,10 +11,14 @@ const PORT = Number(process.env.PORT || 3000);
 const DOC_FILES: Record<string, { label: string; relPath: string }> = {
   project_brief: { label: 'One-Page Project Brief', relPath: 'docs/project_brief.md' },
   data_summary: { label: 'Day 2 Data Summary', relPath: 'docs/data_summary.md' },
+  preprocessing_note: { label: 'Day 3 Preprocessing Note', relPath: 'docs/preprocessing_note.md' },
+  feature_engineering_note: { label: 'Day 4 Feature Engineering Note', relPath: 'docs/feature_engineering_note.md' },
   dataset_note: { label: 'Dataset Decision Note', relPath: 'docs/dataset_note.md' },
   mentor_message: { label: 'Mentor Scope Message', relPath: 'docs/mentor_message.md' },
   readme: { label: 'Repository README', relPath: 'README.md' },
   data_loader: { label: 'Day 2 Loader (src/data.py)', relPath: 'src/data.py' },
+  preprocessing_py: { label: 'Day 3 Pipeline (src/preprocessing.py)', relPath: 'src/preprocessing.py' },
+  features_py: { label: 'Day 4 Features (src/features.py)', relPath: 'src/features.py' },
   requirements: { label: 'Python Requirements', relPath: 'requirements.txt' },
   verify_env: { label: 'Env Verification Script', relPath: 'src/pipeline/verify_env.py' },
 };
@@ -29,6 +33,8 @@ interface Day1State {
   selectedDataset: 'primary_zenodo' | 'synthetic_fallback';
   completedBlocks: number[];
   day2CompletedBlocks: number[];
+  day3CompletedBlocks: number[];
+  day4CompletedBlocks: number[];
   updatedAt: string;
 }
 
@@ -40,6 +46,8 @@ const DEFAULT_STATE: Day1State = {
   selectedDataset: 'primary_zenodo',
   completedBlocks: [1, 2, 3, 4, 5, 6],
   day2CompletedBlocks: [1, 2, 3, 4, 5, 6],
+  day3CompletedBlocks: [1, 2, 3, 4, 5, 6, 7],
+  day4CompletedBlocks: [1, 2, 3, 4, 5, 6],
   updatedAt: new Date().toISOString(),
 };
 
@@ -434,19 +442,34 @@ async function createServer() {
       'docs/project_brief.md',
       'docs/dataset_note.md',
       'docs/data_summary.md',
+      'docs/preprocessing_note.md',
+      'docs/feature_engineering_note.md',
       'docs/mentor_message.md',
       'src/data.py',
+      'src/preprocessing.py',
+      'src/features.py',
       'src/pipeline/verify_env.py',
       'src/pipeline/run_day2_eda.py',
+      'src/pipeline/run_day3_preprocessing.py',
+      'src/pipeline/run_day4_features.py',
       'notebooks/01_day1_env_and_data_check.ipynb',
       'notebooks/01_eda.ipynb',
+      'notebooks/02_preprocessing.ipynb',
+      'notebooks/03_features.ipynb',
       'reports/figures/01_mean_spectra_variance.png',
       'reports/figures/02_difference_spectrum_red_edge.png',
       'reports/figures/03_class_group_and_outliers.png',
       'reports/figures/04_temporal_spectral_progression.png',
+      'reports/figures/05_preprocessing_comparison.png',
+      'reports/figures/06_savgol_and_derivative_comparison.png',
+      'reports/figures/07_pca_variance_and_band_importance.png',
+      'reports/figures/08_feature_sets_and_indices.png',
       'data/raw/Multispectral_Reflectance.csv',
       'data/raw/experimental_design.csv',
       'data/raw/synthetic_leaf_disease_spectra_v1.csv',
+      'data/processed/primary_day3_preprocessed.npz',
+      'data/processed/primary_feature_set_Set_A.npz',
+      'data/processed/primary_feature_set_Set_E.npz',
     ];
 
     const directories = expectedDirs.map((d) => {
@@ -552,6 +575,8 @@ async function createServer() {
     if (
       key !== 'project_brief' &&
       key !== 'data_summary' &&
+      key !== 'preprocessing_note' &&
+      key !== 'feature_engineering_note' &&
       key !== 'dataset_note' &&
       key !== 'mentor_message' &&
       key !== 'readme'
@@ -621,6 +646,85 @@ async function createServer() {
       return;
     }
     res.sendFile(full);
+  });
+
+  app.get('/api/preprocessing/metrics', async (_req, res) => {
+    const metricsPath = path.join(ROOT_DIR, 'reports', 'day3_preprocessing_metrics.json');
+    try {
+      if (!fs.existsSync(metricsPath)) {
+        await execFileAsync('python3', ['src/pipeline/run_day3_preprocessing.py'], {
+          cwd: ROOT_DIR,
+          timeout: 45000,
+        });
+      }
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load Day 3 preprocessing metrics';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/preprocessing/run', async (req, res) => {
+    try {
+      const args = ['src/pipeline/run_day3_preprocessing.py'];
+      if (req.body && Object.keys(req.body).length > 0) {
+        args.push('--config-json', JSON.stringify(req.body));
+      }
+      const { stdout } = await execFileAsync('python3', args, {
+        cwd: ROOT_DIR,
+        timeout: 45000,
+      });
+      const metricsPath = path.join(ROOT_DIR, 'reports', 'day3_preprocessing_metrics.json');
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json({ ok: true, log: stdout, data: JSON.parse(raw) });
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Preprocessing run failed' });
+    }
+  });
+
+  app.get('/api/features/metrics', async (_req, res) => {
+    const metricsPath = path.join(ROOT_DIR, 'reports', 'day4_features_metrics.json');
+    try {
+      if (!fs.existsSync(metricsPath)) {
+        await execFileAsync('python3', ['src/pipeline/run_day4_features.py'], {
+          cwd: ROOT_DIR,
+          timeout: 60000,
+        });
+      }
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load Day 4 feature metrics';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/features/run', async (req, res) => {
+    try {
+      const topK = Number(req.body?.topK) || 5;
+      const normalization = ['none', 'snv', 'msc'].includes(req.body?.normalization)
+        ? req.body.normalization
+        : 'snv';
+      const args = [
+        'src/pipeline/run_day4_features.py',
+        '--top-k',
+        String(Math.max(2, Math.min(15, topK))),
+        '--normalization',
+        normalization,
+      ];
+      const { stdout } = await execFileAsync('python3', args, {
+        cwd: ROOT_DIR,
+        timeout: 60000,
+      });
+      const metricsPath = path.join(ROOT_DIR, 'reports', 'day4_features_metrics.json');
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json({ ok: true, log: stdout, data: JSON.parse(raw) });
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Feature engineering run failed' });
+    }
   });
 
   if (process.env.NODE_ENV !== 'production') {
