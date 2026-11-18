@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ExternalLink, Play, RefreshCw, X } from 'lucide-react';
+import { ExternalLink, Play, RefreshCw, X } from 'lucide-react';
 import { DifferenceSpectrumChart, OutlierHistogramChart } from './Day2Charts';
 import { MarkdownViewer } from './MarkdownViewer';
 import {
@@ -15,20 +15,9 @@ interface Day2EdaViewProps {
   edaSource: 'primary' | 'synthetic';
   onChangeSource: (src: 'primary' | 'synthetic') => void;
   onRunEda: () => void;
-  completedBlocks: number[];
-  onToggleBlock: (blockId: number) => void;
   dataSummaryMarkdown: string;
   onOpenDoc: (key: string) => void;
 }
-
-const DAY2_SCHEDULE = [
-  { id: 1, title: 'Unified Loader (src/data.py)', time: '1 h' },
-  { id: 2, title: 'Sanity Checks & Axis Audit', time: '45 min' },
-  { id: 3, title: 'Class Balance & Grouping Keys', time: '45 min' },
-  { id: 4, title: 'Mean Spectra & Variance Bands', time: '1 h' },
-  { id: 5, title: 'Difference Spectrum & Red Edge', time: '1 h' },
-  { id: 6, title: 'Clean Notebook & Data Summary', time: '1 h' },
-];
 
 export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
   edaPayload,
@@ -37,8 +26,6 @@ export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
   edaSource,
   onChangeSource,
   onRunEda,
-  completedBlocks,
-  onToggleBlock,
   dataSummaryMarkdown,
   onOpenDoc,
 }) => {
@@ -108,19 +95,17 @@ export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Control & Schedule Strip */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
+      {/* Control Header */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-              <span>Day 2</span>
+              <span>src/data.py</span>
               <span aria-hidden="true">·</span>
-              <span>Tue 17 Nov</span>
-              <span aria-hidden="true">·</span>
-              <span>Data Loading &amp; EDA</span>
+              <span>Spectral Sanity &amp; Red-Edge Discriminability</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-0.5">
-              Spectral Sanity Checks, Discriminability &amp; Band Audit
+              Dataset Profiling, Wavelength Separation &amp; Outlier Audit
             </h2>
           </div>
 
@@ -153,36 +138,9 @@ export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${edaRunning ? 'animate-spin' : ''}`} />
-              <span>{edaRunning ? 'Running Python EDA...' : 'Rerun Python EDA'}</span>
+              <span>{edaRunning ? 'Running EDA...' : 'Rerun EDA Script'}</span>
             </button>
           </div>
-        </div>
-
-        {/* Interactive Day 2 6-block checklist strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-4 border-t border-slate-100">
-          {DAY2_SCHEDULE.map((blk) => {
-            const done = completedBlocks.includes(blk.id);
-            return (
-              <button
-                key={blk.id}
-                type="button"
-                onClick={() => onToggleBlock(blk.id)}
-                className={`text-left p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  done
-                    ? 'bg-slate-50 border-slate-200 text-slate-900'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                  <span>B0{blk.id} · {blk.time}</span>
-                  <span className={done ? 'text-teal-800 font-semibold' : 'text-slate-400'}>
-                    {done ? <Check className="w-3.5 h-3.5 inline" /> : '○'}
-                  </span>
-                </div>
-                <div className="text-xs font-medium mt-1 truncate">{blk.title}</div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Sub-section segmented bar */}
@@ -214,7 +172,7 @@ export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
           <div className="lg:col-span-7 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-900">
-                Block 2 Sanity Checks (<code className="font-mono text-xs">src/data.py</code>)
+                Matrix Integrity &amp; Sanity Checks (<code className="font-mono text-xs">src/data.py</code>)
               </h3>
               <span className="text-xs font-mono text-teal-800 font-medium">
                 ● Verified from Python output
@@ -276,7 +234,7 @@ export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-slate-900">Block 3 Class Balance</h3>
+                <h3 className="text-sm font-semibold text-slate-900">Class Distribution</h3>
                 <span className="text-xs font-mono tabular-nums text-slate-500">
                   Ratio {activeData.imbalance_ratio}:1
                 </span>
@@ -478,10 +436,10 @@ export const Day2EdaView: React.FC<Day2EdaViewProps> = ({
             <div className="lg:col-span-6 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Done-When #3: Bands Flagged to Drop on Day 3
+                  Low-SNR Bands Flagged for Ablation
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Spectrum edge bands and water-absorption shoulder channels identified for Day 3 ablation
+                  Spectrum edge bands and water-absorption shoulder channels evaluated in Spectral Preprocessing
                 </p>
               </div>
               <div className="space-y-3">

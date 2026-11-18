@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   AlertTriangle,
-  Check,
   ExternalLink,
   Lock,
   Play,
@@ -24,20 +23,9 @@ interface Day5BaselinesViewProps {
   source: 'primary' | 'synthetic';
   onChangeSource: (src: 'primary' | 'synthetic') => void;
   onRunBaselines: (groupCol: 'plant_id' | 'plot_id' | 'field_id') => void;
-  completedBlocks: number[];
-  onToggleBlock: (blockId: number) => void;
   noteMarkdown: string;
   onOpenDoc: (key: string) => void;
 }
-
-const DAY5_SCHEDULE = [
-  { id: 1, title: 'StratifiedGroupKFold Harness', time: '60 min' },
-  { id: 2, title: '4 Baselines on Feature Set A', time: '90 min' },
-  { id: 3, title: 'Best Model Across Sets B–E', time: '90 min' },
-  { id: 4, title: 'Mean ± Std & Confusion Matrix', time: '60 min' },
-  { id: 5, title: 'Naive-Split Leakage Demo', time: '45 min' },
-  { id: 6, title: 'Baseline Report & CSV Saved', time: '30 min' },
-];
 
 export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
   baselinesPayload,
@@ -46,8 +34,6 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
   source,
   onChangeSource,
   onRunBaselines,
-  completedBlocks,
-  onToggleBlock,
   noteMarkdown,
   onOpenDoc,
 }) => {
@@ -95,15 +81,13 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
+      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-              <span>Day 5</span>
+              <span>src/evaluation.py</span>
               <span aria-hidden="true">·</span>
-              <span>Fri 20 Nov</span>
-              <span aria-hidden="true">·</span>
-              <span>Baseline Models &amp; Leak-Free Evaluation</span>
+              <span>StratifiedGroupKFold &amp; Leakage Audit</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-0.5">
               Random Forest, XGBoost, SVM &amp; PLS-DA Across Feature Sets A–E
@@ -152,36 +136,9 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${baselinesRunning ? 'animate-spin' : ''}`} />
-              <span>{baselinesRunning ? 'Training CV...' : 'Rerun Baselines'}</span>
+              <span>{baselinesRunning ? 'Training CV...' : 'Rerun Grouped CV'}</span>
             </button>
           </div>
-        </div>
-
-        {/* 6-Block Schedule Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-4 border-t border-slate-100">
-          {DAY5_SCHEDULE.map((blk) => {
-            const done = completedBlocks.includes(blk.id);
-            return (
-              <button
-                key={blk.id}
-                type="button"
-                onClick={() => onToggleBlock(blk.id)}
-                className={`text-left p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  done
-                    ? 'bg-slate-50 border-slate-200 text-slate-900'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                  <span>B0{blk.id} · {blk.time}</span>
-                  <span className={done ? 'text-teal-800 font-semibold' : 'text-slate-400'}>
-                    {done ? <Check className="w-3.5 h-3.5 inline" /> : '○'}
-                  </span>
-                </div>
-                <div className="text-xs font-medium mt-1 truncate">{blk.title}</div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Leak-free guarantee & Winner Strip */}
@@ -314,7 +271,7 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
             <div className="px-5 py-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Block 2: Four Baseline Models on Feature Set A (Mean ± Std Over 5 Folds)
+                  Four Baseline Models on Feature Set A (Mean ± Std Over 5 Folds)
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   All models trained strictly on identical grouped splits ({activeData.split_manifest.group_column})
@@ -367,7 +324,7 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
             <div className="lg:col-span-7 bg-white border border-slate-200 rounded-lg overflow-hidden">
               <div className="px-5 py-3.5 border-b border-slate-200">
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Block 3: {activeData.best_model_feature_sets[0]?.model_name} Across Feature Sets A–E
+                  {activeData.best_model_feature_sets[0]?.model_name} Across Feature Sets A–E
                 </h3>
               </div>
               <div className="overflow-x-auto">
@@ -408,7 +365,7 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
             <div className="lg:col-span-5 bg-white border border-slate-200 rounded-lg overflow-hidden">
               <div className="px-5 py-3.5 border-b border-slate-200">
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Block 1 Fold Leak-Free Audit ({activeData.split_manifest.group_column})
+                  Fold Leak-Free Split Audit ({activeData.split_manifest.group_column})
                 </h3>
                 <p className="text-[11px] font-mono text-slate-500 mt-0.5">
                   Saved: data/processed/{activeData.source}_day5_cv_splits.json
@@ -453,7 +410,7 @@ export const Day5BaselinesView: React.FC<Day5BaselinesViewProps> = ({
               <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-sm font-bold text-slate-900">
-                  Block 5 Empirical Leakage Proof: Why Naive Random Splits Overstate Accuracy
+                  Empirical Leakage Proof: Why Naive Random Splits Overstate Accuracy
                 </h3>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                   Re-running <strong>{leak.model_name} (Set {leak.feature_set_code})</strong> with a standard random <code className="font-mono">StratifiedKFold</code> (ignoring <code className="font-mono">plant_id</code>) leaks replicate daily scans of the exact same physical plants between training and test folds, artificially inflating Macro-F1 by <strong className="font-mono text-rose-700">{leak.inflation_macro_f1 >= 0 ? `+${leak.inflation_macro_f1.toFixed(4)}` : leak.inflation_macro_f1.toFixed(4)}</strong> and Balanced Accuracy by <strong className="font-mono text-rose-700">{leak.inflation_balanced_acc >= 0 ? `+${leak.inflation_balanced_acc.toFixed(4)}` : leak.inflation_balanced_acc.toFixed(4)}</strong>.

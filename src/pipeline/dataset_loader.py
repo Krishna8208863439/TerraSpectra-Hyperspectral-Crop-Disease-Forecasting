@@ -31,6 +31,7 @@ SPECTRAL_BAND_COLS = [
 
 
 def load_primary_dataset() -> pd.DataFrame:
+    """Load and merge Zenodo multispectral reflectance CSV with plant experimental design metadata."""
     design_path = RAW_DIR / "experimental_design.csv"
     spectra_path = RAW_DIR / "Multispectral_Reflectance.csv"
     if not design_path.exists() or not spectra_path.exists():
@@ -43,6 +44,7 @@ def load_primary_dataset() -> pd.DataFrame:
 
 
 def summarize_dataset() -> dict:
+    """Compute structural shape, label balance, wavelength stats, and mean curves per class."""
     df = load_primary_dataset()
     wavelengths = [int(c.split("_")[1]) for c in SPECTRAL_BAND_COLS]
     label_counts = df["Treatment"].fillna("Unknown").value_counts().to_dict()

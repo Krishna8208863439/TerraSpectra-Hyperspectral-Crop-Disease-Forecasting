@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ExternalLink, Play, RefreshCw, SlidersHorizontal, X } from 'lucide-react';
+import { ExternalLink, Play, RefreshCw, SlidersHorizontal, X } from 'lucide-react';
 import { PreprocessingAblationChart } from './Day3And4Charts';
 import { MarkdownViewer } from './MarkdownViewer';
 import { SpectralReflectanceChart } from './SpectralCharts';
@@ -17,21 +17,9 @@ interface Day3PreprocessingViewProps {
   source: 'primary' | 'synthetic';
   onChangeSource: (src: 'primary' | 'synthetic') => void;
   onRunPreprocessing: (config?: Partial<PreprocessingConfigDto>) => void;
-  completedBlocks: number[];
-  onToggleBlock: (blockId: number) => void;
   noteMarkdown: string;
   onOpenDoc: (key: string) => void;
 }
-
-const DAY3_SCHEDULE = [
-  { id: 1, title: 'Drop Bad Edges & Water Bands', time: '45 min' },
-  { id: 2, title: 'Clip & Sanitize Reflectance', time: '45 min' },
-  { id: 3, title: 'Savitzky-Golay Smoothing', time: '1 h' },
-  { id: 4, title: 'SNV & Train-Fit MSC', time: '1 h' },
-  { id: 5, title: 'First-Derivative Spectra', time: '45 min' },
-  { id: 6, title: 'Raw vs. Processed Plots', time: '1 h' },
-  { id: 7, title: 'src/preprocessing.py Pipeline', time: '75 min' },
-];
 
 export const Day3PreprocessingView: React.FC<Day3PreprocessingViewProps> = ({
   prepPayload,
@@ -40,8 +28,6 @@ export const Day3PreprocessingView: React.FC<Day3PreprocessingViewProps> = ({
   source,
   onChangeSource,
   onRunPreprocessing,
-  completedBlocks,
-  onToggleBlock,
   noteMarkdown,
   onOpenDoc,
 }) => {
@@ -129,19 +115,17 @@ export const Day3PreprocessingView: React.FC<Day3PreprocessingViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header & Schedule Strip */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
+      {/* Control Header */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-              <span>Day 3</span>
+              <span>src/preprocessing.py</span>
               <span aria-hidden="true">·</span>
-              <span>Wed 18 Nov</span>
-              <span aria-hidden="true">·</span>
-              <span>Preprocessing &amp; Spectral Transforms</span>
+              <span>Leak-Free Spectral Transforms &amp; Ablation</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-0.5">
-              Leak-Free Spectral Cleaning, Savitzky-Golay, SNV/MSC &amp; Derivatives
+              Spectral Cleaning, Savitzky-Golay, SNV/MSC &amp; First-Derivative Studio
             </h2>
           </div>
 
@@ -174,34 +158,9 @@ export const Day3PreprocessingView: React.FC<Day3PreprocessingViewProps> = ({
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${prepRunning ? 'animate-spin' : ''}`} />
-              <span>{prepRunning ? 'Running Pipeline...' : 'Apply & Rerun Pipeline'}</span>
+              <span>{prepRunning ? 'Running Pipeline...' : 'Apply & Rerun Transform'}</span>
             </button>
           </div>
-        </div>
-
-        {/* 7-block Schedule Tracker */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 pt-4 border-t border-slate-100">
-          {DAY3_SCHEDULE.map((blk) => {
-            const done = completedBlocks.includes(blk.id);
-            return (
-              <button
-                key={blk.id}
-                type="button"
-                onClick={() => onToggleBlock(blk.id)}
-                className={`text-left p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  done ? 'bg-slate-50 border-slate-200 text-slate-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                  <span>B0{blk.id} · {blk.time}</span>
-                  <span className={done ? 'text-teal-800 font-semibold' : 'text-slate-400'}>
-                    {done ? <Check className="w-3.5 h-3.5 inline" /> : '○'}
-                  </span>
-                </div>
-                <div className="text-xs font-medium mt-1 truncate">{blk.title}</div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Interactive Switchable Config Controls */}
@@ -386,7 +345,7 @@ export const Day3PreprocessingView: React.FC<Day3PreprocessingViewProps> = ({
 
           <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
             <h3 className="text-sm font-semibold text-slate-900">
-              Block 3 Savitzky-Golay Smoothing Window &amp; Polynomial Sweep
+              Savitzky-Golay Smoothing Window &amp; Polynomial Sweep
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {activeData.savgol_comparison.map((sg) => (

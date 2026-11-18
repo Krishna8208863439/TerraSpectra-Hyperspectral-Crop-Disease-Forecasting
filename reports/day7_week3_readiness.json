@@ -1,0 +1,88 @@
+{
+  "architectures": [
+    {
+      "id": "spectral_1d_cnn",
+      "name": "Spectral 1D-CNN Classifier",
+      "task": "Leaf Stress / Disease Detection",
+      "input_shape_primary": "(batch, 1, 9 bands)",
+      "input_shape_synthetic": "(batch, 1, 60 bands)",
+      "architecture": "Conv1d(1->32, k=3) -> BN -> GELU -> Conv1d(32->64, k=3) -> AdaptiveAvgPool1d -> Linear(64->2/4)",
+      "approx_params": "~11,400 parameters",
+      "cv_contract": "Evaluated on frozen data/processed/primary_day5_cv_splits.json (5-fold StratifiedGroupKFold by plant_id)",
+      "comparator": "XGBoost Tuned Set E (Macro-F1 0.4892 primary / 1.0000 synthetic)",
+      "status": "Architecture Spec + MLP Comparator Verified"
+    },
+    {
+      "id": "temporal_stress_gru",
+      "name": "Temporal Stress GRU Forecaster",
+      "task": "Multi-Horizon Canopy NDVI & Stress Trajectory Forecasting (t+1..t+3)",
+      "input_shape_primary": "(batch, W=3 steps, 14 VI+band channels)",
+      "input_shape_synthetic": "(batch, W=2 steps, 65 VI+band channels)",
+      "architecture": "GRU(input_dim->48, num_layers=2, dropout=0.2) -> LayerNorm -> Linear(48->horizon)",
+      "approx_params": "~23,800 parameters",
+      "cv_contract": "GroupKFold(n_splits=5, groups=plant_id) via src/sequences.py windows",
+      "comparator": "Lag-Feature Random Forest (k=+1 MAE 0.0175, R\u00b2 0.9822; k=+3 MAE 0.0327, R\u00b2 0.9425)",
+      "status": "Sequence Tensors Ready (1,986 W=3 windows)"
+    },
+    {
+      "id": "optional_3d_cnn",
+      "name": "Optional Patch 3D-CNN (Cube-Only Extension)",
+      "task": "Spatial-Spectral Leaf Lesion Classification",
+      "input_shape_primary": "Deferred (Zenodo primary dataset is leaf-mean CSV without raw pixel cubes)",
+      "input_shape_synthetic": "Cut first per Week 3 scope guard if timeline is tight",
+      "architecture": "Conv3d(1->16, k=(3,3,3)) -> MaxPool3d -> GlobalAvgPool3d -> Linear",
+      "approx_params": "~42,000 parameters",
+      "cv_contract": "Spatial block holdout across plots/fields",
+      "comparator": "Patch 1D-CNN baseline",
+      "status": "Optional / First to Cut"
+    }
+  ],
+  "benchmarks": {
+    "primary": {
+      "source": "primary",
+      "neural_mlp_results": [
+        {
+          "model_name": "Neural MLP (Set A Spectrum)",
+          "feature_set": "A_full_spectrum",
+          "balanced_acc_mean": 0.484,
+          "balanced_acc_std": 0.0372,
+          "macro_f1_mean": 0.442,
+          "macro_f1_std": 0.0449,
+          "roc_auc_mean": 0.4953
+        },
+        {
+          "model_name": "Neural MLP (Set E Indices+Bands)",
+          "feature_set": "E_indices_plus_selected",
+          "balanced_acc_mean": 0.4733,
+          "balanced_acc_std": 0.0162,
+          "macro_f1_mean": 0.426,
+          "macro_f1_std": 0.0248,
+          "roc_auc_mean": 0.4661
+        }
+      ]
+    },
+    "synthetic": {
+      "source": "synthetic",
+      "neural_mlp_results": [
+        {
+          "model_name": "Neural MLP (Set A Spectrum)",
+          "feature_set": "A_full_spectrum",
+          "balanced_acc_mean": 0.4996,
+          "balanced_acc_std": 0.0732,
+          "macro_f1_mean": 0.4261,
+          "macro_f1_std": 0.0789,
+          "roc_auc_mean": 0.92
+        },
+        {
+          "model_name": "Neural MLP (Set E Indices+Bands)",
+          "feature_set": "E_indices_plus_selected",
+          "balanced_acc_mean": 0.5111,
+          "balanced_acc_std": 0.042,
+          "macro_f1_mean": 0.4385,
+          "macro_f1_std": 0.0581,
+          "roc_auc_mean": 0.9266
+        }
+      ]
+    }
+  }
+}

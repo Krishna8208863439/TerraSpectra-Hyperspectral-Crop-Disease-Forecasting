@@ -9,21 +9,26 @@ const ROOT_DIR = process.cwd();
 const PORT = Number(process.env.PORT || 3000);
 
 const DOC_FILES: Record<string, { label: string; relPath: string }> = {
-  project_brief: { label: 'One-Page Project Brief', relPath: 'docs/project_brief.md' },
-  data_summary: { label: 'Day 2 Data Summary', relPath: 'docs/data_summary.md' },
-  preprocessing_note: { label: 'Day 3 Preprocessing Note', relPath: 'docs/preprocessing_note.md' },
-  feature_engineering_note: { label: 'Day 4 Feature Engineering Note', relPath: 'docs/feature_engineering_note.md' },
-  baseline_results_note: { label: 'Day 5 Baseline Results Note', relPath: 'docs/baseline_results_note.md' },
-  error_interpretability_note: { label: 'Day 6 Error & Forecast Note', relPath: 'docs/error_interpretability_note.md' },
-  dataset_note: { label: 'Dataset Decision Note', relPath: 'docs/dataset_note.md' },
-  mentor_message: { label: 'Mentor Scope Message', relPath: 'docs/mentor_message.md' },
+  project_report: { label: 'Technical Project Report (Draft)', relPath: 'docs/project_report.md' },
+  weekly_mentor_update: { label: 'Weekly Mentor Progress Update', relPath: 'docs/weekly_mentor_update.md' },
+  week3_plan: { label: 'Week 3 Modeling Roadmap', relPath: 'docs/week3_plan.md' },
+  project_brief: { label: 'Project Scope & Framing Brief', relPath: 'docs/project_brief.md' },
+  dataset_note: { label: 'Dataset Decision & Metadata Note', relPath: 'docs/dataset_note.md' },
+  data_summary: { label: 'Spectral Data & EDA Summary', relPath: 'docs/data_summary.md' },
+  preprocessing_note: { label: 'Spectral Preprocessing Note', relPath: 'docs/preprocessing_note.md' },
+  feature_engineering_note: { label: 'Feature Engineering & Sets A–E Note', relPath: 'docs/feature_engineering_note.md' },
+  baseline_results_note: { label: 'Grouped-CV Baseline Results Note', relPath: 'docs/baseline_results_note.md' },
+  error_interpretability_note: { label: 'Error Analysis & Forecasting Note', relPath: 'docs/error_interpretability_note.md' },
+  mentor_message: { label: 'Mentor Scope Check-In', relPath: 'docs/mentor_message.md' },
   readme: { label: 'Repository README', relPath: 'README.md' },
-  data_loader: { label: 'Day 2 Loader (src/data.py)', relPath: 'src/data.py' },
-  preprocessing_py: { label: 'Day 3 Pipeline (src/preprocessing.py)', relPath: 'src/preprocessing.py' },
-  features_py: { label: 'Day 4 Features (src/features.py)', relPath: 'src/features.py' },
-  evaluation_py: { label: 'Day 5 Evaluation (src/evaluation.py)', relPath: 'src/evaluation.py' },
-  sequences_py: { label: 'Day 6 Sequences (src/sequences.py)', relPath: 'src/sequences.py' },
-  requirements: { label: 'Python Requirements', relPath: 'requirements.txt' },
+  data_loader: { label: 'Dataset Loader (src/data.py)', relPath: 'src/data.py' },
+  preprocessing_py: { label: 'Preprocessing Pipeline (src/preprocessing.py)', relPath: 'src/preprocessing.py' },
+  features_py: { label: 'Feature Engineering (src/features.py)', relPath: 'src/features.py' },
+  evaluation_py: { label: 'Grouped CV Harness (src/evaluation.py)', relPath: 'src/evaluation.py' },
+  sequences_py: { label: 'Temporal Sequences (src/sequences.py)', relPath: 'src/sequences.py' },
+  inference_py: { label: 'Live Inference Engine (src/inference.py)', relPath: 'src/inference.py' },
+  week3_models_py: { label: 'Week 3 Neural Comparator (src/week3_models.py)', relPath: 'src/week3_models.py' },
+  requirements: { label: 'Pinned Python Requirements', relPath: 'requirements.txt' },
   verify_env: { label: 'Env Verification Script', relPath: 'src/pipeline/verify_env.py' },
 };
 
@@ -447,6 +452,9 @@ async function createServer() {
     const expectedFiles = [
       'README.md',
       'requirements.txt',
+      'docs/project_report.md',
+      'docs/weekly_mentor_update.md',
+      'docs/week3_plan.md',
       'docs/project_brief.md',
       'docs/dataset_note.md',
       'docs/data_summary.md',
@@ -460,6 +468,8 @@ async function createServer() {
       'src/features.py',
       'src/evaluation.py',
       'src/sequences.py',
+      'src/inference.py',
+      'src/week3_models.py',
       'src/pipeline/verify_env.py',
       'src/pipeline/run_day2_eda.py',
       'src/pipeline/run_day3_preprocessing.py',
@@ -473,6 +483,7 @@ async function createServer() {
       'notebooks/04_baselines.ipynb',
       'notebooks/05_error_analysis.ipynb',
       'reports/day5_baseline_results.csv',
+      'reports/day7_week3_readiness.json',
       'reports/experiment_log.csv',
       'reports/figures/01_mean_spectra_variance.png',
       'reports/figures/02_difference_spectrum_red_edge.png',
@@ -597,17 +608,21 @@ async function createServer() {
       res.status(404).json({ error: 'Unknown document key' });
       return;
     }
-    if (
-      key !== 'project_brief' &&
-      key !== 'data_summary' &&
-      key !== 'preprocessing_note' &&
-      key !== 'feature_engineering_note' &&
-      key !== 'baseline_results_note' &&
-      key !== 'error_interpretability_note' &&
-      key !== 'dataset_note' &&
-      key !== 'mentor_message' &&
-      key !== 'readme'
-    ) {
+    const editableKeys = new Set([
+      'project_report',
+      'weekly_mentor_update',
+      'week3_plan',
+      'project_brief',
+      'data_summary',
+      'preprocessing_note',
+      'feature_engineering_note',
+      'baseline_results_note',
+      'error_interpretability_note',
+      'dataset_note',
+      'mentor_message',
+      'readme',
+    ]);
+    if (!editableKeys.has(key)) {
       res.status(403).json({ error: 'Document is read-only in workbench' });
       return;
     }
@@ -831,6 +846,120 @@ async function createServer() {
     }
   });
 
+  app.get('/api/predict/samples', async (req, res) => {
+    const source = req.query.source === 'synthetic' ? 'synthetic' : 'primary';
+    try {
+      const { stdout } = await execFileAsync(
+        'python3',
+        ['src/inference.py', '--action', 'samples', '--source', source],
+        { cwd: ROOT_DIR, timeout: 60000 }
+      );
+      res.json(JSON.parse(stdout));
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Failed to load inference samples' });
+    }
+  });
+
+  app.post('/api/predict/spectrum', async (req, res) => {
+    const source = req.body?.source === 'synthetic' ? 'synthetic' : 'primary';
+    try {
+      const payload = JSON.stringify({
+        bands: req.body?.bands || {},
+        vector: req.body?.vector,
+        model: req.body?.model || 'xgboost',
+      });
+      const { stdout } = await execFileAsync(
+        'python3',
+        ['src/inference.py', '--action', 'predict-one', '--source', source, '--payload-json', payload],
+        { cwd: ROOT_DIR, timeout: 45000 }
+      );
+      res.json(JSON.parse(stdout));
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Spectrum prediction failed' });
+    }
+  });
+
+  app.post('/api/predict/csv', async (req, res) => {
+    const source = req.body?.source === 'synthetic' ? 'synthetic' : 'primary';
+    try {
+      const payload = JSON.stringify({
+        csv_text: req.body?.csv_text || '',
+        model: req.body?.model || 'xgboost',
+      });
+      const { stdout } = await execFileAsync(
+        'python3',
+        ['src/inference.py', '--action', 'predict-csv', '--source', source, '--payload-json', payload],
+        { cwd: ROOT_DIR, timeout: 60000 }
+      );
+      res.json(JSON.parse(stdout));
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Batch CSV prediction failed' });
+    }
+  });
+
+  app.post('/api/predict/forecast', async (req, res) => {
+    const source = req.body?.source === 'synthetic' ? 'synthetic' : 'primary';
+    try {
+      const payload = JSON.stringify({
+        plant_id: req.body?.plant_id || '',
+        horizon: Math.max(1, Math.min(3, Number(req.body?.horizon) || 3)),
+      });
+      const { stdout } = await execFileAsync(
+        'python3',
+        ['src/inference.py', '--action', 'forecast-plant', '--source', source, '--payload-json', payload],
+        { cwd: ROOT_DIR, timeout: 60000 }
+      );
+      res.json(JSON.parse(stdout));
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Plant forecast failed' });
+    }
+  });
+
+  app.get('/api/early-detection', async (req, res) => {
+    const source = req.query.source === 'synthetic' ? 'synthetic' : 'primary';
+    try {
+      const { stdout } = await execFileAsync(
+        'python3',
+        ['src/inference.py', '--action', 'early-detection', '--source', source],
+        { cwd: ROOT_DIR, timeout: 60000 }
+      );
+      res.json(JSON.parse(stdout));
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Early detection computation failed' });
+    }
+  });
+
+  app.get('/api/week3/readiness', async (req, res) => {
+    const readinessPath = path.join(ROOT_DIR, 'reports', 'day7_week3_readiness.json');
+    try {
+      if (req.query.refresh === '1' || !fs.existsSync(readinessPath)) {
+        await execFileAsync('python3', ['src/week3_models.py'], { cwd: ROOT_DIR, timeout: 120000 });
+      }
+      res.json(JSON.parse(fs.readFileSync(readinessPath, 'utf-8')));
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Week 3 readiness failed' });
+    }
+  });
+
+  app.post('/api/pipeline/run-all', async (_req, res) => {
+    try {
+      await execFileAsync('python3', ['src/pipeline/run_day5_baselines.py'], { cwd: ROOT_DIR, timeout: 180000 });
+      await execFileAsync('python3', ['src/pipeline/run_day6_error_and_forecast.py'], { cwd: ROOT_DIR, timeout: 180000 });
+      await execFileAsync('python3', ['src/week3_models.py'], { cwd: ROOT_DIR, timeout: 120000 });
+      await execFileAsync('python3', ['src/inference.py', '--action', 'warm-cache'], { cwd: ROOT_DIR, timeout: 60000 });
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Full pipeline run failed' });
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
@@ -847,7 +976,7 @@ async function createServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`SpectralCrop Day 1 server listening on http://localhost:${PORT}`);
+    console.log(`TerraSpectra Workbench server listening on http://localhost:${PORT}`);
   });
 }
 

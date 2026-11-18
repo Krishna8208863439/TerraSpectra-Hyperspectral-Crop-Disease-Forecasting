@@ -17,13 +17,16 @@ REQUIRED_PACKAGES = [
     ("numpy", "NumPy", "1.26.0"),
     ("pandas", "pandas", "2.2.0"),
     ("sklearn", "scikit-learn", "1.5.0"),
+    ("scipy", "SciPy", "1.13.0"),
     ("xgboost", "XGBoost", "2.1.0"),
+    ("shap", "SHAP", "0.46.0"),
     ("matplotlib", "matplotlib", "3.9.0"),
     ("spectral", "spectral (SPy)", "0.23.1"),
 ]
 
 
 def check_environment() -> dict:
+    """Import every required library in requirements.txt and report installed versions."""
     results = []
     all_ok = True
 
@@ -64,6 +67,7 @@ def check_environment() -> dict:
 
 
 def main() -> int:
+    """CLI entrypoint printing environment status as text or JSON (--json)."""
     report = check_environment()
     if "--json" in sys.argv:
         print(json.dumps(report, indent=2))

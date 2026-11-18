@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ExternalLink, Lock, Play, RefreshCw, X } from 'lucide-react';
+import { ExternalLink, Lock, Play, RefreshCw, X } from 'lucide-react';
 import { BandImportanceChart, PcaScreeChart } from './Day3And4Charts';
 import { MarkdownViewer } from './MarkdownViewer';
 import type { Day4DatasetFeatures, Day4FeaturesPayload } from '../types/day1';
@@ -11,20 +11,9 @@ interface Day4FeaturesViewProps {
   source: 'primary' | 'synthetic';
   onChangeSource: (src: 'primary' | 'synthetic') => void;
   onRunFeatures: (params: { topK: number; normalization: 'none' | 'snv' | 'msc' }) => void;
-  completedBlocks: number[];
-  onToggleBlock: (blockId: number) => void;
   noteMarkdown: string;
   onOpenDoc: (key: string) => void;
 }
-
-const DAY4_SCHEDULE = [
-  { id: 1, title: 'Nearest-Band Helper', time: '30 min' },
-  { id: 2, title: 'NDVI, NDRE, PRI, REP, MCARI', time: '90 min' },
-  { id: 3, title: 'Train-Only PCA & Variance', time: '1 h' },
-  { id: 4, title: 'RF & Mutual Info Selection', time: '90 min' },
-  { id: 5, title: 'Named Feature Sets A–E', time: '1 h' },
-  { id: 6, title: 'Per-Class Sanity Plots', time: '1 h' },
-];
 
 export const Day4FeaturesView: React.FC<Day4FeaturesViewProps> = ({
   featuresPayload,
@@ -33,8 +22,6 @@ export const Day4FeaturesView: React.FC<Day4FeaturesViewProps> = ({
   source,
   onChangeSource,
   onRunFeatures,
-  completedBlocks,
-  onToggleBlock,
   noteMarkdown,
   onOpenDoc,
 }) => {
@@ -84,19 +71,17 @@ export const Day4FeaturesView: React.FC<Day4FeaturesViewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header & Schedule Strip */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
+      {/* Header & Controls */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-              <span>Day 4</span>
+              <span>src/features.py</span>
               <span aria-hidden="true">·</span>
-              <span>Thu 19 Nov</span>
-              <span aria-hidden="true">·</span>
-              <span>Feature Engineering</span>
+              <span>Biophysical Indices &amp; Supervised Band Selection</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-0.5">
-              Vegetation Indices, Train-Only PCA, RF/MI Selection &amp; Sets A–E
+              Vegetation Indices, Train-Only PCA, RF/MI Selection &amp; Feature Sets A–E
             </h2>
           </div>
 
@@ -157,31 +142,6 @@ export const Day4FeaturesView: React.FC<Day4FeaturesViewProps> = ({
               <span>{featuresRunning ? 'Building Sets A–E...' : 'Rebuild Feature Sets'}</span>
             </button>
           </div>
-        </div>
-
-        {/* 6-block Schedule Tracker */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-4 border-t border-slate-100">
-          {DAY4_SCHEDULE.map((blk) => {
-            const done = completedBlocks.includes(blk.id);
-            return (
-              <button
-                key={blk.id}
-                type="button"
-                onClick={() => onToggleBlock(blk.id)}
-                className={`text-left p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  done ? 'bg-slate-50 border-slate-200 text-slate-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                  <span>B0{blk.id} · {blk.time}</span>
-                  <span className={done ? 'text-teal-800 font-semibold' : 'text-slate-400'}>
-                    {done ? <Check className="w-3.5 h-3.5 inline" /> : '○'}
-                  </span>
-                </div>
-                <div className="text-xs font-medium mt-1 truncate">{blk.title}</div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Leak-free guarantee strip */}
@@ -291,7 +251,7 @@ export const Day4FeaturesView: React.FC<Day4FeaturesViewProps> = ({
             <div className="lg:col-span-6 bg-white border border-slate-200 rounded-lg p-5 space-y-3">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Block 1 &amp; 2 Nearest-Band Wavelength Mapping
+                  Nearest-Band Wavelength Mapping
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Aligned wavelengths: <code className="font-mono">{activeData.manifest.aligned_wavelengths_nm.join(', ')} nm</code>
@@ -330,7 +290,7 @@ export const Day4FeaturesView: React.FC<Day4FeaturesViewProps> = ({
             <div className="lg:col-span-6 bg-white border border-slate-200 rounded-lg p-5 space-y-3">
               <div>
                 <h3 className="text-sm font-semibold text-slate-900">
-                  Block 6 Sanity Check: Index Distributions per Class (Train Split)
+                  Biophysical Index Distributions per Class (Train Split)
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Mean ± SD across training observations before Day 5 modeling

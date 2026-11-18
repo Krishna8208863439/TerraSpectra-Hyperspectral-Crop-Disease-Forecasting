@@ -1,12 +1,79 @@
-# SpectralCrop — Hyperspectral Crop Stress Detection & Temporal Forecasting
+# TerraSpectra — Hyperspectral Crop Stress Detection & Temporal Forecasting
 
-Day 1–6 End-to-End Spectral Machine Learning Workbench: Setup, EDA, Spectral Preprocessing, Feature Engineering, Leak-Free Baseline Modeling, SHAP Interpretability, Tuning & Temporal Sequence Forecasting Prep.
+End-to-end reproducible machine learning pipeline and interactive spectral workbench for crop leaf stress detection, biophysical vegetation-index extraction, plant-grouped validation, SHAP interpretability, and chronological multi-horizon canopy forecasting.
 
-## Project Scope
+---
 
-1. **Detection Baseline:** Classify leaf/plant spectral reflectance observations into healthy vs. stressed/diseased states using Random Forest, XGBoost, SVM (RBF), and PLS-DA inside leak-free plant-grouped 5-fold CV (`StratifiedGroupKFold`).
-2. **Temporal Forecast Prep (`src/sequences.py`):** Construct chronological per-plant sliding spectral + VI windows (`W` steps → horizon `k ∈ {1,2,3}`) and benchmark Persistence vs. Lag-Feature Ridge vs. Lag-Feature Random Forest inside `GroupKFold(plant_id)`.
-3. **Interactive Workbench:** Web console (`server.ts` + React `src/`) to execute live Python verification, Day 2 EDA (`src/data.py`), switchable Day 3 spectral preprocessing (`src/preprocessing.py`), leak-free Day 4 feature sets A–E (`src/features.py`), Day 5 baseline & leakage evaluation (`src/evaluation.py`), and Day 6 error analysis, SHAP alignment, tuning, experiment logging & sequence forecasting.
+## Project Summary
+
+TerraSpectra solves three connected crop phenotyping & spectral modeling tasks under strict zero-leakage guarantees:
+
+1. **Detection & Diagnosis (`src/preprocessing.py`, `src/features.py`, `src/evaluation.py`):** Preprocesses raw leaf reflectance spectra (`BadBandDropper` dropping UV noise at 365 nm, Savitzky-Golay denoising, SNV/MSC scatter normalization), extracts uncentered domain vegetation indices (**NDVI, NDRE, PRI, MCARI, Red-Edge Position**), and benchmarks Random Forest, XGBoost, SVM (RBF), PLS-DA, and Neural MLP inside frozen 5-fold `StratifiedGroupKFold(plant_id)`.
+2. **Interpretability & Early Detection (`src/inference.py`):** Ranks spectral wavelengths and indices via validation-fold `TreeExplainer` SHAP values, measures early-detection lead time on unseen holdout plants, and powers real-time spectrum classification and batch CSV scoring.
+3. **Temporal Trajectory Forecasting (`src/sequences.py`):** Aggregates longitudinal scans per plant into sliding windows (`W=3` prior dates) to forecast future canopy $\text{NDVI}_{t+k}$ (`k ∈ {1, 2, 3}`) using Lag-Feature Ridge and Lag-Feature Random Forest vs. a Persistence baseline ($\hat{y}_{t+k} = y_t$) strictly inside `GroupKFold(plant_id)`.
+
+---
+
+## Data Sources & Licences
+
+| Dataset | Source / Origin | Licence | Scope & Explicit Limitations |
+| --- | --- | --- | --- |
+| **Primary Multi-Temporal Plant Spectra** (`data/raw/Multispectral_Reflectance.csv` + `experimental_design.csv`) | Zenodo Record [`10.5281/zenodo.22755812`](https://doi.org/10.5281/zenodo.22755812) (*Plant Phenotyping and Environmental Stress Dataset*) | **CC-BY-4.0** | `2,285` total rows (`2,272` clean valid scans) across `79` plants (`Plant_ID`), `2` genotypes, `31` dates, and `10` multispectral bands (`365–970 nm`). **Limitation:** Labels capture controlled abiotic water/drought stress (`Control 40%` vs `Drought 10%`) rather than biotic pathogen inoculation. |
+| **Companion Synthetic Benchmark** (`data/raw/synthetic_leaf_disease_spectra_v1.csv`) | Local Generator (`src/pipeline/generate_synthetic_spectra.py`) | **Apache-2.0** | `120` scans × `61` dense bands (`400–1000 nm`, `10 nm` step) across `4` disease stages (`Healthy`, `Early_Chlorosis`, `Moderate_Blight`, `Severe_Necrosis`) and `5` dates. Clearly tagged `SYNTHETIC_CONTROLLED_STRESS`. |
+
+---
+
+## Setup & Reproducible Pipeline Execution (From Scratch)
+
+### 1. Python Environment Setup
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 2. Verify Stack & Run Every Stage in Order
+```bash
+# Stage 0: Verify core Python stack imports
+python3 src/pipeline/verify_env.py
+
+# Stage 1: Inspect unified dataset shapes, wavelengths & Plant_ID grouping keys
+python3 src/data.py
+
+# Stage 2: Exploratory Data Analysis & Figures 01–04
+python3 src/pipeline/run_day2_eda.py
+
+# Stage 3: Leak-free Preprocessing Pipeline & Figures 05–06
+python3 src/pipeline/run_day3_preprocessing.py
+
+# Stage 4: Vegetation Indices, Train-Only PCA / RF+MI Sets A–E & Figures 07–08
+python3 src/pipeline/run_day4_features.py
+
+# Stage 5: Grouped-CV Baselines (RF, XGBoost, SVM, PLS-DA), Leakage Audit & Figures 09–10
+python3 src/pipeline/run_day5_baselines.py
+
+# Stage 6: Error Analysis, SHAP Alignment, Tuning, Temporal Forecasting & Figures 11–13
+python3 src/pipeline/run_day6_error_and_forecast.py
+
+# Stage 7: Neural Comparator, Week 3 Readiness & Live Inference Model Cache
+python3 src/week3_models.py
+python3 src/inference.py --action warm-cache
+```
+
+### 3. Launch Interactive TerraSpectra Web Application
+```bash
+npm install
+npm run dev
+# Open http://localhost:3000
+```
+
+---
+
+## Key Verified Results
+
+- **Leakage Demonstration (`StratifiedGroupKFold` vs. Naive Random Split):** Naive row-level splits leak replicate scans of identical plants across folds, falsely inflating XGBoost Set E Macro-F1 by **`+0.0881`** (`0.4877` grouped vs `0.5758` naive).
+- **Multi-Horizon Temporal Forecasting (`W=3`, `1,828–1,986` sequences):** Lag-Feature Random Forest outperforms naive Persistence at every horizon, cutting `k=+3` MAE by **52.5%** (`0.0327` vs `0.0688`, $R^2 = 0.9425$ vs `0.7758`).
 
 ---
 
@@ -14,79 +81,32 @@ Day 1–6 End-to-End Spectral Machine Learning Workbench: Setup, EDA, Spectral P
 
 ```text
 .
-├── app/                      # Web application architecture notes & integration docs
 ├── data/
-│   ├── raw/                  # Immutable Zenodo CC-BY-4.0 CSVs + clearly labeled synthetic fallback CSV
-│   └── processed/            # Day 3 preprocessed splits, Day 4 Feature Sets A–E (.npz), Day 5 CV splits (.json)
+│   ├── raw/                  # Immutable Zenodo CC-BY-4.0 CSVs + synthetic fallback CSV
+│   └── processed/            # Preprocessed matrices, Sets A–E (.npz), CV splits (.json) & cached inference bundle
 ├── docs/
-│   ├── project_brief.md            # Day 1 one-page project brief
-│   ├── dataset_note.md             # Day 1 dataset source, licence, labels, and grouping columns
-│   ├── mentor_message.md           # Day 1 mentor scope confirmation & cadence message
-│   ├── data_summary.md             # Day 2 code-generated data summary & band-drop audit
-│   ├── preprocessing_note.md       # Day 3 preprocessing step justifications & separation findings
-│   ├── feature_engineering_note.md # Day 4 index mapping, MCARI ref, PCA & Feature Sets A–E report
-│   ├── baseline_results_note.md    # Day 5 grouped CV baseline tables & leakage inflation proof
-│   └── error_interpretability_note.md # Day 6 OOF error diagnosis, SHAP vs Day 2 ρ, tuning & forecast verdict
-├── notebooks/
-│   ├── 01_day1_env_and_data_check.ipynb  # Day 1 environment & sanity-check notebook
-│   ├── 01_eda.ipynb                      # Day 2 reproducible EDA notebook
-│   ├── 02_preprocessing.ipynb            # Day 3 before/after spectral transform notebook
-│   ├── 03_features.ipynb                 # Day 4 indices, train-only PCA & RF/MI notebook
-│   ├── 04_baselines.ipynb                # Day 5 4-model Set A + Sets B-E sweep + leakage demo
-│   └── 05_error_analysis.ipynb           # Day 6 OOF errors, SHAP, grouped tuning & sequences
+│   ├── project_report.md     # Draft technical report (Sections 1–4 complete, 5–6 outlined + citations)
+│   ├── weekly_mentor_update.md # Concise milestone summary & Week 3 confirmation request
+│   ├── week3_plan.md         # Week 3 1D-CNN, GRU/LSTM & light tuning roadmap
+│   ├── project_brief.md      # Scope & metrics framing
+│   ├── dataset_note.md       # Portal audit & metadata decision log
+│   └── ...                   # Per-stage technical notes (data summary, preprocessing, features, baselines, error)
+├── notebooks/                # Reproducible EDA, preprocessing, feature, baseline & error analysis notebooks
 ├── reports/
-│   ├── day2_eda_metrics.json             # Structured JSON EDA metrics
-│   ├── day3_preprocessing_metrics.json   # Structured JSON preprocessing ablation metrics
-│   ├── day4_features_metrics.json        # Structured JSON PCA, RF/MI & Sets A–E metrics
-│   ├── day5_baseline_metrics.json        # Structured JSON Day 5 CV metrics & leakage benchmark
-│   ├── day5_baseline_results.csv         # Clean Day 5 tabular results CSV
-│   ├── day6_error_and_forecast_metrics.json # Day 6 OOF errors, SHAP, tuning & forecasting JSON
-│   ├── experiment_log.csv                # Full reproducible Day 5–6 experiment ledger
-│   └── figures/                          # Figures 01–04 (Day 2), 05–06 (Day 3), 07–08 (Day 4), 09–10 (Day 5), 11–13 (Day 6)
+│   ├── day*_metrics.json     # Structured JSON stage outputs
+│   ├── day5_baseline_results.csv # Clean baseline results table
+│   ├── experiment_log.csv    # Reproducible experiment tracker
+│   └── figures/              # Publication PNG charts (01–13)
 ├── src/
-│   ├── data.py                           # Day 2 unified loader (spectra, labels, wavelengths, group_ids)
-│   ├── preprocessing.py                  # Day 3 scikit-learn Pipeline transformers & config
-│   ├── features.py                       # Day 4 nearest-band, VIs, train-only PCA, RF+MI, Sets A–E
-│   ├── evaluation.py                     # Day 5 StratifiedGroupKFold harness, PLSDAClassifier & OOF aggregator
-│   ├── sequences.py                      # Day 6 chronological sliding-window sequence & lag forecasters
-│   └── pipeline/
-│       ├── verify_env.py                 # Core Python library import verification
-│       ├── dataset_loader.py             # CSV loader & spectral summary inspector
-│       ├── run_day2_eda.py               # Reproducible Day 2 EDA runner
-│       ├── run_day3_preprocessing.py     # Reproducible Day 3 ablation & figure runner
-│       ├── run_day4_features.py          # Reproducible Day 4 Feature Sets A–E runner
-│       ├── run_day5_baselines.py         # Reproducible Day 5 baseline & leakage demo runner
-│       ├── run_day6_error_and_forecast.py # Reproducible Day 6 error, SHAP, tuning & forecast runner
-│       └── generate_synthetic_spectra.py # Synthetic controlled-stress spectra generator
+│   ├── data.py               # Unified dataset loader (Primary Zenodo + Synthetic)
+│   ├── preprocessing.py      # BadBandDropper, ReflectanceSanitizer, SavitzkyGolay, SNV/MSC, 1st Deriv
+│   ├── features.py           # NDVI, NDRE, PRI, REP, MCARI, train-only PCA, RF+MI selection, Sets A–E
+│   ├── evaluation.py         # StratifiedGroupKFold harness, PLSDAClassifier, OOF metrics
+│   ├── sequences.py          # Chronological plant sliding windows & Persistence/Ridge/RF forecasters
+│   ├── inference.py          # Live spectrum classifier, CSV batch scorer, forecaster & lead-time engine
+│   ├── week3_models.py       # Neural MLP comparator & 1D-CNN / GRU architecture specifications
+│   └── pipeline/             # CLI runnable stage scripts
+├── server.ts                 # Express API bridge to live Python models & artifacts
 ├── README.md
 └── requirements.txt
-```
-
----
-
-## Quickstart & Pipeline Execution (Days 1–6)
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-python3 src/pipeline/verify_env.py
-python3 src/data.py
-python3 src/pipeline/run_day2_eda.py
-python3 src/pipeline/run_day3_preprocessing.py
-python3 src/pipeline/run_day4_features.py
-python3 src/pipeline/run_day5_baselines.py
-python3 src/pipeline/run_day6_error_and_forecast.py
-
-npm install
-npm run dev
-```
-
-## Pushing to GitHub
-
-```bash
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git branch -M main
-git push -u origin main
 ```

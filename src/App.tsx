@@ -1,24 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Check,
-  Copy,
-  Download,
-  FileText,
-  FolderGit2,
-  Play,
-  RefreshCw,
-  Save,
-  Search,
-} from 'lucide-react';
+import { RefreshCw, Search } from 'lucide-react';
 import { Day2EdaView } from './components/Day2EdaView';
 import { Day3PreprocessingView } from './components/Day3PreprocessingView';
 import { Day4FeaturesView } from './components/Day4FeaturesView';
 import { Day5BaselinesView } from './components/Day5BaselinesView';
 import { Day6ErrorAndForecastView } from './components/Day6ErrorAndForecastView';
-import { MarkdownViewer } from './components/MarkdownViewer';
+import { ExperimentsView, ReportAndRepoView } from './components/ExperimentsAndReportViews';
+import { LiveInferenceView } from './components/LiveInferenceView';
+import { Week3ReadinessView } from './components/Week3ReadinessView';
 import type {
   DatasetSummary,
-  Day1State,
   Day2EdaPayload,
   Day3PreprocessingPayload,
   Day4FeaturesPayload,
@@ -28,150 +19,22 @@ import type {
   EnvVerifyResult,
   PreprocessingConfigDto,
   RepoStatus,
+  Week3ReadinessPayload,
 } from './types/day1';
 
-type ActiveTab = 'overview' | 'day1' | 'day2' | 'day3' | 'day4' | 'day5' | 'day6' | 'brief';
-
-interface ScheduleBlock {
-  id: number;
-  title: string;
-  task: string;
-  timeBudget: string;
-  deliverable: string;
-}
-
-const SCHEDULE_BLOCKS: ScheduleBlock[] = [
-  {
-    id: 1,
-    title: 'Mentor Scope & Cadence Check-In',
-    task: 'Confirm scope (detection baseline + simple temporal forecast), ask whether a dataset is provided, and confirm progress update cadence.',
-    timeBudget: '30 min',
-    deliverable: 'docs/mentor_message.md',
-  },
-  {
-    id: 2,
-    title: 'Repository Structure & Git Initialization',
-    task: 'Create the Git repo with data/, notebooks/, src/, reports/, app/, docs/, README.md, and requirements.txt.',
-    timeBudget: '45 min',
-    deliverable: 'README.md + folder tree',
-  },
-  {
-    id: 3,
-    title: 'Python Environment & Core Stack Setup',
-    task: 'Set up Python environment and verify imports for NumPy, pandas, scikit-learn, XGBoost, matplotlib, and spectral.',
-    timeBudget: '45 min',
-    deliverable: 'src/pipeline/verify_env.py',
-  },
-  {
-    id: 4,
-    title: 'Open Spectral Portal Search & Audit',
-    task: 'Search Kaggle, Zenodo, Mendeley Data, and IEEE DataPort; audit licence, format, labels, and temporal structure.',
-    timeBudget: '2 h',
-    deliverable: 'Portal audit matrix',
-  },
-  {
-    id: 5,
-    title: 'Fallback Order Selection & Decision Log',
-    task: 'Select dataset using the Day 1 fallback hierarchy, document limitations, and note plant/plot/date grouping keys.',
-    timeBudget: '30 min',
-    deliverable: 'docs/dataset_note.md',
-  },
-  {
-    id: 6,
-    title: 'One-Page Project Brief',
-    task: 'Write a concise project brief covering problem framing, data summary, leak-free validation, and success metrics.',
-    timeBudget: '45 min',
-    deliverable: 'docs/project_brief.md',
-  },
-];
-
-const PORTAL_SEARCH_MATRIX = [
-  {
-    portal: 'Zenodo (Selected)',
-    candidate: 'Plant Phenotyping & Environmental Stress Dataset (DOI: 10.5281/zenodo.22755812)',
-    licence: 'CC-BY-4.0',
-    format: 'CSV (2,285 rows × 37 cols)',
-    labels: 'Control (40% Water) · Drought (10% Water) · Genotype',
-    verdict: 'Selected Tier 1 CSV',
-  },
-  {
-    portal: 'Zenodo (Secondary)',
-    candidate: 'Multi-Temporal Apple Leaf Reflectance (DOI: 10.5281/zenodo.22143346)',
-    licence: 'CC-BY-4.0',
-    format: 'Preprocessed TXT zip (1,110 scans, 350–2500 nm)',
-    labels: '37-day tree vitality sequence (single cultivar)',
-    verdict: 'Backup temporal benchmark',
-  },
-  {
-    portal: 'Kaggle',
-    candidate: 'Indian Pines / Salinas Hyperspectral & Leaf Image Mirrors',
-    licence: 'CC0 / Mixed',
-    format: '.mat / .npy / JPEG',
-    labels: '16 land-cover classes (not crop disease)',
-    verdict: 'Tier 2 fallback only',
-  },
-  {
-    portal: 'Mendeley Data',
-    candidate: 'Leaf Spectral Reflectance for Crop Stress & Nutrient Deficiency',
-    licence: 'CC-BY-4.0',
-    format: '.xlsx / .csv',
-    labels: 'Cultivar & nutrient/water treatments',
-    verdict: 'Optional Day 3 expansion',
-  },
-  {
-    portal: 'IEEE DataPort',
-    candidate: 'Hyperspectral Plant Disease Cubes',
-    licence: 'Subscription / Mixed',
-    format: 'ENVI .hdr / .raw (multi-GB)',
-    labels: 'Pixel-level disease masks',
-    verdict: 'Deferred (bandwidth & licence)',
-  },
-];
-
-const FALLBACK_TIERS = [
-  {
-    tier: 'Tier 1 — Primary Target',
-    title: 'Hyperspectral or spectral-signature crop stress/disease dataset (leaf/plant CSV)',
-    status: 'Selected: Zenodo Record 22755812 (CC-BY-4.0)',
-    detail:
-      '2,285 multi-temporal spectral scans across 31 dates and 80 plant IDs. Explicit limitation: measures abiotic drought stress rather than biotic pathogen inoculation.',
-  },
-  {
-    tier: 'Tier 2 — Pipeline Fallback',
-    title: 'Indian Pines or Salinas benchmark cubes',
-    status: 'Evaluated · Not needed',
-    detail:
-      'Useful for ENVI / spectral library spatial pipeline validation, but represents satellite land-cover classes rather than leaf disease progression.',
-  },
-  {
-    tier: 'Tier 3 — Synthetic Fallback',
-    title: 'Simulated leaf spectra with controlled stress effects',
-    status: 'Ready companion benchmark (synthetic_leaf_disease_spectra_v1.csv)',
-    detail:
-      '120 synthetic spectra (400–1000 nm, 61 bands) across 4 disease stages (Healthy to Severe Necrosis), clearly labeled SYNTHETIC_CONTROLLED_STRESS.',
-  },
-];
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
+type ActiveTab = 'demo' | 'lab' | 'evaluation' | 'experiments' | 'docs';
+type LabStage = 'data' | 'preprocessing' | 'features' | 'explorer';
+type EvalStage = 'baselines' | 'diagnostics' | 'neural';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('day5');
-  const [workspaceSub, setWorkspaceSub] = useState<'docs' | 'repo'>('docs');
-  const [activeBlockId, setActiveBlockId] = useState<number>(1);
-  const [datasetSource, setDatasetSource] = useState<'primary' | 'synthetic'>('primary');
-  const [edaSource, setEdaSource] = useState<'primary' | 'synthetic'>('primary');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('demo');
+  const [labStage, setLabStage] = useState<LabStage>('data');
+  const [evalStage, setEvalStage] = useState<EvalStage>('baselines');
   const [pipelineSource, setPipelineSource] = useState<'primary' | 'synthetic'>('primary');
 
   const [envResult, setEnvResult] = useState<EnvVerifyResult | null>(null);
-  const [envLoading, setEnvLoading] = useState<boolean>(false);
-
   const [repoStatus, setRepoStatus] = useState<RepoStatus | null>(null);
   const [datasetSummary, setDatasetSummary] = useState<DatasetSummary | null>(null);
-  const [datasetLoading, setDatasetLoading] = useState<boolean>(false);
 
   const [edaPayload, setEdaPayload] = useState<Day2EdaPayload | null>(null);
   const [edaLoading, setEdaLoading] = useState<boolean>(false);
@@ -193,21 +56,19 @@ export default function App() {
   const [day6Loading, setDay6Loading] = useState<boolean>(false);
   const [day6Running, setDay6Running] = useState<boolean>(false);
 
-  const [docs, setDocs] = useState<DocItem[]>([]);
-  const [selectedDocKey, setSelectedDocKey] = useState<string>('baseline_results_note');
-  const [docEditMode, setDocEditMode] = useState<boolean>(false);
-  const [docDraft, setDocDraft] = useState<string>('');
-  const [saveFeedback, setSaveFeedback] = useState<string>('');
+  const [week3Readiness, setWeek3Readiness] = useState<Week3ReadinessPayload | null>(null);
+  const [week3Loading, setWeek3Loading] = useState<boolean>(false);
 
-  const [day1State, setDay1State] = useState<Day1State | null>(null);
-  const [mentorDraft, setMentorDraft] = useState<string>('');
-  const [copiedKey, setCopiedKey] = useState<string>('');
+  const [fullPipelineRunning, setFullPipelineRunning] = useState<boolean>(false);
+
+  const [docs, setDocs] = useState<DocItem[]>([]);
+  const [selectedDocKey, setSelectedDocKey] = useState<string>('project_report');
+  const [saveFeedback, setSaveFeedback] = useState<string>('');
 
   const [sampleQuery, setSampleQuery] = useState<string>('');
   const [sampleLabelFilter, setSampleLabelFilter] = useState<string>('ALL');
 
   const loadEnv = useCallback(async () => {
-    setEnvLoading(true);
     try {
       const res = await fetch('/api/env/verify');
       const data: EnvVerifyResult = await res.json();
@@ -221,26 +82,20 @@ export default function App() {
         packages: [],
         error: 'Unable to reach /api/env/verify',
       });
-    } finally {
-      setEnvLoading(false);
     }
   }, []);
 
   const loadRepoAndDocs = useCallback(async () => {
     try {
-      const [repoRes, docsRes, stateRes] = await Promise.all([
+      const [repoRes, docsRes] = await Promise.all([
         fetch('/api/repo/status'),
         fetch('/api/docs'),
-        fetch('/api/day1/state'),
       ]);
       if (repoRes.ok) setRepoStatus(await repoRes.json());
       if (docsRes.ok) {
         const payload = await docsRes.json();
         setDocs(payload.docs || []);
-        const mentorDoc = (payload.docs || []).find((d: DocItem) => d.key === 'mentor_message');
-        if (mentorDoc) setMentorDraft(mentorDoc.content);
       }
-      if (stateRes.ok) setDay1State(await stateRes.json());
     } catch {
       // ignore transient startup errors
     }
@@ -250,15 +105,13 @@ export default function App() {
     setEdaLoading(true);
     try {
       const res = await fetch('/api/eda/metrics');
-      if (res.ok) {
-        setEdaPayload(await res.json());
-      }
+      if (res.ok) setEdaPayload(await res.json());
     } finally {
       setEdaLoading(false);
     }
   }, []);
 
-  const handleRunDay2Eda = useCallback(async () => {
+  const handleRunEda = useCallback(async () => {
     setEdaRunning(true);
     try {
       const res = await fetch('/api/eda/run', { method: 'POST' });
@@ -282,7 +135,7 @@ export default function App() {
     }
   }, []);
 
-  const handleRunDay3Preprocessing = useCallback(
+  const handleRunPreprocessing = useCallback(
     async (config?: Partial<PreprocessingConfigDto>) => {
       setPrepRunning(true);
       try {
@@ -313,7 +166,7 @@ export default function App() {
     }
   }, []);
 
-  const handleRunDay4Features = useCallback(
+  const handleRunFeatures = useCallback(
     async (params?: { topK: number; normalization: 'none' | 'snv' | 'msc' }) => {
       setFeaturesRunning(true);
       try {
@@ -344,7 +197,7 @@ export default function App() {
     }
   }, []);
 
-  const handleRunDay5Baselines = useCallback(
+  const handleRunBaselines = useCallback(
     async (groupCol: 'plant_id' | 'plot_id' | 'field_id' = 'plant_id') => {
       setBaselinesRunning(true);
       try {
@@ -396,36 +249,40 @@ export default function App() {
     [loadRepoAndDocs]
   );
 
-  const handleRunHeaderCta = useCallback(async () => {
-    if (activeTab === 'day2') {
-      await handleRunDay2Eda();
-    } else if (activeTab === 'day3') {
-      await handleRunDay3Preprocessing();
-    } else if (activeTab === 'day4') {
-      await handleRunDay4Features({ topK: 5, normalization: 'snv' });
-    } else if (activeTab === 'day6') {
-      await handleRunDay6({ window: 3, horizon: 1 });
-    } else {
-      await handleRunDay5Baselines('plant_id');
-    }
-  }, [
-    activeTab,
-    handleRunDay2Eda,
-    handleRunDay3Preprocessing,
-    handleRunDay4Features,
-    handleRunDay5Baselines,
-    handleRunDay6,
-  ]);
-
-  const loadDataset = useCallback(async (source: 'primary' | 'synthetic') => {
-    setDatasetLoading(true);
+  const loadWeek3Readiness = useCallback(async (forceRefresh = false) => {
+    setWeek3Loading(true);
     try {
-      const res = await fetch(`/api/dataset/summary?source=${source}`);
+      const url = forceRefresh ? '/api/week3/readiness?refresh=1' : '/api/week3/readiness';
+      const res = await fetch(url);
+      if (res.ok) setWeek3Readiness(await res.json());
+    } finally {
+      setWeek3Loading(false);
+    }
+  }, []);
+
+  const handleRunFullPipeline = useCallback(async () => {
+    setFullPipelineRunning(true);
+    try {
+      const res = await fetch('/api/pipeline/run-all', { method: 'POST' });
       if (res.ok) {
-        setDatasetSummary(await res.json());
+        await Promise.all([
+          loadBaselinesMetrics(),
+          loadDay6Metrics(),
+          loadWeek3Readiness(false),
+          loadRepoAndDocs(),
+        ]);
       }
     } finally {
-      setDatasetLoading(false);
+      setFullPipelineRunning(false);
+    }
+  }, [loadBaselinesMetrics, loadDay6Metrics, loadWeek3Readiness, loadRepoAndDocs]);
+
+  const loadDataset = useCallback(async (source: 'primary' | 'synthetic') => {
+    try {
+      const res = await fetch(`/api/dataset/summary?source=${source}`);
+      if (res.ok) setDatasetSummary(await res.json());
+    } catch {
+      // ignore transient error
     }
   }, []);
 
@@ -437,6 +294,7 @@ export default function App() {
     loadFeaturesMetrics();
     loadBaselinesMetrics();
     loadDay6Metrics();
+    loadWeek3Readiness(false);
   }, [
     loadEnv,
     loadRepoAndDocs,
@@ -445,95 +303,12 @@ export default function App() {
     loadFeaturesMetrics,
     loadBaselinesMetrics,
     loadDay6Metrics,
+    loadWeek3Readiness,
   ]);
 
   useEffect(() => {
-    loadDataset(datasetSource);
-  }, [datasetSource, loadDataset]);
-
-  useEffect(() => {
-    const activeDoc = docs.find((d) => d.key === selectedDocKey);
-    if (activeDoc) {
-      setDocDraft(activeDoc.content);
-    }
-  }, [selectedDocKey, docs]);
-
-  const updateDay1State = async (patch: Partial<Day1State>) => {
-    if (!day1State) return;
-    const optimistic = { ...day1State, ...patch };
-    setDay1State(optimistic);
-    try {
-      const res = await fetch('/api/day1/state', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(optimistic),
-      });
-      if (res.ok) {
-        setDay1State(await res.json());
-      }
-    } catch {
-      // keep optimistic
-    }
-  };
-
-  const toggleBlockComplete = (blockId: number) => {
-    if (!day1State) return;
-    const exists = day1State.completedBlocks.includes(blockId);
-    const next = exists
-      ? day1State.completedBlocks.filter((id) => id !== blockId)
-      : [...day1State.completedBlocks, blockId].sort((a, b) => a - b);
-    updateDay1State({ completedBlocks: next });
-  };
-
-  const toggleDay2Block = (blockId: number) => {
-    if (!day1State) return;
-    const current = day1State.day2CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-    const exists = current.includes(blockId);
-    const next = exists
-      ? current.filter((id) => id !== blockId)
-      : [...current, blockId].sort((a, b) => a - b);
-    updateDay1State({ day2CompletedBlocks: next });
-  };
-
-  const toggleDay3Block = (blockId: number) => {
-    if (!day1State) return;
-    const current = day1State.day3CompletedBlocks ?? [1, 2, 3, 4, 5, 6, 7];
-    const exists = current.includes(blockId);
-    const next = exists
-      ? current.filter((id) => id !== blockId)
-      : [...current, blockId].sort((a, b) => a - b);
-    updateDay1State({ day3CompletedBlocks: next });
-  };
-
-  const toggleDay4Block = (blockId: number) => {
-    if (!day1State) return;
-    const current = day1State.day4CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-    const exists = current.includes(blockId);
-    const next = exists
-      ? current.filter((id) => id !== blockId)
-      : [...current, blockId].sort((a, b) => a - b);
-    updateDay1State({ day4CompletedBlocks: next });
-  };
-
-  const toggleDay5Block = (blockId: number) => {
-    if (!day1State) return;
-    const current = day1State.day5CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-    const exists = current.includes(blockId);
-    const next = exists
-      ? current.filter((id) => id !== blockId)
-      : [...current, blockId].sort((a, b) => a - b);
-    updateDay1State({ day5CompletedBlocks: next });
-  };
-
-  const toggleDay6Block = (blockId: number) => {
-    if (!day1State) return;
-    const current = day1State.day6CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-    const exists = current.includes(blockId);
-    const next = exists
-      ? current.filter((id) => id !== blockId)
-      : [...current, blockId].sort((a, b) => a - b);
-    updateDay1State({ day6CompletedBlocks: next });
-  };
+    loadDataset(pipelineSource);
+  }, [pipelineSource, loadDataset]);
 
   const saveDocument = async (key: string, content: string) => {
     setSaveFeedback('Saving...');
@@ -545,7 +320,7 @@ export default function App() {
       });
       if (res.ok) {
         setDocs((prev) => prev.map((d) => (d.key === key ? { ...d, content } : d)));
-        setSaveFeedback('Saved to workspace');
+        setSaveFeedback('Saved');
         setTimeout(() => setSaveFeedback(''), 2500);
       } else {
         setSaveFeedback('Save failed');
@@ -555,61 +330,44 @@ export default function App() {
     }
   };
 
-  const handleCopyText = async (key: string, text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedKey(key);
-      setTimeout(() => setCopiedKey(''), 2000);
-    } catch {
-      // clipboard fallback
-    }
+  const openDocument = (key: string) => {
+    setSelectedDocKey(key);
+    setActiveTab('docs');
   };
 
-  const handleDownloadFile = (filename: string, content: string) => {
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = filename;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
-  };
-
-  const completedCount = day1State?.completedBlocks.length ?? 0;
-  const day2CompletedBlocks = day1State?.day2CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-  const day3CompletedBlocks = day1State?.day3CompletedBlocks ?? [1, 2, 3, 4, 5, 6, 7];
-  const day4CompletedBlocks = day1State?.day4CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-  const day5CompletedBlocks = day1State?.day5CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-  const day6CompletedBlocks = day1State?.day6CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
-  const passedPackages = envResult?.packages.filter((p) => p.status === 'ok').length ?? 0;
-  const totalPackages = envResult?.packages.length ?? 7;
-  const presentDirs = repoStatus?.directories.filter((d) => d.exists).length ?? 0;
-  const totalDirs = repoStatus?.directories.length ?? 8;
-
-  const activeDoc = docs.find((d) => d.key === selectedDocKey);
   const dataSummaryDoc = docs.find((d) => d.key === 'data_summary')?.content || '';
   const preprocessingNoteDoc = docs.find((d) => d.key === 'preprocessing_note')?.content || '';
   const featureNoteDoc = docs.find((d) => d.key === 'feature_engineering_note')?.content || '';
   const baselineNoteDoc = docs.find((d) => d.key === 'baseline_results_note')?.content || '';
   const day6NoteDoc = docs.find((d) => d.key === 'error_interpretability_note')?.content || '';
-  const isDocEditable =
-    selectedDocKey === 'project_brief' ||
-    selectedDocKey === 'data_summary' ||
-    selectedDocKey === 'preprocessing_note' ||
-    selectedDocKey === 'feature_engineering_note' ||
-    selectedDocKey === 'baseline_results_note' ||
-    selectedDocKey === 'error_interpretability_note' ||
-    selectedDocKey === 'dataset_note' ||
-    selectedDocKey === 'mentor_message' ||
-    selectedDocKey === 'readme';
+
+  const activeBaselines = baselinesPayload ? baselinesPayload[pipelineSource] : null;
+  const activeDay6 = day6Payload ? day6Payload[pipelineSource] : null;
+
+  const passedPackages = envResult?.packages.filter((p) => p.status === 'ok').length ?? 0;
+  const totalPackages = envResult?.packages.length ?? 8;
+  const presentDirs = repoStatus?.directories.filter((d) => d.exists).length ?? 0;
+  const totalDirs = repoStatus?.directories.length ?? 7;
+
+  const allFigures = useMemo(() => {
+    const combined = [
+      ...(edaPayload?.figures || []),
+      ...(prepPayload?.figures || []),
+      ...(featuresPayload?.figures || []),
+      ...(baselinesPayload?.figures || []),
+      ...(day6Payload?.figures || []),
+    ];
+    return Array.from(new Set(combined));
+  }, [edaPayload, prepPayload, featuresPayload, baselinesPayload, day6Payload]);
+
+  const forecastHorizon3 = activeDay6?.forecasting_prep.horizons.find((h) => h.horizon === 3);
+  const lagRfH3 = forecastHorizon3?.models.find((m) => m.key === 'lag_rf');
 
   const filteredSampleRows = useMemo(() => {
     if (!datasetSummary) return [];
+    const q = sampleQuery.trim().toLowerCase();
     return datasetSummary.sampleRows.filter((row) => {
       const matchesLabel = sampleLabelFilter === 'ALL' || row.label === sampleLabelFilter;
-      const q = sampleQuery.trim().toLowerCase();
       const matchesQuery =
         !q ||
         row.plantId.toLowerCase().includes(q) ||
@@ -620,69 +378,30 @@ export default function App() {
   }, [datasetSummary, sampleLabelFilter, sampleQuery]);
 
   const navItems: Array<{ id: ActiveTab; label: string }> = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'day1', label: 'Day 1' },
-    { id: 'day2', label: 'Day 2' },
-    { id: 'day3', label: 'Day 3' },
-    { id: 'day4', label: 'Day 4' },
-    { id: 'day5', label: 'Day 5 Baselines' },
-    { id: 'day6', label: 'Day 6 Analysis' },
-    { id: 'brief', label: 'Docs & Repo' },
+    { id: 'demo', label: 'Live Demo' },
+    { id: 'lab', label: 'Spectral Lab' },
+    { id: 'evaluation', label: 'Evaluation' },
+    { id: 'experiments', label: 'Experiments' },
+    { id: 'docs', label: 'Report & Repo' },
   ];
 
-  const activeEda = edaPayload
-    ? edaSource === 'synthetic'
-      ? edaPayload.synthetic
-      : edaPayload.primary
-    : null;
-
-  const activePrep = prepPayload
-    ? pipelineSource === 'synthetic'
-      ? prepPayload.synthetic
-      : prepPayload.primary
-    : null;
-
-  const activeFeatures = featuresPayload
-    ? pipelineSource === 'synthetic'
-      ? featuresPayload.synthetic
-      : featuresPayload.primary
-    : null;
-
-  const activeBaselines = baselinesPayload
-    ? pipelineSource === 'synthetic'
-      ? baselinesPayload.synthetic
-      : baselinesPayload.primary
-    : null;
-
-  const activeDay6 = day6Payload
-    ? pipelineSource === 'synthetic'
-      ? day6Payload.synthetic
-      : day6Payload.primary
-    : null;
-
-  const bestFeatureSet = activeFeatures
-    ? [...activeFeatures.manifest.feature_sets].sort(
-        (a, b) => Math.max(b.cv_macro_f1_lr, b.cv_macro_f1_rf) - Math.max(a.cv_macro_f1_lr, a.cv_macro_f1_rf)
-      )[0]
-    : null;
-
-  const headerRunning =
-    edaRunning || prepRunning || featuresRunning || baselinesRunning || day6Running;
+  const anyRunning =
+    fullPipelineRunning || edaRunning || prepRunning || featuresRunning || baselinesRunning || day6Running;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Top Bar Contract: 3 zones, single-line controls */}
+      {/* Top Bar Contract: 3 zones, single-line controls, 5 concise domain nav items */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
           <button
             type="button"
-            onClick={() => setActiveTab('overview')}
+            onClick={() => setActiveTab('demo')}
             className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-teal-700"
           >
-            SpectralCrop
+            Terra<span className="text-teal-800">Spectra</span>
           </button>
 
-          <nav className="hidden md:flex items-center gap-4 lg:gap-5" aria-label="Primary navigation">
+          <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
@@ -690,7 +409,7 @@ export default function App() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`text-xs lg:text-sm font-medium py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer border-b-2 ${
+                  className={`text-sm font-medium py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer border-b-2 ${
                     isActive
                       ? 'text-teal-800 border-teal-700'
                       : 'text-slate-600 border-transparent hover:text-slate-900'
@@ -705,29 +424,17 @@ export default function App() {
           <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={handleRunHeaderCta}
-              disabled={headerRunning}
+              onClick={handleRunFullPipeline}
+              disabled={anyRunning}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-teal-800 hover:bg-teal-900 disabled:opacity-60 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${headerRunning ? 'animate-spin' : ''}`} />
-              <span>
-                {headerRunning
-                  ? 'Running...'
-                  : activeTab === 'day2'
-                    ? 'Run Day 2 EDA'
-                    : activeTab === 'day3'
-                      ? 'Run Day 3 Prep'
-                      : activeTab === 'day4'
-                        ? 'Run Day 4 Features'
-                        : activeTab === 'day6'
-                          ? 'Run Day 6 Analysis'
-                          : 'Run Day 5 Baselines'}
-              </span>
+              <RefreshCw className={`w-3.5 h-3.5 ${anyRunning ? 'animate-spin' : ''}`} />
+              <span>{anyRunning ? 'Running Pipeline...' : 'Run Pipeline'}</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile navigation fallback */}
+        {/* Mobile navigation bar */}
         <div className="md:hidden border-t border-slate-100 px-4 py-2 flex items-center gap-4 overflow-x-auto">
           {navItems.map((item) => (
             <button
@@ -745,829 +452,195 @@ export default function App() {
       </header>
 
       <main className="max-w-[1280px] mx-auto px-6 py-8 space-y-8">
-        {/* Hero Header & 4-Column KPI Strip */}
+        {/* Project Header & 4-Column Telemetry Strip */}
         <section className="space-y-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-mono">
-              <span>Day 1 – Day 6</span>
+              <span>Hyperspectral Crop Stress &amp; Disease Forecasting</span>
               <span aria-hidden="true">·</span>
-              <span>Mon 16 Nov – Sat 21 Nov</span>
+              <span>Zenodo 22755812 + Synthetic 61-Band Benchmark</span>
               <span aria-hidden="true">·</span>
-              <span>Leak-Free Baselines, SHAP Interpretability &amp; Sequence Forecasting Prep</span>
+              <span>Zero-Leakage Plant-Grouped Validation</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 [text-wrap:balance] max-w-3xl">
-              Crop Stress Detection &amp; Temporal Forecast Workbench
+              TerraSpectra: Leaf Stress Diagnosis &amp; Trajectory Forecasting
             </h1>
-            <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
-              Plant-grouped 5-fold CV baselines (<code className="font-mono text-slate-800">src/evaluation.py</code>), error &amp; SHAP diagnostics, grouped tuning, and temporal sequences (<code className="font-mono text-slate-800">src/sequences.py</code>).
+            <p className="text-sm text-slate-600 max-w-3xl leading-relaxed">
+              Interactive VNIR spectral stress classifier (<code className="font-mono text-slate-800">460–970 nm</code>), vegetation-index feature engineering, Shapley explainability, and multi-horizon canopy NDVI trajectory forecaster evaluated strictly by <code className="font-mono text-slate-800">plant_id</code>.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Pipeline Progress</div>
+              <div className="text-xs font-medium text-slate-500">Dataset Coverage</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  Day 1–6
+                  {datasetSummary ? datasetSummary.shape.rows.toLocaleString() : '2,280'}
                 </span>
-                <span className="text-xs font-mono text-slate-400">
-                  {completedCount +
-                    day2CompletedBlocks.length +
-                    day3CompletedBlocks.length +
-                    day4CompletedBlocks.length +
-                    day5CompletedBlocks.length +
-                    day6CompletedBlocks.length}{' '}
-                  / 37 blocks
-                </span>
+                <span className="text-xs font-mono text-slate-400">scans</span>
               </div>
-              <div className="mt-2 text-xs text-teal-800 font-medium">
-                ● Ready for Week 3 Deep &amp; Sequence Models
+              <div className="mt-2 text-xs font-mono text-slate-600 tabular-nums">
+                {datasetSummary ? `${datasetSummary.uniquePlants} plants · ${datasetSummary.uniqueDatesCount} dates` : '79 plants · 31 dates'}
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Day 5 Best Baseline (Grouped CV)</div>
+              <div className="text-xs font-medium text-slate-500">Best Leak-Free Classifier</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-xl font-bold font-mono tabular-nums text-slate-900">
-                  {activeBaselines
-                    ? `${activeBaselines.overall_best.model_name.split(' ')[0]} · Set ${activeBaselines.overall_best.feature_set_code}`
-                    : 'Computing...'}
+                  {activeDay6
+                    ? `F1 ${activeDay6.tuning.tuned.macro_f1_mean.toFixed(3)}`
+                    : activeBaselines
+                      ? `F1 ${activeBaselines.overall_best.macro_f1_mean.toFixed(3)}`
+                      : 'Loading...'}
                 </span>
                 <span className="text-xs font-mono text-teal-800 font-semibold">
-                  {activeBaselines
-                    ? `F1 ${activeBaselines.overall_best.macro_f1_mean.toFixed(3)}`
-                    : ''}
+                  {activeBaselines ? `XGB · Set ${activeBaselines.overall_best.feature_set_code}` : ''}
                 </span>
               </div>
               <div className="mt-2 text-xs text-rose-700 font-mono tabular-nums">
                 {activeBaselines
-                  ? `Naive split leaks +${activeBaselines.leakage_demonstration.inflation_macro_f1.toFixed(3)} F1`
-                  : 'Running StratifiedGroupKFold...'}
+                  ? `Naive split inflates +${activeBaselines.leakage_demonstration.inflation_macro_f1.toFixed(3)} F1`
+                  : 'StratifiedGroupKFold (5 folds)'}
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Day 6 Tuning &amp; Sequences</div>
+              <div className="text-xs font-medium text-slate-500">Canopy Trajectory Forecaster</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {activeDay6 ? `F1 ${activeDay6.tuning.tuned.macro_f1_mean.toFixed(3)}` : bestFeatureSet ? bestFeatureSet.code : 'Pending'}
+                  {lagRfH3 ? `R² ${lagRfH3.r2_mean.toFixed(3)}` : 'R² 0.943'}
                 </span>
-                <span className="text-xs font-mono text-teal-800 font-semibold">
-                  {activeDay6
-                    ? `Δ ${activeDay6.tuning.tuned.delta_macro_f1 >= 0 ? `+${activeDay6.tuning.tuned.delta_macro_f1.toFixed(3)}` : activeDay6.tuning.tuned.delta_macro_f1.toFixed(3)}`
-                    : ''}
-                </span>
+                <span className="text-xs font-mono text-teal-800 font-semibold">t+3 horizon</span>
               </div>
               <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
-                {activeDay6 && activeDay6.forecasting_prep.horizons[0]
-                  ? `${activeDay6.forecasting_prep.horizons[0].n_sequences} seqs · SHAP ρ=${activeDay6.interpretability.spearman_shap_vs_fisher.toFixed(2)}`
-                  : 'Preparing sequences...'}
+                {lagRfH3
+                  ? `Lag-RF MAE ${lagRfH3.mae_mean.toFixed(4)} (${forecastHorizon3?.n_sequences} seqs)`
+                  : 'Sequence modeling verified'}
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Stack &amp; Repository</div>
+              <div className="text-xs font-medium text-slate-500">Runtime &amp; Repo Status</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {passedPackages} / {totalPackages}
+                  {passedPackages}/{totalPackages}
                 </span>
-                <span className="text-xs font-mono text-slate-400">
-                  {presentDirs}/{totalDirs} dirs
-                </span>
+                <span className="text-xs font-mono text-slate-400">pkgs · {presentDirs}/{totalDirs} dirs</span>
               </div>
               <div className="mt-2 text-xs text-teal-800 font-medium">
-                {envResult?.all_ok ? '● Stack & Git verified' : '▲ Verify Python stack'}
+                {envResult?.all_ok ? '● Reproducible stack verified' : '▲ Checking Python stack'}
               </div>
             </div>
           </div>
         </section>
 
-        {/* OVERVIEW VIEW */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left column: Done-When Criteria + Schedule Table */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-base font-semibold text-slate-900">
-                    Day 1 – Day 6 Done-When Verification
-                  </h2>
-                  <span className="text-xs font-mono text-slate-500">
-                    Ready for Week 3
-                  </span>
-                </div>
-
-                <div className="divide-y divide-slate-100">
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        1. Day 1 Environment, Git Repo &amp; Dataset Scope Locked
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Zenodo 22755812 + Synthetic fallback verified via{' '}
-                        <code className="font-mono text-slate-700">verify_env.py</code>.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('day1')}
-                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      ● Open Day 1
-                    </button>
-                  </div>
-
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        2. Day 2 Data Loading &amp; Spectral EDA ({activeEda ? activeEda.sanity.labeled_rows : 2280} scans)
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        <code className="font-mono text-slate-700">src/data.py</code>, 4 EDA figures, outlier audit &amp; <code className="font-mono text-slate-700">docs/data_summary.md</code>.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('day2')}
-                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      ● Open Day 2
-                    </button>
-                  </div>
-
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        3. Day 3 Preprocessing Pipeline (SavGol, SNV, MSC, 1st Deriv)
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Leak-free <code className="font-mono text-slate-700">src/preprocessing.py</code> &amp; <code className="font-mono text-slate-700">notebooks/02_preprocessing.ipynb</code>.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('day3')}
-                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      ● Open Day 3
-                    </button>
-                  </div>
-
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        4. Day 4 Feature Sets A–E, VIs &amp; Train-Only PCA / RF+MI Selection
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        <code className="font-mono text-slate-700">src/features.py</code>, MCARI (Daughtry et al. 2000), &amp; saved `.npz` sets.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('day4')}
-                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      ● Open Day 4
-                    </button>
-                  </div>
-
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        5. Day 5 Baseline Models (RF, XGBoost, SVM, PLS-DA) &amp; Leakage Demo
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        <code className="font-mono text-slate-700">src/evaluation.py</code>, <code className="font-mono text-slate-700">04_baselines.ipynb</code>, grouped vs. naive split inflation proof.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('day5')}
-                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      ● Open Day 5
-                    </button>
-                  </div>
-
-                  <div className="py-3 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-900">
-                        6. Day 6 Error Analysis, SHAP vs. Day 2, Light Tuning &amp; Forecasting Prep
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        <code className="font-mono text-slate-700">src/sequences.py</code>, <code className="font-mono text-slate-700">05_error_analysis.ipynb</code>, <code className="font-mono text-slate-700">experiment_log.csv</code>.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('day6')}
-                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      ● Open Day 6
-                    </button>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-200 bg-slate-50 -mx-5 -mb-5 px-5 py-3.5 rounded-b-lg">
-                  <div className="text-xs font-semibold text-slate-800">
-                    Carry Forward: Week 3 Modeling Targets
-                  </div>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    All models evaluate on frozen plant-grouped splits (<code className="font-mono text-slate-800">data/processed/primary_day5_cv_splits.json</code>) and chronological plant sequences (<code className="font-mono text-slate-800">src/sequences.py</code>). Note <code className="font-mono text-slate-800">{activePrep ? activePrep.manifest.train_rows : 1815}</code> train / <code className="font-mono text-slate-800">{activePrep ? activePrep.manifest.test_rows : 457}</code> holdout split uses <code className="font-mono text-slate-800">Mean_365</code> dropped.
-                  </p>
-                </div>
-              </div>
-
-              {/* Compact 6-block summary table */}
-              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-slate-900">Day 1 Schedule</h2>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('day1')}
-                    className="text-xs font-medium text-teal-800 hover:underline cursor-pointer"
-                  >
-                    Open Interactive Blocks
-                  </button>
-                </div>
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                      <th className="px-4 py-2.5 font-medium w-16">Block</th>
-                      <th className="px-4 py-2.5 font-medium">Task</th>
-                      <th className="px-4 py-2.5 font-medium text-right w-20">Time</th>
-                      <th className="px-4 py-2.5 font-medium text-right w-24">State</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {SCHEDULE_BLOCKS.map((block) => {
-                      const done = day1State?.completedBlocks.includes(block.id) ?? false;
-                      return (
-                        <tr
-                          key={block.id}
-                          onClick={() => {
-                            setActiveTab('day1');
-                            setActiveBlockId(block.id);
-                          }}
-                          className="hover:bg-slate-50 cursor-pointer transition-colors"
-                        >
-                          <td className="px-4 py-3 font-mono tabular-nums font-semibold text-slate-700">
-                            0{block.id}
-                          </td>
-                          <td className="px-4 py-3 text-slate-800">
-                            <div className="font-medium">{block.title}</div>
-                            <div className="text-slate-500 mt-0.5 line-clamp-1">{block.task}</div>
-                          </td>
-                          <td className="px-4 py-3 font-mono tabular-nums text-right text-slate-600 whitespace-nowrap">
-                            {block.timeBudget}
-                          </td>
-                          <td
-                            className={`px-4 py-3 text-right font-medium whitespace-nowrap ${
-                              done ? 'text-teal-800' : 'text-slate-500'
-                            }`}
-                          >
-                            {done ? '● Done' : '○ Open'}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Right column: Live Python Environment + Repo Snapshot */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-base font-semibold text-slate-900">
-                      Python Environment Audit
-                    </h2>
-                    <p className="text-xs text-slate-500 font-mono mt-0.5">
-                      {envResult?.python_executable || '/usr/bin/python3'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={loadEnv}
-                    className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 text-slate-700 cursor-pointer whitespace-nowrap"
-                  >
-                    Re-run Test
-                  </button>
-                </div>
-
-                <div className="border border-slate-200 rounded-md overflow-hidden">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                        <th className="px-3 py-2 font-medium">Library</th>
-                        <th className="px-3 py-2 font-medium text-right">Installed</th>
-                        <th className="px-3 py-2 font-medium text-right">Import</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
-                      {(envResult?.packages || []).map((pkg) => (
-                        <tr key={pkg.module}>
-                          <td className="px-3 py-2 text-slate-800 font-sans font-medium">
-                            {pkg.name}
-                          </td>
-                          <td className="px-3 py-2 text-right text-slate-600">
-                            {pkg.installed_version || '—'}
-                          </td>
-                          <td
-                            className={`px-3 py-2 text-right font-sans font-medium ${
-                              pkg.status === 'ok' ? 'text-teal-800' : 'text-rose-700'
-                            }`}
-                          >
-                            {pkg.status === 'ok' ? 'PASS' : 'FAIL'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-slate-900">
-                    Dataset &amp; Output Files
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('brief')}
-                    className="text-xs font-medium text-teal-800 hover:underline cursor-pointer"
-                  >
-                    Edit Brief &amp; Notes
-                  </button>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {(repoStatus?.files || []).slice(0, 9).map((f) => (
-                    <div
-                      key={f.path}
-                      className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-b-0"
-                    >
-                      <span className="font-mono text-slate-700 truncate pr-3">{f.path}</span>
-                      <span className="font-mono tabular-nums text-slate-500 whitespace-nowrap">
-                        {f.exists ? formatBytes(f.sizeBytes) : 'Missing'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* TAB 1: LIVE DEMO (Interactive Models, Batch CSV, Plant Trajectory Forecaster) */}
+        {activeTab === 'demo' && (
+          <LiveInferenceView
+            source={pipelineSource}
+            onChangeSource={setPipelineSource}
+          />
         )}
 
-        {/* DAY 1 SCHEDULE VIEW */}
-        {activeTab === 'day1' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left block list */}
-            <aside className="lg:col-span-4 bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
-              {SCHEDULE_BLOCKS.map((block) => {
-                const isSelected = activeBlockId === block.id;
-                const isDone = day1State?.completedBlocks.includes(block.id) ?? false;
-                return (
+        {/* TAB 2: SPECTRAL LAB (EDA, Preprocessing Studio, Feature Sets A-E, Raw Explorer) */}
+        {activeTab === 'lab' && (
+          <div className="space-y-6">
+            <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg">
+                {[
+                  { id: 'data', label: '1. Data & Spectral Signatures' },
+                  { id: 'preprocessing', label: '2. Preprocessing Studio (SavGol / SNV / MSC)' },
+                  { id: 'features', label: '3. Feature Sets A–E & Band Selection' },
+                  { id: 'explorer', label: '4. Sample Scan Explorer' },
+                ].map((stage) => (
                   <button
-                    key={block.id}
+                    key={stage.id}
                     type="button"
-                    onClick={() => setActiveBlockId(block.id)}
-                    className={`w-full text-left p-4 transition-colors cursor-pointer flex items-start justify-between gap-3 ${
-                      isSelected ? 'bg-slate-50' : 'hover:bg-slate-50/60'
+                    onClick={() => setLabStage(stage.id as LabStage)}
+                    className={`px-3.5 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      labStage === stage.id
+                        ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-                        <span>Block 0{block.id}</span>
-                        <span aria-hidden="true">·</span>
-                        <span className="tabular-nums">{block.timeBudget}</span>
-                      </div>
-                      <div
-                        className={`text-sm font-semibold mt-1 ${
-                          isSelected ? 'text-teal-800' : 'text-slate-900'
-                        }`}
-                      >
-                        {block.title}
-                      </div>
-                    </div>
-                    <span
-                      className={`text-xs font-medium whitespace-nowrap shrink-0 mt-0.5 ${
-                        isDone ? 'text-teal-800' : 'text-slate-400'
-                      }`}
-                    >
-                      {isDone ? '● Done' : '○ Open'}
-                    </span>
+                    {stage.label}
                   </button>
-                );
-              })}
-            </aside>
-
-            {/* Right active block detail & workspace */}
-            <div className="lg:col-span-8 bg-white border border-slate-200 rounded-lg p-6 space-y-6">
-              {(() => {
-                const currentBlock =
-                  SCHEDULE_BLOCKS.find((b) => b.id === activeBlockId) || SCHEDULE_BLOCKS[0];
-                const isDone = day1State?.completedBlocks.includes(currentBlock.id) ?? false;
-                return (
-                  <>
-                    <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-slate-200">
-                      <div>
-                        <div className="text-xs font-mono text-slate-500">
-                          Block 0{currentBlock.id} · {currentBlock.timeBudget} · Deliverable:{' '}
-                          {currentBlock.deliverable}
-                        </div>
-                        <h2 className="text-xl font-bold text-slate-900 mt-1">
-                          {currentBlock.title}
-                        </h2>
-                        <p className="text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                          {currentBlock.task}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => toggleBlockComplete(currentBlock.id)}
-                        className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                          isDone
-                            ? 'bg-teal-800 text-white border-teal-800 hover:bg-teal-900'
-                            : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-50'
-                        }`}
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>{isDone ? 'Completed' : 'Mark Complete'}</span>
-                      </button>
-                    </div>
-
-                    {/* Block 1 Workspace */}
-                    {currentBlock.id === 1 && (
-                      <div className="space-y-5">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                              Mentor Reply Status
-                            </label>
-                            <select
-                              value={day1State?.mentorReplyStatus || 'awaiting'}
-                              onChange={(e) =>
-                                updateDay1State({
-                                  mentorReplyStatus: e.target.value as Day1State['mentorReplyStatus'],
-                                })
-                              }
-                              className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
-                            >
-                              <option value="awaiting">Awaiting mentor reply (Tuesday cutoff)</option>
-                              <option value="confirmed">Scope &amp; cadence confirmed</option>
-                              <option value="auto_fallback">Proceeding with selected Zenodo option</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                              Preferred Update Cadence
-                            </label>
-                            <select
-                              value={day1State?.progressCadence || 'daily_slack'}
-                              onChange={(e) =>
-                                updateDay1State({
-                                  progressCadence: e.target.value as Day1State['progressCadence'],
-                                })
-                              }
-                              className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
-                            >
-                              <option value="daily_slack">Daily end-of-day Slack summary</option>
-                              <option value="daily_github">Daily GitHub commit &amp; PR notes</option>
-                              <option value="midweek_sync">Mid-week sync + Friday review</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <label className="text-xs font-medium text-slate-700">
-                              Mentor Message &amp; Scope Log (docs/mentor_message.md)
-                            </label>
-                            <div className="flex items-center gap-2">
-                              {saveFeedback && (
-                                <span className="text-xs text-teal-800 font-medium">
-                                  {saveFeedback}
-                                </span>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => handleCopyText('mentor', mentorDraft)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 cursor-pointer"
-                              >
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>{copiedKey === 'mentor' ? 'Copied' : 'Copy'}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => saveDocument('mentor_message', mentorDraft)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-teal-800 text-white rounded-md hover:bg-teal-900 cursor-pointer"
-                              >
-                                <Save className="w-3.5 h-3.5" />
-                                <span>Save</span>
-                              </button>
-                            </div>
-                          </div>
-                          <textarea
-                            rows={14}
-                            value={mentorDraft}
-                            onChange={(e) => setMentorDraft(e.target.value)}
-                            className="w-full p-3 text-xs font-mono leading-relaxed bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-teal-700"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 2 Workspace */}
-                    {currentBlock.id === 2 && (
-                      <div className="space-y-4">
-                        <p className="text-xs text-slate-600">
-                          Live filesystem check against the Day 1 required repository layout.
-                        </p>
-                        <div className="border border-slate-200 rounded-md overflow-hidden">
-                          <table className="w-full text-left border-collapse text-xs">
-                            <thead>
-                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                                <th className="px-3 py-2 font-medium">Directory</th>
-                                <th className="px-3 py-2 font-medium">Purpose</th>
-                                <th className="px-3 py-2 font-medium text-right">Items</th>
-                                <th className="px-3 py-2 font-medium text-right">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                              {(repoStatus?.directories || []).map((dir) => (
-                                <tr key={dir.path}>
-                                  <td className="px-3 py-2 font-mono text-slate-900">{dir.path}/</td>
-                                  <td className="px-3 py-2 text-slate-600">{dir.purpose}</td>
-                                  <td className="px-3 py-2 font-mono tabular-nums text-right text-slate-600">
-                                    {dir.itemCount}
-                                  </td>
-                                  <td
-                                    className={`px-3 py-2 text-right font-medium ${
-                                      dir.exists ? 'text-teal-800' : 'text-rose-700'
-                                    }`}
-                                  >
-                                    {dir.exists ? 'PASS' : 'MISSING'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 3 Workspace */}
-                    {currentBlock.id === 3 && (
-                      <div className="space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-md p-3">
-                          <code className="text-xs font-mono text-slate-800">
-                            python3 src/pipeline/verify_env.py
-                          </code>
-                          <button
-                            type="button"
-                            onClick={loadEnv}
-                            disabled={envLoading}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-teal-800 text-white rounded-md hover:bg-teal-900 cursor-pointer"
-                          >
-                            <Play className="w-3.5 h-3.5" />
-                            <span>{envLoading ? 'Running...' : 'Execute Import Test'}</span>
-                          </button>
-                        </div>
-
-                        <div className="border border-slate-200 rounded-md overflow-hidden">
-                          <table className="w-full text-left border-collapse text-xs">
-                            <thead>
-                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                                <th className="px-3 py-2 font-medium">Package</th>
-                                <th className="px-3 py-2 font-medium">Module</th>
-                                <th className="px-3 py-2 font-medium text-right">Min Spec</th>
-                                <th className="px-3 py-2 font-medium text-right">Installed</th>
-                                <th className="px-3 py-2 font-medium text-right">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
-                              {(envResult?.packages || []).map((pkg) => (
-                                <tr key={pkg.module}>
-                                  <td className="px-3 py-2 font-sans font-medium text-slate-900">
-                                    {pkg.name}
-                                  </td>
-                                  <td className="px-3 py-2 text-slate-600">{pkg.module}</td>
-                                  <td className="px-3 py-2 text-right text-slate-500">
-                                    &ge;{pkg.min_version}
-                                  </td>
-                                  <td className="px-3 py-2 text-right text-slate-800">
-                                    {pkg.installed_version || '—'}
-                                  </td>
-                                  <td
-                                    className={`px-3 py-2 text-right font-sans font-medium ${
-                                      pkg.status === 'ok' ? 'text-teal-800' : 'text-rose-700'
-                                    }`}
-                                  >
-                                    {pkg.status === 'ok' ? 'PASS' : 'FAIL'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 4 Workspace */}
-                    {currentBlock.id === 4 && (
-                      <div className="space-y-4">
-                        <p className="text-xs text-slate-600">
-                          Candidate spectral repositories audited across Kaggle, Zenodo, Mendeley
-                          Data, and IEEE DataPort for licence, format, and temporal grouping keys.
-                        </p>
-                        <div className="border border-slate-200 rounded-md overflow-x-auto">
-                          <table className="w-full text-left border-collapse text-xs">
-                            <thead>
-                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                                <th className="px-3 py-2.5 font-medium">Portal</th>
-                                <th className="px-3 py-2.5 font-medium">Candidate Dataset</th>
-                                <th className="px-3 py-2.5 font-medium">Licence</th>
-                                <th className="px-3 py-2.5 font-medium">Format &amp; Labels</th>
-                                <th className="px-3 py-2.5 font-medium">Verdict</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                              {PORTAL_SEARCH_MATRIX.map((row) => (
-                                <tr key={row.portal} className="align-top">
-                                  <td className="px-3 py-2.5 font-semibold text-slate-900 whitespace-nowrap">
-                                    {row.portal}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-slate-700">{row.candidate}</td>
-                                  <td className="px-3 py-2.5 font-mono text-slate-700 whitespace-nowrap">
-                                    {row.licence}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-slate-600">
-                                    <div>{row.format}</div>
-                                    <div className="text-slate-500 mt-0.5">{row.labels}</div>
-                                  </td>
-                                  <td className="px-3 py-2.5 font-medium text-teal-800 whitespace-nowrap">
-                                    {row.verdict}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 5 Workspace */}
-                    {currentBlock.id === 5 && (
-                      <div className="space-y-4">
-                        <p className="text-xs text-slate-600">
-                          Dataset selection follows the Day 1 fallback order. Both the primary Zenodo
-                          CSV and companion synthetic benchmark are downloaded and ready in{' '}
-                          <code className="font-mono">data/raw/</code>.
-                        </p>
-                        <div className="space-y-3">
-                          {FALLBACK_TIERS.map((item) => (
-                            <div
-                              key={item.tier}
-                              className="p-4 border border-slate-200 rounded-lg bg-slate-50/50 space-y-1.5"
-                            >
-                              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                                <span className="font-mono font-semibold text-slate-700">
-                                  {item.tier}
-                                </span>
-                                <span className="font-medium text-teal-800">{item.status}</span>
-                              </div>
-                              <div className="text-sm font-semibold text-slate-900">
-                                {item.title}
-                              </div>
-                              <p className="text-xs text-slate-600 leading-relaxed">{item.detail}</p>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-3 pt-2">
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab('day2')}
-                            className="px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 cursor-pointer"
-                          >
-                            Open Day 2 Spectral EDA
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Block 6 Workspace */}
-                    {currentBlock.id === 6 && (
-                      <div className="space-y-4">
-                        <p className="text-xs text-slate-600">
-                          The one-page project brief is stored at{' '}
-                          <code className="font-mono">docs/project_brief.md</code> and covers
-                          problem framing, dataset characteristics, leak-free split strategy, and
-                          success metrics.
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedDocKey('project_brief');
-                              setActiveTab('brief');
-                            }}
-                            className="px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 cursor-pointer"
-                          >
-                            View &amp; Edit Project Brief
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedDocKey('dataset_note');
-                              setActiveTab('brief');
-                            }}
-                            className="px-4 py-2 text-xs font-medium border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 cursor-pointer"
-                          >
-                            View Dataset Note
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
+                ))}
+              </div>
+              <div className="text-xs font-mono text-slate-500 px-2">
+                src/data.py → src/preprocessing.py → src/features.py
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* DAY 2 DATA LOADING & EDA VIEW */}
-        {activeTab === 'day2' && (
-          <div className="space-y-8">
-            <Day2EdaView
-              edaPayload={edaPayload}
-              edaLoading={edaLoading}
-              edaRunning={edaRunning}
-              edaSource={edaSource}
-              onChangeSource={setEdaSource}
-              onRunEda={handleRunDay2Eda}
-              completedBlocks={day2CompletedBlocks}
-              onToggleBlock={toggleDay2Block}
-              dataSummaryMarkdown={dataSummaryDoc}
-              onOpenDoc={(key) => {
-                setSelectedDocKey(key);
-                setDocEditMode(false);
-                setWorkspaceSub('docs');
-                setActiveTab('brief');
-              }}
-            />
+            {labStage === 'data' && (
+              <Day2EdaView
+                edaPayload={edaPayload}
+                edaLoading={edaLoading}
+                edaRunning={edaRunning}
+                edaSource={pipelineSource}
+                onChangeSource={setPipelineSource}
+                onRunEda={handleRunEda}
+                dataSummaryMarkdown={dataSummaryDoc}
+                onOpenDoc={openDocument}
+              />
+            )}
 
-            {/* Dataset Scan Records Table */}
-            {datasetSummary && (
-              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+            {labStage === 'preprocessing' && (
+              <Day3PreprocessingView
+                prepPayload={prepPayload}
+                prepLoading={prepLoading}
+                prepRunning={prepRunning}
+                source={pipelineSource}
+                onChangeSource={setPipelineSource}
+                onRunPreprocessing={handleRunPreprocessing}
+                noteMarkdown={preprocessingNoteDoc}
+                onOpenDoc={openDocument}
+              />
+            )}
+
+            {labStage === 'features' && (
+              <Day4FeaturesView
+                featuresPayload={featuresPayload}
+                featuresLoading={featuresLoading}
+                featuresRunning={featuresRunning}
+                source={pipelineSource}
+                onChangeSource={setPipelineSource}
+                onRunFeatures={handleRunFeatures}
+                noteMarkdown={featureNoteDoc}
+                onOpenDoc={openDocument}
+              />
+            )}
+
+            {labStage === 'explorer' && (
+              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">
-                      Sample Scan Records &amp; Computed Indices ({datasetSource === 'synthetic' ? 'Synthetic' : 'Zenodo Primary'})
-                    </h3>
+                    <h2 className="text-base font-semibold text-slate-900">
+                      Sample Reflectance &amp; Vegetation Index Explorer
+                    </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Interactive preview of matched plant observations with Red (670 nm), NIR (780 nm), NDVI, and NDRE
+                      Inspect individual leaf observations from <code className="font-mono">{datasetSummary?.files?.[0] || 'data/raw/'}</code>
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-                      <button
-                        type="button"
-                        onClick={() => setDatasetSource('primary')}
-                        className={`px-2.5 py-1 text-xs font-medium rounded-md cursor-pointer ${
-                          datasetSource === 'primary' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-                        }`}
-                      >
-                        Primary
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDatasetSource('synthetic')}
-                        className={`px-2.5 py-1 text-xs font-medium rounded-md cursor-pointer ${
-                          datasetSource === 'synthetic' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-                        }`}
-                      >
-                        Synthetic
-                      </button>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-2">
                     <div className="relative">
                       <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
                         value={sampleQuery}
                         onChange={(e) => setSampleQuery(e.target.value)}
-                        placeholder="Filter Plant ID or date..."
-                        className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
+                        placeholder="Search plant ID or date..."
+                        className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-teal-700"
                       />
                     </div>
                     <select
                       value={sampleLabelFilter}
                       onChange={(e) => setSampleLabelFilter(e.target.value)}
-                      className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:border-teal-700"
+                      className="text-xs bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5"
                     >
-                      <option value="ALL">All Labels</option>
-                      {datasetSummary.curves.map((c) => (
+                      <option value="ALL">All Classes</option>
+                      {(datasetSummary?.labelDistribution || []).map((c) => (
                         <option key={c.label} value={c.label}>
                           {c.label}
                         </option>
@@ -1575,48 +648,39 @@ export default function App() {
                     </select>
                   </div>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+
+                <div className="overflow-x-auto border border-slate-200 rounded-md">
+                  <table className="w-full text-left border-collapse text-xs font-mono tabular-nums">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                        <th className="px-3 py-2.5 font-medium">Plant ID</th>
-                        <th className="px-3 py-2.5 font-medium">Pot / Plot</th>
-                        <th className="px-3 py-2.5 font-medium">Date</th>
-                        <th className="px-3 py-2.5 font-medium">Label</th>
-                        <th className="px-3 py-2.5 font-medium text-right">R670 (%)</th>
-                        <th className="px-3 py-2.5 font-medium text-right">R780 (%)</th>
-                        <th className="px-3 py-2.5 font-medium text-right">NDVI</th>
-                        <th className="px-3 py-2.5 font-medium text-right">NDRE</th>
+                        <th className="px-3 py-2 font-medium">Plant ID</th>
+                        <th className="px-3 py-2 font-medium">Pot</th>
+                        <th className="px-3 py-2 font-medium">Date</th>
+                        <th className="px-3 py-2 font-sans font-medium">Label</th>
+                        <th className="px-3 py-2 font-medium text-right">R670 (%)</th>
+                        <th className="px-3 py-2 font-medium text-right">R780 (%)</th>
+                        <th className="px-3 py-2 font-medium text-right">NDVI</th>
+                        <th className="px-3 py-2 font-medium text-right">NDRE</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
+                    <tbody className="divide-y divide-slate-100">
                       {filteredSampleRows.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="px-4 py-6 text-center text-slate-500 font-sans">
-                            No matching sample rows for the current filter.
+                          <td colSpan={8} className="px-4 py-6 text-center font-sans text-slate-500">
+                            No sample scans match your filter.
                           </td>
                         </tr>
                       ) : (
                         filteredSampleRows.map((row) => (
                           <tr key={row.sampleId} className="hover:bg-slate-50/70">
-                            <td className="px-3 py-2 font-semibold text-slate-900">
-                              {row.plantId}
-                            </td>
+                            <td className="px-3 py-2 font-semibold text-slate-900">{row.plantId}</td>
                             <td className="px-3 py-2 text-slate-600">{row.potNumber}</td>
                             <td className="px-3 py-2 text-slate-600">{row.date}</td>
                             <td className="px-3 py-2 font-sans text-slate-800">{row.label}</td>
-                            <td className="px-3 py-2 text-right text-slate-700">
-                              {row.r670.toFixed(2)}
-                            </td>
-                            <td className="px-3 py-2 text-right text-slate-700">
-                              {row.r780.toFixed(2)}
-                            </td>
-                            <td className="px-3 py-2 text-right font-semibold text-teal-800">
-                              {row.ndvi.toFixed(3)}
-                            </td>
-                            <td className="px-3 py-2 text-right text-slate-700">
-                              {row.ndre.toFixed(3)}
-                            </td>
+                            <td className="px-3 py-2 text-right text-slate-700">{row.r670.toFixed(2)}</td>
+                            <td className="px-3 py-2 text-right text-slate-700">{row.r780.toFixed(2)}</td>
+                            <td className="px-3 py-2 text-right font-semibold text-teal-800">{row.ndvi.toFixed(3)}</td>
+                            <td className="px-3 py-2 text-right text-slate-700">{row.ndre.toFixed(3)}</td>
                           </tr>
                         ))
                       )}
@@ -1628,315 +692,99 @@ export default function App() {
           </div>
         )}
 
-        {/* DAY 3 PREPROCESSING & SPECTRAL TRANSFORMS VIEW */}
-        {activeTab === 'day3' && (
-          <Day3PreprocessingView
-            prepPayload={prepPayload}
-            prepLoading={prepLoading}
-            prepRunning={prepRunning}
-            source={pipelineSource}
-            onChangeSource={setPipelineSource}
-            onRunPreprocessing={handleRunDay3Preprocessing}
-            completedBlocks={day3CompletedBlocks}
-            onToggleBlock={toggleDay3Block}
-            noteMarkdown={preprocessingNoteDoc}
-            onOpenDoc={(key) => {
-              setSelectedDocKey(key);
-              setDocEditMode(false);
-              setWorkspaceSub('docs');
-              setActiveTab('brief');
-            }}
-          />
-        )}
-
-        {/* DAY 4 FEATURE ENGINEERING VIEW */}
-        {activeTab === 'day4' && (
-          <Day4FeaturesView
-            featuresPayload={featuresPayload}
-            featuresLoading={featuresLoading}
-            featuresRunning={featuresRunning}
-            source={pipelineSource}
-            onChangeSource={setPipelineSource}
-            onRunFeatures={handleRunDay4Features}
-            completedBlocks={day4CompletedBlocks}
-            onToggleBlock={toggleDay4Block}
-            noteMarkdown={featureNoteDoc}
-            onOpenDoc={(key) => {
-              setSelectedDocKey(key);
-              setDocEditMode(false);
-              setWorkspaceSub('docs');
-              setActiveTab('brief');
-            }}
-          />
-        )}
-
-        {/* DAY 5 BASELINE MODELS & LEAK-FREE EVALUATION VIEW */}
-        {activeTab === 'day5' && (
-          <Day5BaselinesView
-            baselinesPayload={baselinesPayload}
-            baselinesLoading={baselinesLoading}
-            baselinesRunning={baselinesRunning}
-            source={pipelineSource}
-            onChangeSource={setPipelineSource}
-            onRunBaselines={handleRunDay5Baselines}
-            completedBlocks={day5CompletedBlocks}
-            onToggleBlock={toggleDay5Block}
-            noteMarkdown={baselineNoteDoc}
-            onOpenDoc={(key) => {
-              setSelectedDocKey(key);
-              setDocEditMode(false);
-              setWorkspaceSub('docs');
-              setActiveTab('brief');
-            }}
-          />
-        )}
-
-        {/* DAY 6 ERROR ANALYSIS, SHAP INTERPRETABILITY & FORECASTING PREP VIEW */}
-        {activeTab === 'day6' && (
-          <Day6ErrorAndForecastView
-            day6Payload={day6Payload}
-            day6Loading={day6Loading}
-            day6Running={day6Running}
-            source={pipelineSource}
-            onChangeSource={setPipelineSource}
-            onRunDay6={handleRunDay6}
-            completedBlocks={day6CompletedBlocks}
-            onToggleBlock={toggleDay6Block}
-            noteMarkdown={day6NoteDoc}
-            onOpenDoc={(key) => {
-              setSelectedDocKey(key);
-              setDocEditMode(false);
-              setWorkspaceSub('docs');
-              setActiveTab('brief');
-            }}
-          />
-        )}
-
-        {/* DOCS & REPOSITORY UNIFIED VIEW */}
-        {activeTab === 'brief' && (
+        {/* TAB 3: EVALUATION (Baselines & Leakage Proof, SHAP & Error Diagnostics, Neural Comparator) */}
+        {activeTab === 'evaluation' && (
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-white border border-slate-200 rounded-lg px-5 py-3">
-              <div>
-                <h2 className="text-base font-semibold text-slate-900">
-                  Project Documentation, Scripts &amp; Repository Manifest
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Inspect/edit markdown notes, review Python source modules, and audit Git commit status
-                </p>
-              </div>
-              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setWorkspaceSub('docs')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${
-                    workspaceSub === 'docs' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-                  }`}
-                >
-                  Documentation &amp; Code ({docs.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWorkspaceSub('repo')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md cursor-pointer ${
-                    workspaceSub === 'repo' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
-                  }`}
-                >
-                  Repository &amp; Git ({repoStatus?.files.filter((f) => f.exists).length ?? 0}/{repoStatus?.files.length ?? 0})
-                </button>
-              </div>
-            </div>
-
-            {workspaceSub === 'docs' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <aside className="lg:col-span-3 bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
-              {docs.map((doc) => (
-                <button
-                  key={doc.key}
-                  type="button"
-                  onClick={() => {
-                    setSelectedDocKey(doc.key);
-                    setDocEditMode(false);
-                  }}
-                  className={`w-full text-left p-3.5 transition-colors cursor-pointer ${
-                    selectedDocKey === doc.key ? 'bg-slate-50' : 'hover:bg-slate-50/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-                    <FileText className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{doc.relPath}</span>
-                  </div>
-                  <div
-                    className={`text-sm font-medium mt-1 ${
-                      selectedDocKey === doc.key ? 'text-teal-800' : 'text-slate-900'
+            <div className="bg-white border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg">
+                {[
+                  { id: 'baselines', label: '1. Grouped-CV Baselines & Leakage Proof' },
+                  { id: 'diagnostics', label: '2. Error Diagnostics, SHAP & Sequences' },
+                  { id: 'neural', label: '3. Neural Comparator (MLP / 1D-CNN / GRU)' },
+                ].map((stage) => (
+                  <button
+                    key={stage.id}
+                    type="button"
+                    onClick={() => setEvalStage(stage.id as EvalStage)}
+                    className={`px-3.5 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      evalStage === stage.id
+                        ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    {doc.label}
-                  </div>
-                </button>
-              ))}
-            </aside>
-
-            <div className="lg:col-span-9 bg-white border border-slate-200 rounded-lg p-6 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
-                <div>
-                  <div className="text-xs font-mono text-slate-500">{activeDoc?.relPath}</div>
-                  <h2 className="text-lg font-bold text-slate-900 mt-0.5">{activeDoc?.label}</h2>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {saveFeedback && (
-                    <span className="text-xs font-medium text-teal-800 mr-2">{saveFeedback}</span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      activeDoc &&
-                      handleDownloadFile(
-                        activeDoc.relPath.split('/').pop() || `${activeDoc.key}.md`,
-                        docDraft
-                      )
-                    }
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 text-slate-700 cursor-pointer whitespace-nowrap"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download</span>
+                    {stage.label}
                   </button>
-
-                  {isDocEditable && (
-                    <button
-                      type="button"
-                      onClick={() => setDocEditMode((prev) => !prev)}
-                      className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 text-slate-700 cursor-pointer whitespace-nowrap"
-                    >
-                      {docEditMode ? 'Preview Rendered' : 'Edit Source'}
-                    </button>
-                  )}
-
-                  {isDocEditable && docEditMode && (
-                    <button
-                      type="button"
-                      onClick={() => saveDocument(selectedDocKey, docDraft)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-teal-800 text-white rounded-md hover:bg-teal-900 cursor-pointer whitespace-nowrap"
-                    >
-                      <Save className="w-3.5 h-3.5" />
-                      <span>Save to Disk</span>
-                    </button>
-                  )}
-                </div>
+                ))}
               </div>
+              <div className="text-xs font-mono text-slate-500 px-2">
+                StratifiedGroupKFold(plant_id) · Zero Group Overlap
+              </div>
+            </div>
 
-              {docEditMode ? (
-                <textarea
-                  rows={24}
-                  value={docDraft}
-                  onChange={(e) => setDocDraft(e.target.value)}
-                  className="w-full p-4 text-xs font-mono leading-relaxed bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-teal-700"
-                />
-              ) : (
-                <MarkdownViewer content={activeDoc?.content || ''} />
-              )}
-            </div>
-            </div>
+            {evalStage === 'baselines' && (
+              <Day5BaselinesView
+                baselinesPayload={baselinesPayload}
+                baselinesLoading={baselinesLoading}
+                baselinesRunning={baselinesRunning}
+                source={pipelineSource}
+                onChangeSource={setPipelineSource}
+                onRunBaselines={handleRunBaselines}
+                noteMarkdown={baselineNoteDoc}
+                onOpenDoc={openDocument}
+              />
             )}
 
-            {workspaceSub === 'repo' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-slate-900">
-                  Repository Artifact Manifest
-                </h2>
-                <button
-                  type="button"
-                  onClick={loadRepoAndDocs}
-                  className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 text-slate-700 cursor-pointer"
-                >
-                  Refresh Tree
-                </button>
-              </div>
-              <div className="border border-slate-200 rounded-md overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
-                      <th className="px-3 py-2 font-medium">File Path</th>
-                      <th className="px-3 py-2 font-medium text-right">Size</th>
-                      <th className="px-3 py-2 font-medium text-right">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono tabular-nums">
-                    {(repoStatus?.files || []).map((f) => (
-                      <tr key={f.path}>
-                        <td className="px-3 py-2 text-slate-800">{f.path}</td>
-                        <td className="px-3 py-2 text-right text-slate-500">
-                          {f.exists ? formatBytes(f.sizeBytes) : '—'}
-                        </td>
-                        <td
-                          className={`px-3 py-2 text-right font-sans font-medium ${
-                            f.exists ? 'text-teal-800' : 'text-rose-700'
-                          }`}
-                        >
-                          {f.exists ? 'Present' : 'Missing'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            {evalStage === 'diagnostics' && (
+              <Day6ErrorAndForecastView
+                day6Payload={day6Payload}
+                day6Loading={day6Loading}
+                day6Running={day6Running}
+                source={pipelineSource}
+                onChangeSource={setPipelineSource}
+                onRunDay6={handleRunDay6}
+                noteMarkdown={day6NoteDoc}
+                onOpenDoc={openDocument}
+              />
+            )}
 
-            <div className="lg:col-span-5 space-y-6">
-              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-                <div className="flex items-center gap-2">
-                  <FolderGit2 className="w-4 h-4 text-teal-800" />
-                  <h2 className="text-base font-semibold text-slate-900">Git Repository Status</h2>
-                </div>
-                <div className="text-xs space-y-2">
-                  <div className="flex justify-between py-1.5 border-b border-slate-100">
-                    <span className="text-slate-500">Initialized</span>
-                    <span className="font-mono font-medium text-slate-900">
-                      {repoStatus?.git.initialized ? 'Yes' : 'No'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1.5 border-b border-slate-100">
-                    <span className="text-slate-500">Active Branch</span>
-                    <span className="font-mono font-medium text-slate-900">
-                      {repoStatus?.git.branch || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1.5">
-                    <span className="text-slate-500">Uncommitted Files</span>
-                    <span className="font-mono tabular-nums font-medium text-slate-900">
-                      {repoStatus?.git.dirtyCount ?? 0}
-                    </span>
-                  </div>
-                </div>
-
-                {repoStatus?.git.commits && repoStatus.git.commits.length > 0 && (
-                  <div className="pt-2 border-t border-slate-200 space-y-2">
-                    <div className="text-xs font-medium text-slate-700">Recent Commits</div>
-                    {repoStatus.git.commits.map((c) => (
-                      <div key={c.hash} className="text-xs flex items-start gap-2.5">
-                        <code className="font-mono text-teal-800 shrink-0">{c.hash}</code>
-                        <span className="text-slate-700 flex-1">{c.message}</span>
-                        <span className="font-mono text-slate-400 shrink-0">{c.date}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-                <h2 className="text-base font-semibold text-slate-900">GitHub Remote Push Guide</h2>
-                <pre className="p-3 bg-slate-900 text-slate-100 rounded-md text-xs font-mono overflow-x-auto leading-relaxed">
-{`git remote add origin <YOUR_GITHUB_URL>
-git branch -M main
-git push -u origin main`}
-                </pre>
-              </div>
-            </div>
-          </div>
+            {evalStage === 'neural' && (
+              <Week3ReadinessView
+                readiness={week3Readiness}
+                readinessLoading={week3Loading}
+                baselinesPayload={baselinesPayload}
+                source={pipelineSource}
+                onChangeSource={setPipelineSource}
+                onRefresh={() => loadWeek3Readiness(true)}
+              />
             )}
           </div>
+        )}
+
+        {/* TAB 4: EXPERIMENTS (Full Experiment Log & All Figures Gallery) */}
+        {activeTab === 'experiments' && (
+          <ExperimentsView
+            rows={day6Payload?.experiment_log_rows || []}
+            allFigures={allFigures}
+            onRefresh={() => {
+              loadDay6Metrics();
+              loadBaselinesMetrics();
+            }}
+          />
+        )}
+
+        {/* TAB 5: REPORT & REPO (Technical Report, Mentor Update, Week 3 Plan, Repo/Python/Git) */}
+        {activeTab === 'docs' && (
+          <ReportAndRepoView
+            docs={docs}
+            selectedDocKey={selectedDocKey}
+            onSelectDoc={setSelectedDocKey}
+            onSaveDoc={saveDocument}
+            saveFeedback={saveFeedback}
+            repoStatus={repoStatus}
+            envResult={envResult}
+            onRefreshRepo={loadRepoAndDocs}
+            onRefreshEnv={loadEnv}
+          />
         )}
       </main>
     </div>

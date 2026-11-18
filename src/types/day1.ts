@@ -625,4 +625,179 @@ export interface Day6ErrorAndForecastPayload {
   synthetic: Day6DatasetAnalysis;
 }
 
+export interface InferenceSamplePreset {
+  sample_id: string;
+  plant_id: string;
+  date: string;
+  true_label: string;
+  field_id: string;
+  split: string;
+  wavelengths_nm: number[];
+  raw_bands: Record<string, number>;
+}
+
+export interface InferencePlantRecord {
+  plant_id: string;
+  true_label: string;
+  field_id: string;
+  plot_id: string;
+  n_scans: number;
+  date_start: string;
+  date_end: string;
+  split: 'holdout_test' | 'train';
+}
+
+export interface InferenceSamplesPayload {
+  source: 'primary' | 'synthetic';
+  class_names: string[];
+  wavelengths_nm: number[];
+  aligned_wavelengths_nm: number[];
+  holdout_plants_count: number;
+  plants: InferencePlantRecord[];
+  sample_presets: InferenceSamplePreset[];
+}
+
+export interface ModelPredictionVote {
+  model_key: string;
+  model_name: string;
+  predicted_class: string;
+  confidence: number;
+  probabilities: Record<string, number>;
+}
+
+export interface SpectrumPredictionResult {
+  source: 'primary' | 'synthetic';
+  predicted_class: string;
+  confidence: number;
+  ensemble_agreement: string;
+  active_model: string;
+  models: ModelPredictionVote[];
+  vegetation_indices: Record<string, number>;
+  aligned_wavelengths_nm: number[];
+  reflectance_curve: Array<{ wavelength_nm: number; reflectance: number }>;
+  reference_curves: Record<string, Array<{ wavelength_nm: number; mean: number; std: number }>>;
+  drivers: Array<{
+    feature: string;
+    value: number;
+    z_vs_healthy: number;
+    contribution: number;
+    importance: number;
+  }>;
+  input_wavelengths_nm: number[];
+  raw_input_bands: Record<string, number>;
+}
+
+export interface CsvBatchPredictionResult {
+  source: 'primary' | 'synthetic';
+  model: string;
+  rows_scored: number;
+  total_rows_in_csv: number;
+  labeled_accuracy: number | null;
+  class_counts: Record<string, number>;
+  mean_reflectance_curve: Array<{ wavelength_nm: number; reflectance: number }>;
+  reference_curves: Record<string, Array<{ wavelength_nm: number; mean: number; std: number }>>;
+  rows: Array<{
+    row_index: number;
+    sample_id: string;
+    plant_id: string;
+    date: string;
+    true_label: string | null;
+    predicted_class: string;
+    confidence: number;
+    is_correct: boolean | null;
+    ndvi: number;
+    ndre: number;
+    rep_nm: number;
+    probabilities: Record<string, number>;
+  }>;
+}
+
+export interface PlantForecastResult {
+  source: 'primary' | 'synthetic';
+  plant_id: string;
+  true_label: string;
+  field_id: string;
+  plot_id: string;
+  split: string;
+  window_size: number;
+  horizon: number;
+  n_timepoints: number;
+  trial_duration_days: number;
+  first_spectral_flag_day: number | null;
+  first_ndvi_divergence_day: number | null;
+  lead_time_vs_end_days: number | null;
+  history: Array<{
+    step: number;
+    day_offset: number;
+    date: string;
+    actual_ndvi: number;
+    healthy_cohort_ndvi: number;
+    ndre: number;
+    pri: number;
+    rep_nm: number;
+    stress_prob: number;
+    lag_rf_backtest: number | null;
+    lag_ridge_backtest: number | null;
+  }>;
+  future: Array<{
+    horizon: number;
+    day_offset: number;
+    date: string;
+    persistence_ndvi: number;
+    lag_ridge_ndvi: number;
+    lag_rf_ndvi: number;
+    delta_from_current: number;
+  }>;
+}
+
+export interface EarlyDetectionSummary {
+  source: 'primary' | 'synthetic';
+  holdout_scans: number;
+  holdout_stressed_plants: number;
+  trial_span_days: number;
+  first_classifier_detection_day: number | null;
+  first_ndvi_divergence_day: number | null;
+  median_plant_lead_days_before_end: number;
+  pct_stressed_plants_detected_early: number;
+  daily_curve: Array<{
+    day_num: number;
+    date: string;
+    healthy_ndvi: number;
+    stressed_ndvi: number;
+    healthy_stress_prob: number;
+    stressed_stress_prob: number;
+    ndvi_separation_d: number;
+  }>;
+}
+
+export interface Week3ReadinessPayload {
+  architectures: Array<{
+    id: string;
+    name: string;
+    task: string;
+    input_shape_primary: string;
+    input_shape_synthetic: string;
+    architecture: string;
+    approx_params: string;
+    cv_contract: string;
+    comparator: string;
+    status: string;
+  }>;
+  benchmarks: Record<
+    'primary' | 'synthetic',
+    {
+      source: string;
+      neural_mlp_results: Array<{
+        model_name: string;
+        feature_set: string;
+        balanced_acc_mean: number;
+        balanced_acc_std: number;
+        macro_f1_mean: number;
+        macro_f1_std: number;
+        roc_auc_mean: number;
+      }>;
+    }
+  >;
+}
+
 

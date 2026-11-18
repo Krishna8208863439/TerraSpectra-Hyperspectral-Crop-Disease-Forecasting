@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Check,
   ExternalLink,
   Lock,
   Play,
@@ -24,20 +23,9 @@ interface Day6ErrorAndForecastViewProps {
   source: 'primary' | 'synthetic';
   onChangeSource: (src: 'primary' | 'synthetic') => void;
   onRunDay6: (params: { window: number; horizon: number }) => void;
-  completedBlocks: number[];
-  onToggleBlock: (blockId: number) => void;
   noteMarkdown: string;
   onOpenDoc: (key: string) => void;
 }
-
-const DAY6_SCHEDULE = [
-  { id: 1, title: 'Out-of-Fold Error Analysis', time: '90 min' },
-  { id: 2, title: 'SHAP & Perm. Importance', time: '90 min' },
-  { id: 3, title: 'Wavelengths vs. Day 2 EDA', time: '45 min' },
-  { id: 4, title: 'Grouped-CV Grid Tuning', time: '90 min' },
-  { id: 5, title: 'Sequence & Lag Baselines', time: '90 min' },
-  { id: 6, title: 'Experiment Log & Note', time: '30 min' },
-];
 
 export const Day6ErrorAndForecastView: React.FC<Day6ErrorAndForecastViewProps> = ({
   day6Payload,
@@ -46,8 +34,6 @@ export const Day6ErrorAndForecastView: React.FC<Day6ErrorAndForecastViewProps> =
   source,
   onChangeSource,
   onRunDay6,
-  completedBlocks,
-  onToggleBlock,
   noteMarkdown,
   onOpenDoc,
 }) => {
@@ -104,18 +90,16 @@ export const Day6ErrorAndForecastView: React.FC<Day6ErrorAndForecastViewProps> =
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
-      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
+      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-              <span>Day 6</span>
+              <span>src/sequences.py &amp; SHAP</span>
               <span aria-hidden="true">·</span>
-              <span>Sat 21 Nov</span>
-              <span aria-hidden="true">·</span>
-              <span>Error Analysis, Interpretability &amp; Forecasting Prep</span>
+              <span>Error Analysis, Interpretability &amp; Multi-Step Forecasting</span>
             </div>
             <h2 className="text-lg font-bold text-slate-900 mt-0.5">
-              Out-of-Fold Errors, SHAP Alignment, Light Tuning &amp; Temporal Sequences
+              Out-of-Fold Errors, SHAP Alignment, Grouped Tuning &amp; Temporal Sequences
             </h2>
           </div>
 
@@ -172,36 +156,9 @@ export const Day6ErrorAndForecastView: React.FC<Day6ErrorAndForecastViewProps> =
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-teal-800 text-white rounded-lg hover:bg-teal-900 disabled:opacity-60 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${day6Running ? 'animate-spin' : ''}`} />
-              <span>{day6Running ? 'Running Day 6...' : 'Rerun Day 6 Analysis'}</span>
+              <span>{day6Running ? 'Updating Diagnostics...' : 'Rerun Diagnostics & Sequences'}</span>
             </button>
           </div>
-        </div>
-
-        {/* 6-Block Schedule Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-4 border-t border-slate-100">
-          {DAY6_SCHEDULE.map((blk) => {
-            const done = completedBlocks.includes(blk.id);
-            return (
-              <button
-                key={blk.id}
-                type="button"
-                onClick={() => onToggleBlock(blk.id)}
-                className={`text-left p-2.5 rounded-md border transition-colors cursor-pointer ${
-                  done
-                    ? 'bg-slate-50 border-slate-200 text-slate-900'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
-                  <span>B0{blk.id} · {blk.time}</span>
-                  <span className={done ? 'text-teal-800 font-semibold' : 'text-slate-400'}>
-                    {done ? <Check className="w-3.5 h-3.5 inline" /> : '○'}
-                  </span>
-                </div>
-                <div className="text-xs font-medium mt-1 truncate">{blk.title}</div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Leak-free Guarantee & Forecasting Feasibility Verdict Strip */}
@@ -443,7 +400,7 @@ export const Day6ErrorAndForecastView: React.FC<Day6ErrorAndForecastViewProps> =
                 <Sliders className="w-4 h-4 text-teal-800" />
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
-                    Block 4: Light Hyperparameter Tuning Inside StratifiedGroupKFold ({tu.model_name} · Set {tu.feature_set_code})
+                    Hyperparameter Tuning Inside StratifiedGroupKFold ({tu.model_name} · Set {tu.feature_set_code})
                   </h3>
                   <p className="text-xs text-slate-500">
                     Winning params: <code className="font-mono text-slate-700">{JSON.stringify(tu.tuned.params)}</code>
@@ -513,7 +470,7 @@ export const Day6ErrorAndForecastView: React.FC<Day6ErrorAndForecastViewProps> =
                 <TrendingUp className="w-4 h-4 text-teal-800" />
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
-                    Block 5: Temporal Sequence Forecasting Baselines (<code className="font-mono">src/sequences.py</code>)
+                    Temporal Sequence Forecasting Baselines (<code className="font-mono">src/sequences.py</code>)
                   </h3>
                   <p className="text-xs text-slate-500">
                     Predicting future canopy <code className="font-mono">NDVI_{'{t+k}'}</code> from W={activeData.forecasting_prep.window_size} prior spectral scans inside <code className="font-mono">GroupKFold(plant_id)</code>
