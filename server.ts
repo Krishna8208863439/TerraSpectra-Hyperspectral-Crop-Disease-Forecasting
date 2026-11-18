@@ -13,12 +13,16 @@ const DOC_FILES: Record<string, { label: string; relPath: string }> = {
   data_summary: { label: 'Day 2 Data Summary', relPath: 'docs/data_summary.md' },
   preprocessing_note: { label: 'Day 3 Preprocessing Note', relPath: 'docs/preprocessing_note.md' },
   feature_engineering_note: { label: 'Day 4 Feature Engineering Note', relPath: 'docs/feature_engineering_note.md' },
+  baseline_results_note: { label: 'Day 5 Baseline Results Note', relPath: 'docs/baseline_results_note.md' },
+  error_interpretability_note: { label: 'Day 6 Error & Forecast Note', relPath: 'docs/error_interpretability_note.md' },
   dataset_note: { label: 'Dataset Decision Note', relPath: 'docs/dataset_note.md' },
   mentor_message: { label: 'Mentor Scope Message', relPath: 'docs/mentor_message.md' },
   readme: { label: 'Repository README', relPath: 'README.md' },
   data_loader: { label: 'Day 2 Loader (src/data.py)', relPath: 'src/data.py' },
   preprocessing_py: { label: 'Day 3 Pipeline (src/preprocessing.py)', relPath: 'src/preprocessing.py' },
   features_py: { label: 'Day 4 Features (src/features.py)', relPath: 'src/features.py' },
+  evaluation_py: { label: 'Day 5 Evaluation (src/evaluation.py)', relPath: 'src/evaluation.py' },
+  sequences_py: { label: 'Day 6 Sequences (src/sequences.py)', relPath: 'src/sequences.py' },
   requirements: { label: 'Python Requirements', relPath: 'requirements.txt' },
   verify_env: { label: 'Env Verification Script', relPath: 'src/pipeline/verify_env.py' },
 };
@@ -35,6 +39,8 @@ interface Day1State {
   day2CompletedBlocks: number[];
   day3CompletedBlocks: number[];
   day4CompletedBlocks: number[];
+  day5CompletedBlocks: number[];
+  day6CompletedBlocks: number[];
   updatedAt: string;
 }
 
@@ -48,6 +54,8 @@ const DEFAULT_STATE: Day1State = {
   day2CompletedBlocks: [1, 2, 3, 4, 5, 6],
   day3CompletedBlocks: [1, 2, 3, 4, 5, 6, 7],
   day4CompletedBlocks: [1, 2, 3, 4, 5, 6],
+  day5CompletedBlocks: [1, 2, 3, 4, 5, 6],
+  day6CompletedBlocks: [1, 2, 3, 4, 5, 6],
   updatedAt: new Date().toISOString(),
 };
 
@@ -444,18 +452,28 @@ async function createServer() {
       'docs/data_summary.md',
       'docs/preprocessing_note.md',
       'docs/feature_engineering_note.md',
+      'docs/baseline_results_note.md',
+      'docs/error_interpretability_note.md',
       'docs/mentor_message.md',
       'src/data.py',
       'src/preprocessing.py',
       'src/features.py',
+      'src/evaluation.py',
+      'src/sequences.py',
       'src/pipeline/verify_env.py',
       'src/pipeline/run_day2_eda.py',
       'src/pipeline/run_day3_preprocessing.py',
       'src/pipeline/run_day4_features.py',
+      'src/pipeline/run_day5_baselines.py',
+      'src/pipeline/run_day6_error_and_forecast.py',
       'notebooks/01_day1_env_and_data_check.ipynb',
       'notebooks/01_eda.ipynb',
       'notebooks/02_preprocessing.ipynb',
       'notebooks/03_features.ipynb',
+      'notebooks/04_baselines.ipynb',
+      'notebooks/05_error_analysis.ipynb',
+      'reports/day5_baseline_results.csv',
+      'reports/experiment_log.csv',
       'reports/figures/01_mean_spectra_variance.png',
       'reports/figures/02_difference_spectrum_red_edge.png',
       'reports/figures/03_class_group_and_outliers.png',
@@ -464,12 +482,19 @@ async function createServer() {
       'reports/figures/06_savgol_and_derivative_comparison.png',
       'reports/figures/07_pca_variance_and_band_importance.png',
       'reports/figures/08_feature_sets_and_indices.png',
+      'reports/figures/09_day5_confusion_matrices.png',
+      'reports/figures/10_day5_baseline_and_leakage_gap.png',
+      'reports/figures/11_day6_misclassified_spectra_and_error_breakdown.png',
+      'reports/figures/12_day6_shap_vs_day2_wavelength_importance.png',
+      'reports/figures/13_day6_forecast_persistence_vs_lag.png',
       'data/raw/Multispectral_Reflectance.csv',
       'data/raw/experimental_design.csv',
       'data/raw/synthetic_leaf_disease_spectra_v1.csv',
       'data/processed/primary_day3_preprocessed.npz',
       'data/processed/primary_feature_set_Set_A.npz',
       'data/processed/primary_feature_set_Set_E.npz',
+      'data/processed/primary_day5_cv_splits.json',
+      'data/processed/synthetic_day5_cv_splits.json',
     ];
 
     const directories = expectedDirs.map((d) => {
@@ -577,6 +602,8 @@ async function createServer() {
       key !== 'data_summary' &&
       key !== 'preprocessing_note' &&
       key !== 'feature_engineering_note' &&
+      key !== 'baseline_results_note' &&
+      key !== 'error_interpretability_note' &&
       key !== 'dataset_note' &&
       key !== 'mentor_message' &&
       key !== 'readme'
@@ -724,6 +751,83 @@ async function createServer() {
     } catch (err: unknown) {
       const execErr = err as { stderr?: string; message?: string };
       res.status(500).json({ error: execErr.stderr || execErr.message || 'Feature engineering run failed' });
+    }
+  });
+
+  app.get('/api/baselines/metrics', async (_req, res) => {
+    const metricsPath = path.join(ROOT_DIR, 'reports', 'day5_baseline_metrics.json');
+    try {
+      if (!fs.existsSync(metricsPath)) {
+        await execFileAsync('python3', ['src/pipeline/run_day5_baselines.py'], {
+          cwd: ROOT_DIR,
+          timeout: 120000,
+        });
+      }
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load Day 5 baseline metrics';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/baselines/run', async (req, res) => {
+    try {
+      const groupCol = ['plant_id', 'plot_id', 'field_id'].includes(req.body?.groupCol)
+        ? req.body.groupCol
+        : 'plant_id';
+      const args = ['src/pipeline/run_day5_baselines.py', '--group-col', groupCol];
+      const { stdout } = await execFileAsync('python3', args, {
+        cwd: ROOT_DIR,
+        timeout: 120000,
+      });
+      const metricsPath = path.join(ROOT_DIR, 'reports', 'day5_baseline_metrics.json');
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json({ ok: true, log: stdout, data: JSON.parse(raw) });
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Day 5 baseline run failed' });
+    }
+  });
+
+  app.get('/api/day6/metrics', async (_req, res) => {
+    const metricsPath = path.join(ROOT_DIR, 'reports', 'day6_error_and_forecast_metrics.json');
+    try {
+      if (!fs.existsSync(metricsPath)) {
+        await execFileAsync('python3', ['src/pipeline/run_day6_error_and_forecast.py'], {
+          cwd: ROOT_DIR,
+          timeout: 180000,
+        });
+      }
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json(JSON.parse(raw));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load Day 6 analysis metrics';
+      res.status(500).json({ error: message });
+    }
+  });
+
+  app.post('/api/day6/run', async (req, res) => {
+    try {
+      const windowVal = Math.max(2, Math.min(8, Number(req.body?.window) || 3));
+      const horizonVal = Math.max(1, Math.min(5, Number(req.body?.horizon) || 1));
+      const args = [
+        'src/pipeline/run_day6_error_and_forecast.py',
+        '--window',
+        String(windowVal),
+        '--horizon',
+        String(horizonVal),
+      ];
+      const { stdout } = await execFileAsync('python3', args, {
+        cwd: ROOT_DIR,
+        timeout: 180000,
+      });
+      const metricsPath = path.join(ROOT_DIR, 'reports', 'day6_error_and_forecast_metrics.json');
+      const raw = fs.readFileSync(metricsPath, 'utf-8');
+      res.json({ ok: true, log: stdout, data: JSON.parse(raw) });
+    } catch (err: unknown) {
+      const execErr = err as { stderr?: string; message?: string };
+      res.status(500).json({ error: execErr.stderr || execErr.message || 'Day 6 run failed' });
     }
   });
 

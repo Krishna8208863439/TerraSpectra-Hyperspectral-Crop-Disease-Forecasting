@@ -13,6 +13,8 @@ import {
 import { Day2EdaView } from './components/Day2EdaView';
 import { Day3PreprocessingView } from './components/Day3PreprocessingView';
 import { Day4FeaturesView } from './components/Day4FeaturesView';
+import { Day5BaselinesView } from './components/Day5BaselinesView';
+import { Day6ErrorAndForecastView } from './components/Day6ErrorAndForecastView';
 import { MarkdownViewer } from './components/MarkdownViewer';
 import type {
   DatasetSummary,
@@ -20,13 +22,15 @@ import type {
   Day2EdaPayload,
   Day3PreprocessingPayload,
   Day4FeaturesPayload,
+  Day5BaselinesPayload,
+  Day6ErrorAndForecastPayload,
   DocItem,
   EnvVerifyResult,
   PreprocessingConfigDto,
   RepoStatus,
 } from './types/day1';
 
-type ActiveTab = 'overview' | 'day1' | 'day2' | 'day3' | 'day4' | 'brief';
+type ActiveTab = 'overview' | 'day1' | 'day2' | 'day3' | 'day4' | 'day5' | 'day6' | 'brief';
 
 interface ScheduleBlock {
   id: number;
@@ -155,7 +159,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('day3');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('day5');
   const [workspaceSub, setWorkspaceSub] = useState<'docs' | 'repo'>('docs');
   const [activeBlockId, setActiveBlockId] = useState<number>(1);
   const [datasetSource, setDatasetSource] = useState<'primary' | 'synthetic'>('primary');
@@ -181,8 +185,16 @@ export default function App() {
   const [featuresLoading, setFeaturesLoading] = useState<boolean>(false);
   const [featuresRunning, setFeaturesRunning] = useState<boolean>(false);
 
+  const [baselinesPayload, setBaselinesPayload] = useState<Day5BaselinesPayload | null>(null);
+  const [baselinesLoading, setBaselinesLoading] = useState<boolean>(false);
+  const [baselinesRunning, setBaselinesRunning] = useState<boolean>(false);
+
+  const [day6Payload, setDay6Payload] = useState<Day6ErrorAndForecastPayload | null>(null);
+  const [day6Loading, setDay6Loading] = useState<boolean>(false);
+  const [day6Running, setDay6Running] = useState<boolean>(false);
+
   const [docs, setDocs] = useState<DocItem[]>([]);
-  const [selectedDocKey, setSelectedDocKey] = useState<string>('preprocessing_note');
+  const [selectedDocKey, setSelectedDocKey] = useState<string>('baseline_results_note');
   const [docEditMode, setDocEditMode] = useState<boolean>(false);
   const [docDraft, setDocDraft] = useState<string>('');
   const [saveFeedback, setSaveFeedback] = useState<string>('');
@@ -322,15 +334,88 @@ export default function App() {
     [loadRepoAndDocs]
   );
 
+  const loadBaselinesMetrics = useCallback(async () => {
+    setBaselinesLoading(true);
+    try {
+      const res = await fetch('/api/baselines/metrics');
+      if (res.ok) setBaselinesPayload(await res.json());
+    } finally {
+      setBaselinesLoading(false);
+    }
+  }, []);
+
+  const handleRunDay5Baselines = useCallback(
+    async (groupCol: 'plant_id' | 'plot_id' | 'field_id' = 'plant_id') => {
+      setBaselinesRunning(true);
+      try {
+        const res = await fetch('/api/baselines/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groupCol }),
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) setBaselinesPayload(payload.data);
+          await loadRepoAndDocs();
+        }
+      } finally {
+        setBaselinesRunning(false);
+      }
+    },
+    [loadRepoAndDocs]
+  );
+
+  const loadDay6Metrics = useCallback(async () => {
+    setDay6Loading(true);
+    try {
+      const res = await fetch('/api/day6/metrics');
+      if (res.ok) setDay6Payload(await res.json());
+    } finally {
+      setDay6Loading(false);
+    }
+  }, []);
+
+  const handleRunDay6 = useCallback(
+    async (params: { window: number; horizon: number } = { window: 3, horizon: 1 }) => {
+      setDay6Running(true);
+      try {
+        const res = await fetch('/api/day6/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        });
+        if (res.ok) {
+          const payload = await res.json();
+          if (payload.data) setDay6Payload(payload.data);
+          await loadRepoAndDocs();
+        }
+      } finally {
+        setDay6Running(false);
+      }
+    },
+    [loadRepoAndDocs]
+  );
+
   const handleRunHeaderCta = useCallback(async () => {
     if (activeTab === 'day2') {
       await handleRunDay2Eda();
+    } else if (activeTab === 'day3') {
+      await handleRunDay3Preprocessing();
     } else if (activeTab === 'day4') {
       await handleRunDay4Features({ topK: 5, normalization: 'snv' });
+    } else if (activeTab === 'day6') {
+      await handleRunDay6({ window: 3, horizon: 1 });
     } else {
-      await handleRunDay3Preprocessing();
+      await handleRunDay5Baselines('plant_id');
     }
-  }, [activeTab, handleRunDay2Eda, handleRunDay3Preprocessing, handleRunDay4Features]);
+  }, [
+    activeTab,
+    handleRunDay2Eda,
+    handleRunDay3Preprocessing,
+    handleRunDay4Features,
+    handleRunDay5Baselines,
+    handleRunDay6,
+  ]);
 
   const loadDataset = useCallback(async (source: 'primary' | 'synthetic') => {
     setDatasetLoading(true);
@@ -350,7 +435,17 @@ export default function App() {
     loadEdaMetrics();
     loadPreprocessingMetrics();
     loadFeaturesMetrics();
-  }, [loadEnv, loadRepoAndDocs, loadEdaMetrics, loadPreprocessingMetrics, loadFeaturesMetrics]);
+    loadBaselinesMetrics();
+    loadDay6Metrics();
+  }, [
+    loadEnv,
+    loadRepoAndDocs,
+    loadEdaMetrics,
+    loadPreprocessingMetrics,
+    loadFeaturesMetrics,
+    loadBaselinesMetrics,
+    loadDay6Metrics,
+  ]);
 
   useEffect(() => {
     loadDataset(datasetSource);
@@ -420,6 +515,26 @@ export default function App() {
     updateDay1State({ day4CompletedBlocks: next });
   };
 
+  const toggleDay5Block = (blockId: number) => {
+    if (!day1State) return;
+    const current = day1State.day5CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+    const exists = current.includes(blockId);
+    const next = exists
+      ? current.filter((id) => id !== blockId)
+      : [...current, blockId].sort((a, b) => a - b);
+    updateDay1State({ day5CompletedBlocks: next });
+  };
+
+  const toggleDay6Block = (blockId: number) => {
+    if (!day1State) return;
+    const current = day1State.day6CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+    const exists = current.includes(blockId);
+    const next = exists
+      ? current.filter((id) => id !== blockId)
+      : [...current, blockId].sort((a, b) => a - b);
+    updateDay1State({ day6CompletedBlocks: next });
+  };
+
   const saveDocument = async (key: string, content: string) => {
     setSaveFeedback('Saving...');
     try {
@@ -466,8 +581,10 @@ export default function App() {
   const day2CompletedBlocks = day1State?.day2CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
   const day3CompletedBlocks = day1State?.day3CompletedBlocks ?? [1, 2, 3, 4, 5, 6, 7];
   const day4CompletedBlocks = day1State?.day4CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+  const day5CompletedBlocks = day1State?.day5CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
+  const day6CompletedBlocks = day1State?.day6CompletedBlocks ?? [1, 2, 3, 4, 5, 6];
   const passedPackages = envResult?.packages.filter((p) => p.status === 'ok').length ?? 0;
-  const totalPackages = envResult?.packages.length ?? 6;
+  const totalPackages = envResult?.packages.length ?? 7;
   const presentDirs = repoStatus?.directories.filter((d) => d.exists).length ?? 0;
   const totalDirs = repoStatus?.directories.length ?? 8;
 
@@ -475,11 +592,15 @@ export default function App() {
   const dataSummaryDoc = docs.find((d) => d.key === 'data_summary')?.content || '';
   const preprocessingNoteDoc = docs.find((d) => d.key === 'preprocessing_note')?.content || '';
   const featureNoteDoc = docs.find((d) => d.key === 'feature_engineering_note')?.content || '';
+  const baselineNoteDoc = docs.find((d) => d.key === 'baseline_results_note')?.content || '';
+  const day6NoteDoc = docs.find((d) => d.key === 'error_interpretability_note')?.content || '';
   const isDocEditable =
     selectedDocKey === 'project_brief' ||
     selectedDocKey === 'data_summary' ||
     selectedDocKey === 'preprocessing_note' ||
     selectedDocKey === 'feature_engineering_note' ||
+    selectedDocKey === 'baseline_results_note' ||
+    selectedDocKey === 'error_interpretability_note' ||
     selectedDocKey === 'dataset_note' ||
     selectedDocKey === 'mentor_message' ||
     selectedDocKey === 'readme';
@@ -501,9 +622,11 @@ export default function App() {
   const navItems: Array<{ id: ActiveTab; label: string }> = [
     { id: 'overview', label: 'Overview' },
     { id: 'day1', label: 'Day 1' },
-    { id: 'day2', label: 'Day 2 EDA' },
-    { id: 'day3', label: 'Day 3 Prep' },
-    { id: 'day4', label: 'Day 4 Features' },
+    { id: 'day2', label: 'Day 2' },
+    { id: 'day3', label: 'Day 3' },
+    { id: 'day4', label: 'Day 4' },
+    { id: 'day5', label: 'Day 5 Baselines' },
+    { id: 'day6', label: 'Day 6 Analysis' },
     { id: 'brief', label: 'Docs & Repo' },
   ];
 
@@ -525,19 +648,32 @@ export default function App() {
       : featuresPayload.primary
     : null;
 
+  const activeBaselines = baselinesPayload
+    ? pipelineSource === 'synthetic'
+      ? baselinesPayload.synthetic
+      : baselinesPayload.primary
+    : null;
+
+  const activeDay6 = day6Payload
+    ? pipelineSource === 'synthetic'
+      ? day6Payload.synthetic
+      : day6Payload.primary
+    : null;
+
   const bestFeatureSet = activeFeatures
     ? [...activeFeatures.manifest.feature_sets].sort(
         (a, b) => Math.max(b.cv_macro_f1_lr, b.cv_macro_f1_rf) - Math.max(a.cv_macro_f1_lr, a.cv_macro_f1_rf)
       )[0]
     : null;
 
-  const headerRunning = edaRunning || prepRunning || featuresRunning;
+  const headerRunning =
+    edaRunning || prepRunning || featuresRunning || baselinesRunning || day6Running;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Top Bar Contract: 3 zones, gap-8, single-line controls */}
+      {/* Top Bar Contract: 3 zones, single-line controls */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
-        <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between gap-8">
+        <div className="max-w-[1280px] mx-auto px-6 h-16 flex items-center justify-between gap-6">
           <button
             type="button"
             onClick={() => setActiveTab('overview')}
@@ -546,7 +682,7 @@ export default function App() {
             SpectralCrop
           </button>
 
-          <nav className="hidden md:flex items-center gap-6" aria-label="Primary navigation">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-5" aria-label="Primary navigation">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
@@ -554,7 +690,7 @@ export default function App() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
-                  className={`text-sm font-medium py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer border-b-2 ${
+                  className={`text-xs lg:text-sm font-medium py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer border-b-2 ${
                     isActive
                       ? 'text-teal-800 border-teal-700'
                       : 'text-slate-600 border-transparent hover:text-slate-900'
@@ -579,9 +715,13 @@ export default function App() {
                   ? 'Running...'
                   : activeTab === 'day2'
                     ? 'Run Day 2 EDA'
-                    : activeTab === 'day4'
-                      ? 'Run Day 4 Features'
-                      : 'Run Day 3 Prep'}
+                    : activeTab === 'day3'
+                      ? 'Run Day 3 Prep'
+                      : activeTab === 'day4'
+                        ? 'Run Day 4 Features'
+                        : activeTab === 'day6'
+                          ? 'Run Day 6 Analysis'
+                          : 'Run Day 5 Baselines'}
               </span>
             </button>
           </div>
@@ -609,18 +749,17 @@ export default function App() {
         <section className="space-y-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-mono">
-              <span>Day 1 – Day 4</span>
+              <span>Day 1 – Day 6</span>
               <span aria-hidden="true">·</span>
-              <span>Mon 16 Nov – Thu 19 Nov</span>
+              <span>Mon 16 Nov – Sat 21 Nov</span>
               <span aria-hidden="true">·</span>
-              <span>EDA, Preprocessing &amp; Leak-Free Feature Sets A–E</span>
+              <span>Leak-Free Baselines, SHAP Interpretability &amp; Sequence Forecasting Prep</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 [text-wrap:balance] max-w-3xl">
               Crop Stress Detection &amp; Temporal Forecast Workbench
             </h1>
             <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
-              Execute modular scikit-learn spectral preprocessing (<code className="font-mono text-slate-800">src/preprocessing.py</code>)
-              and build leak-free vegetation index, PCA, and RF/MI Feature Sets A–E (<code className="font-mono text-slate-800">src/features.py</code>).
+              Plant-grouped 5-fold CV baselines (<code className="font-mono text-slate-800">src/evaluation.py</code>), error &amp; SHAP diagnostics, grouped tuning, and temporal sequences (<code className="font-mono text-slate-800">src/sequences.py</code>).
             </p>
           </div>
 
@@ -629,50 +768,60 @@ export default function App() {
               <div className="text-xs font-medium text-slate-500">Pipeline Progress</div>
               <div className="mt-1.5 flex items-baseline gap-2">
                 <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  Day 1–4
+                  Day 1–6
                 </span>
                 <span className="text-xs font-mono text-slate-400">
-                  {completedCount + day2CompletedBlocks.length + day3CompletedBlocks.length + day4CompletedBlocks.length} / 25 blocks
+                  {completedCount +
+                    day2CompletedBlocks.length +
+                    day3CompletedBlocks.length +
+                    day4CompletedBlocks.length +
+                    day5CompletedBlocks.length +
+                    day6CompletedBlocks.length}{' '}
+                  / 37 blocks
                 </span>
               </div>
               <div className="mt-2 text-xs text-teal-800 font-medium">
-                ● Ready for Day 5 Baseline &amp; XGBoost
+                ● Ready for Week 3 Deep &amp; Sequence Models
               </div>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Day 3 Aligned Bands</div>
+              <div className="text-xs font-medium text-slate-500">Day 5 Best Baseline (Grouped CV)</div>
               <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {activePrep ? activePrep.manifest.wavelengths_out_nm.length : 9} bands
-                </span>
-                <span className="text-xs font-mono text-slate-400">
-                  ({activePrep ? activePrep.manifest.train_rows : 1815} tr / {activePrep ? activePrep.manifest.test_rows : 457} te)
-                </span>
-              </div>
-              <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
-                {activePrep
-                  ? `Dropped ${activePrep.manifest.dropped_wavelengths_nm.join(', ') || 'none'} nm · ${activePrep.dropped_nan_rows} NaN rows`
-                  : 'Loading preprocessing...'}
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-lg p-4">
-              <div className="text-xs font-medium text-slate-500">Day 4 Best Feature Set</div>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
-                  {bestFeatureSet ? bestFeatureSet.code : 'Set E'}
+                <span className="text-xl font-bold font-mono tabular-nums text-slate-900">
+                  {activeBaselines
+                    ? `${activeBaselines.overall_best.model_name.split(' ')[0]} · Set ${activeBaselines.overall_best.feature_set_code}`
+                    : 'Computing...'}
                 </span>
                 <span className="text-xs font-mono text-teal-800 font-semibold">
-                  {bestFeatureSet
-                    ? `F1 ${Math.max(bestFeatureSet.cv_macro_f1_lr, bestFeatureSet.cv_macro_f1_rf).toFixed(3)}`
-                    : 'Computing CV...'}
+                  {activeBaselines
+                    ? `F1 ${activeBaselines.overall_best.macro_f1_mean.toFixed(3)}`
+                    : ''}
+                </span>
+              </div>
+              <div className="mt-2 text-xs text-rose-700 font-mono tabular-nums">
+                {activeBaselines
+                  ? `Naive split leaks +${activeBaselines.leakage_demonstration.inflation_macro_f1.toFixed(3)} F1`
+                  : 'Running StratifiedGroupKFold...'}
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-lg p-4">
+              <div className="text-xs font-medium text-slate-500">Day 6 Tuning &amp; Sequences</div>
+              <div className="mt-1.5 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-mono tabular-nums text-slate-900">
+                  {activeDay6 ? `F1 ${activeDay6.tuning.tuned.macro_f1_mean.toFixed(3)}` : bestFeatureSet ? bestFeatureSet.code : 'Pending'}
+                </span>
+                <span className="text-xs font-mono text-teal-800 font-semibold">
+                  {activeDay6
+                    ? `Δ ${activeDay6.tuning.tuned.delta_macro_f1 >= 0 ? `+${activeDay6.tuning.tuned.delta_macro_f1.toFixed(3)}` : activeDay6.tuning.tuned.delta_macro_f1.toFixed(3)}`
+                    : ''}
                 </span>
               </div>
               <div className="mt-2 text-xs text-slate-600 font-mono tabular-nums">
-                {bestFeatureSet
-                  ? `${bestFeatureSet.n_features} features · Plant-Grouped CV`
-                  : 'Auditing sets A–E...'}
+                {activeDay6 && activeDay6.forecasting_prep.horizons[0]
+                  ? `${activeDay6.forecasting_prep.horizons[0].n_sequences} seqs · SHAP ρ=${activeDay6.interpretability.spearman_shap_vs_fisher.toFixed(2)}`
+                  : 'Preparing sequences...'}
               </div>
             </div>
 
@@ -701,10 +850,10 @@ export default function App() {
               <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-base font-semibold text-slate-900">
-                    Day 1 – Day 4 Done-When Verification
+                    Day 1 – Day 6 Done-When Verification
                   </h2>
                   <span className="text-xs font-mono text-slate-500">
-                    Ready for Day 5 Modeling
+                    Ready for Week 3
                   </span>
                 </div>
 
@@ -742,7 +891,7 @@ export default function App() {
                       onClick={() => setActiveTab('day2')}
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      ● Open Day 2 EDA
+                      ● Open Day 2
                     </button>
                   </div>
 
@@ -752,7 +901,7 @@ export default function App() {
                         3. Day 3 Preprocessing Pipeline (SavGol, SNV, MSC, 1st Deriv)
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Leak-free <code className="font-mono text-slate-700">src/preprocessing.py</code> &amp; <code className="font-mono text-slate-700">notebooks/02_preprocessing.ipynb</code> with aligned wavelengths.
+                        Leak-free <code className="font-mono text-slate-700">src/preprocessing.py</code> &amp; <code className="font-mono text-slate-700">notebooks/02_preprocessing.ipynb</code>.
                       </p>
                     </div>
                     <button
@@ -760,7 +909,7 @@ export default function App() {
                       onClick={() => setActiveTab('day3')}
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      ● Open Day 3 Prep
+                      ● Open Day 3
                     </button>
                   </div>
 
@@ -770,7 +919,7 @@ export default function App() {
                         4. Day 4 Feature Sets A–E, VIs &amp; Train-Only PCA / RF+MI Selection
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        <code className="font-mono text-slate-700">src/features.py</code>, MCARI (Daughtry et al. 2000), &amp; saved `.npz` sets in <code className="font-mono text-slate-700">data/processed/</code>.
+                        <code className="font-mono text-slate-700">src/features.py</code>, MCARI (Daughtry et al. 2000), &amp; saved `.npz` sets.
                       </p>
                     </div>
                     <button
@@ -778,22 +927,53 @@ export default function App() {
                       onClick={() => setActiveTab('day4')}
                       className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                     >
-                      ● Open Day 4 Features
+                      ● Open Day 4
+                    </button>
+                  </div>
+
+                  <div className="py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">
+                        5. Day 5 Baseline Models (RF, XGBoost, SVM, PLS-DA) &amp; Leakage Demo
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        <code className="font-mono text-slate-700">src/evaluation.py</code>, <code className="font-mono text-slate-700">04_baselines.ipynb</code>, grouped vs. naive split inflation proof.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('day5')}
+                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      ● Open Day 5
+                    </button>
+                  </div>
+
+                  <div className="py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">
+                        6. Day 6 Error Analysis, SHAP vs. Day 2, Light Tuning &amp; Forecasting Prep
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        <code className="font-mono text-slate-700">src/sequences.py</code>, <code className="font-mono text-slate-700">05_error_analysis.ipynb</code>, <code className="font-mono text-slate-700">experiment_log.csv</code>.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('day6')}
+                      className="text-xs font-medium text-teal-800 hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      ● Open Day 6
                     </button>
                   </div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-200 bg-slate-50 -mx-5 -mb-5 px-5 py-3.5 rounded-b-lg">
                   <div className="text-xs font-semibold text-slate-800">
-                    Carry Forward to Day 3 &amp; Day 5 Leak-Free Splits
+                    Carry Forward: Week 3 Modeling Targets
                   </div>
                   <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Group CV folds by <code className="font-mono text-slate-800">plant_id</code>{' '}
-                    (79 plants) and order forecasts by{' '}
-                    <code className="font-mono text-slate-800">date</code> (31 dates). Drop 8
-                    failed-scan NaN rows and audit edge bands{' '}
-                    <code className="font-mono text-slate-800">Mean_365</code> &amp;{' '}
-                    <code className="font-mono text-slate-800">Mean_970</code> on Day 3.
+                    All models evaluate on frozen plant-grouped splits (<code className="font-mono text-slate-800">data/processed/primary_day5_cv_splits.json</code>) and chronological plant sequences (<code className="font-mono text-slate-800">src/sequences.py</code>). Note <code className="font-mono text-slate-800">{activePrep ? activePrep.manifest.train_rows : 1815}</code> train / <code className="font-mono text-slate-800">{activePrep ? activePrep.manifest.test_rows : 457}</code> holdout split uses <code className="font-mono text-slate-800">Mean_365</code> dropped.
                   </p>
                 </div>
               </div>
@@ -1481,6 +1661,48 @@ export default function App() {
             completedBlocks={day4CompletedBlocks}
             onToggleBlock={toggleDay4Block}
             noteMarkdown={featureNoteDoc}
+            onOpenDoc={(key) => {
+              setSelectedDocKey(key);
+              setDocEditMode(false);
+              setWorkspaceSub('docs');
+              setActiveTab('brief');
+            }}
+          />
+        )}
+
+        {/* DAY 5 BASELINE MODELS & LEAK-FREE EVALUATION VIEW */}
+        {activeTab === 'day5' && (
+          <Day5BaselinesView
+            baselinesPayload={baselinesPayload}
+            baselinesLoading={baselinesLoading}
+            baselinesRunning={baselinesRunning}
+            source={pipelineSource}
+            onChangeSource={setPipelineSource}
+            onRunBaselines={handleRunDay5Baselines}
+            completedBlocks={day5CompletedBlocks}
+            onToggleBlock={toggleDay5Block}
+            noteMarkdown={baselineNoteDoc}
+            onOpenDoc={(key) => {
+              setSelectedDocKey(key);
+              setDocEditMode(false);
+              setWorkspaceSub('docs');
+              setActiveTab('brief');
+            }}
+          />
+        )}
+
+        {/* DAY 6 ERROR ANALYSIS, SHAP INTERPRETABILITY & FORECASTING PREP VIEW */}
+        {activeTab === 'day6' && (
+          <Day6ErrorAndForecastView
+            day6Payload={day6Payload}
+            day6Loading={day6Loading}
+            day6Running={day6Running}
+            source={pipelineSource}
+            onChangeSource={setPipelineSource}
+            onRunDay6={handleRunDay6}
+            completedBlocks={day6CompletedBlocks}
+            onToggleBlock={toggleDay6Block}
+            noteMarkdown={day6NoteDoc}
             onOpenDoc={(key) => {
               setSelectedDocKey(key);
               setDocEditMode(false);

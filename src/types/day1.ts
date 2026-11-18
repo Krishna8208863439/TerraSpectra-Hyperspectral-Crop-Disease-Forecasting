@@ -108,6 +108,8 @@ export interface Day1State {
   day2CompletedBlocks?: number[];
   day3CompletedBlocks?: number[];
   day4CompletedBlocks?: number[];
+  day5CompletedBlocks?: number[];
+  day6CompletedBlocks?: number[];
   updatedAt: string;
 }
 
@@ -364,6 +366,263 @@ export interface Day4FeaturesPayload {
   figures: string[];
   primary: Day4DatasetFeatures;
   synthetic: Day4DatasetFeatures;
+}
+
+export interface Day5ModelRun {
+  model_key: string;
+  model_name: string;
+  feature_set_key: string;
+  feature_set_code: string;
+  feature_set_desc: string;
+  split_scheme: string;
+  class_names: string[];
+  balanced_acc_mean: number;
+  balanced_acc_std: number;
+  macro_f1_mean: number;
+  macro_f1_std: number;
+  roc_auc_mean: number;
+  roc_auc_std: number;
+  oof_balanced_acc: number;
+  oof_macro_f1: number;
+  oof_roc_auc: number;
+  fold_scores: {
+    balanced_acc: number[];
+    macro_f1: number[];
+    roc_auc: number[];
+  };
+  per_class: Array<{
+    class_name: string;
+    precision: number;
+    recall: number;
+    f1: number;
+    support: number;
+  }>;
+  confusion_matrix: number[][];
+}
+
+export interface Day5LeakageDemo {
+  model_key: string;
+  model_name: string;
+  feature_set_code: string;
+  feature_set_key: string;
+  grouped_balanced_acc: number;
+  grouped_balanced_acc_std: number;
+  grouped_macro_f1: number;
+  grouped_macro_f1_std: number;
+  grouped_roc_auc: number;
+  naive_balanced_acc: number;
+  naive_balanced_acc_std: number;
+  naive_macro_f1: number;
+  naive_macro_f1_std: number;
+  naive_roc_auc: number;
+  inflation_balanced_acc: number;
+  inflation_macro_f1: number;
+  inflation_roc_auc: number;
+  naive_confusion_matrix: number[][];
+}
+
+export interface Day5DatasetBaselines {
+  source: 'primary' | 'synthetic';
+  random_seed: number;
+  group_col: string;
+  dropped_nan_rows: number;
+  clean_samples: number;
+  split_manifest: {
+    source: string;
+    random_seed: number;
+    cv_strategy: string;
+    group_column: string;
+    total_clean_samples: number;
+    unique_groups: number;
+    folds: Array<{
+      fold: number;
+      train_n: number;
+      val_n: number;
+      train_groups: number;
+      val_groups: number;
+      group_overlap: number;
+    }>;
+  };
+  set_a_models: Day5ModelRun[];
+  best_model_feature_sets: Day5ModelRun[];
+  overall_best: Day5ModelRun;
+  leakage_demonstration: Day5LeakageDemo;
+}
+
+export interface Day5BaselinesPayload {
+  figures: string[];
+  csv_path: string;
+  primary: Day5DatasetBaselines;
+  synthetic: Day5DatasetBaselines;
+}
+
+export interface ExperimentLogRow {
+  run_id: string;
+  timestamp: string;
+  day: string;
+  data_version: string;
+  preprocessing: string;
+  features: string;
+  model: string;
+  parameters: string;
+  cv_scheme: string;
+  balanced_acc: string;
+  macro_f1: string;
+  roc_auc: string;
+  notes: string;
+}
+
+export interface Day6DatasetAnalysis {
+  source: 'primary' | 'synthetic';
+  best_baseline: {
+    model_name: string;
+    model_key: string;
+    feature_set_code: string;
+    feature_set_key: string;
+    overall_error_rate_pct: number;
+    total_errors: number;
+    total_samples: number;
+  };
+  error_analysis: {
+    confused_pairs: Array<{
+      true_class: string;
+      predicted_class: string;
+      count: number;
+      percent_of_errors: number;
+    }>;
+    spectra_comparison: Array<{
+      class_name: string;
+      n_total: number;
+      n_correct: number;
+      n_errors: number;
+      points: Array<{
+        wavelength_nm: number;
+        true_mean: number;
+        true_std: number;
+        correct_mean: number;
+        misclassified_mean: number;
+      }>;
+    }>;
+    noise_vs_ambiguity: {
+      correct_median_robust_z: number;
+      error_median_robust_z: number;
+      error_noisy_pct_z_gt_3: number;
+      correct_median_centroid_margin: number;
+      error_median_centroid_margin: number;
+    };
+    early_half_error_pct: number;
+    late_half_error_pct: number;
+    top_error_plants: Array<{
+      plant_id: string;
+      true_label: string;
+      scans: number;
+      errors: number;
+      error_rate_pct: number;
+    }>;
+    by_genotype_or_field: Array<{
+      field_id: string;
+      scans: number;
+      errors: number;
+      error_rate_pct: number;
+    }>;
+    by_date_series: Array<{
+      date: string;
+      scans: number;
+      errors: number;
+      error_rate_pct: number;
+    }>;
+  };
+  interpretability: {
+    best_set_shap: {
+      method: string;
+      feature_set_key: string;
+      n_eval_samples: number;
+      features: Array<{
+        feature: string;
+        mean_abs_shap: number;
+        permutation_importance: number;
+        direction_corr: number;
+      }>;
+    };
+    wavelength_shap_vs_day2: Array<{
+      wavelength_nm: number;
+      region: string;
+      shap_importance: number;
+      perm_importance: number;
+      day2_fisher_ratio: number;
+      day2_abs_diff_pct: number;
+    }>;
+    spearman_shap_vs_fisher: number;
+  };
+  tuning: {
+    model_name: string;
+    model_key: string;
+    feature_set_code: string;
+    untuned: {
+      balanced_acc_mean: number;
+      balanced_acc_std: number;
+      macro_f1_mean: number;
+      macro_f1_std: number;
+      roc_auc_mean: number;
+    };
+    tuned: {
+      params: Record<string, unknown>;
+      balanced_acc_mean: number;
+      balanced_acc_std: number;
+      macro_f1_mean: number;
+      macro_f1_std: number;
+      roc_auc_mean: number;
+      delta_macro_f1: number;
+      delta_balanced_acc: number;
+    };
+    grid_trials: Array<{
+      params: Record<string, unknown>;
+      balanced_acc_mean: number;
+      macro_f1_mean: number;
+      roc_auc_mean: number;
+    }>;
+  };
+  forecasting_prep: {
+    window_size: number;
+    default_horizon: number;
+    horizons: Array<{
+      feasible: boolean;
+      source: string;
+      window_size: number;
+      horizon: number;
+      n_sequences: number;
+      n_features_per_window: number;
+      n_plants: number;
+      unique_dates: number;
+      obs_per_plant: { min: number; median: number; max: number };
+      models: Array<{
+        key: string;
+        name: string;
+        mae_mean: number;
+        mae_std: number;
+        rmse_mean: number;
+        rmse_std: number;
+        r2_mean: number;
+        r2_std: number;
+      }>;
+      sample_predictions: Array<{
+        plant_id: string;
+        date: string;
+        actual_ndvi: number;
+        persistence_ndvi: number;
+        lag_ridge_ndvi: number;
+        lag_rf_ndvi: number;
+      }>;
+    }>;
+  };
+}
+
+export interface Day6ErrorAndForecastPayload {
+  figures: string[];
+  experiment_log_path: string;
+  experiment_log_rows: ExperimentLogRow[];
+  primary: Day6DatasetAnalysis;
+  synthetic: Day6DatasetAnalysis;
 }
 
 
