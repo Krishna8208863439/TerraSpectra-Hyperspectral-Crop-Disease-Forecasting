@@ -20,6 +20,21 @@ TerraSpectra solves three connected crop phenotyping & spectral modeling tasks u
 | --- | --- | --- | --- |
 | **Primary Multi-Temporal Plant Spectra** (`data/raw/Multispectral_Reflectance.csv` + `experimental_design.csv`) | Zenodo Record [`10.5281/zenodo.22755812`](https://doi.org/10.5281/zenodo.22755812) (*Plant Phenotyping and Environmental Stress Dataset*) | **CC-BY-4.0** | `2,285` total rows (`2,272` clean valid scans) across `79` plants (`Plant_ID`), `2` genotypes, `31` dates, and `10` multispectral bands (`365–970 nm`). **Limitation:** Labels capture controlled abiotic water/drought stress (`Control 40%` vs `Drought 10%`) rather than biotic pathogen inoculation. |
 | **Companion Synthetic Benchmark** (`data/raw/synthetic_leaf_disease_spectra_v1.csv`) | Local Generator (`src/pipeline/generate_synthetic_spectra.py`) | **Apache-2.0** | `120` scans × `61` dense bands (`400–1000 nm`, `10 nm` step) across `4` disease stages (`Healthy`, `Early_Chlorosis`, `Moderate_Blight`, `Severe_Necrosis`) and `5` dates. Clearly tagged `SYNTHETIC_CONTROLLED_STRESS`. |
+5. Tech stack
+Python, NumPy, pandas, scikit-learn, XGBoost, PyTorch, spectral / rasterio / h5py for
+cube I/O, matplotlib/plotly, SHAP, Streamlit, Git/GitHub.
+6. Risks and mitigations
+No suitable dataset: decide by the end of Week 1 and use a fallback rather than
+waiting.
+Small sample size with many bands (the "curse of dimensionality"): use band
+selection or PCA, strong regularization, and cross-validation.
+Data leakage: use group-based splits.
+Time overrun: treat the 3D-CNN as optional. A solid baseline plus a working demo and
+a good report beats an unfinished deep model.
+Plagiarism: the terms require original work, so cite any dataset or paper you use and
+write your own code and text.
+If your mentor has already given you a dataset, tell me its format and I'll tailor Phase 1 and
+the preprocessing steps to it.
 
 ---
 
