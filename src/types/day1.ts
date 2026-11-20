@@ -58,6 +58,20 @@ export interface TemporalPoint {
   series: Record<string, number>;
 }
 
+export interface SampleScanRow {
+  sampleId: string;
+  plantId: string;
+  potNumber: string;
+  genotype: string;
+  date: string;
+  label: string;
+  r670: number;
+  r780: number;
+  ndvi: number;
+  ndre: number;
+  spectrum: Array<{ wavelengthNm: number; reflectance: number }>;
+}
+
 export interface DatasetSummary {
   datasetId: 'primary_zenodo' | 'synthetic_fallback';
   title: string;
@@ -77,18 +91,7 @@ export interface DatasetSummary {
   genotypeDistribution: Array<{ label: string; count: number }>;
   curves: SpectralCurve[];
   temporalTrajectory: TemporalPoint[];
-  sampleRows: Array<{
-    sampleId: string;
-    plantId: string;
-    potNumber: string;
-    genotype: string;
-    date: string;
-    label: string;
-    r670: number;
-    r780: number;
-    ndvi: number;
-    ndre: number;
-  }>;
+  sampleRows: SampleScanRow[];
 }
 
 export interface DocItem {

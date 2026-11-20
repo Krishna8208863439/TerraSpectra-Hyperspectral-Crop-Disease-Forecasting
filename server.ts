@@ -155,8 +155,10 @@ function summarizePrimaryDataset() {
   >();
   const dateAgg = new Map<string, Map<string, { sumNdvi: number; sumRedEdge: number; n: number }>>();
 
-  const sampleRows: Array<Record<string, string | number>> = [];
+  const sampleRows: Array<Record<string, unknown>> = [];
+  const profileBands = bands.filter((b) => b.nm >= 460 && b.nm <= 970);
 
+  let matchedSeen = 0;
   for (const row of spectra.rows) {
     const plantId = row.Plant_ID || 'Unknown';
     const meta = designMap.get(plantId);
@@ -208,19 +210,26 @@ function summarizePrimaryDataset() {
       dEntry.n += 1;
     }
 
-    if (sampleRows.length < 18 && meta) {
-      sampleRows.push({
-        sampleId: row.Sample_ID,
-        plantId,
-        potNumber: pot,
-        genotype,
-        date,
-        label: treatment,
-        r670: Number(r670.toFixed(2)),
-        r780: Number(r780.toFixed(2)),
-        ndvi: Number(ndvi.toFixed(3)),
-        ndre: Number(ndre.toFixed(3)),
-      });
+    if (meta) {
+      matchedSeen += 1;
+      if (sampleRows.length < 72 && matchedSeen % 30 === 1) {
+        sampleRows.push({
+          sampleId: row.Sample_ID,
+          plantId,
+          potNumber: pot,
+          genotype,
+          date,
+          label: treatment,
+          r670: Number(r670.toFixed(2)),
+          r780: Number(r780.toFixed(2)),
+          ndvi: Number(ndvi.toFixed(3)),
+          ndre: Number(ndre.toFixed(3)),
+          spectrum: profileBands.map((b) => ({
+            wavelengthNm: b.nm,
+            reflectance: Number(Number.parseFloat(row[b.col] || '0').toFixed(3)),
+          })),
+        });
+      }
     }
   }
 
@@ -302,7 +311,10 @@ function summarizeSyntheticDataset() {
     { n: number; plants: Set<string>; sums: number[]; sqSums: number[] }
   >();
   const dateAgg = new Map<string, Map<string, { sumNdvi: number; n: number }>>();
-  const sampleRows: Array<Record<string, string | number>> = [];
+  const sampleRows: Array<Record<string, unknown>> = [];
+  const profileBandIndices = wavelengths
+    .map((wl, idx) => ({ wl, idx, col: bandCols[idx] }))
+    .filter((b) => b.wl >= 460 && b.wl <= 970);
 
   for (const row of synth.rows) {
     const label = row.disease_label || 'Unknown';
@@ -345,7 +357,7 @@ function summarizeSyntheticDataset() {
     dEntry.sumNdvi += ndvi;
     dEntry.n += 1;
 
-    if (sampleRows.length < 18) {
+    if (sampleRows.length < 72) {
       sampleRows.push({
         sampleId: row.sample_id,
         plantId,
@@ -357,6 +369,10 @@ function summarizeSyntheticDataset() {
         r780: Number(r780.toFixed(2)),
         ndvi: Number(ndvi.toFixed(3)),
         ndre: Number(ndre.toFixed(3)),
+        spectrum: profileBandIndices.map((b) => ({
+          wavelengthNm: b.wl,
+          reflectance: Number((Number.parseFloat(row[b.col] || '0') * 100).toFixed(3)),
+        })),
       });
     }
   }

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Search } from 'lucide-react';
+import { Check, RefreshCw, Search } from 'lucide-react';
 import { Day2EdaView } from './components/Day2EdaView';
 import { Day3PreprocessingView } from './components/Day3PreprocessingView';
 import { Day4FeaturesView } from './components/Day4FeaturesView';
@@ -7,6 +7,7 @@ import { Day5BaselinesView } from './components/Day5BaselinesView';
 import { Day6ErrorAndForecastView } from './components/Day6ErrorAndForecastView';
 import { ExperimentsView, ReportAndRepoView } from './components/ExperimentsAndReportViews';
 import { LiveInferenceView } from './components/LiveInferenceView';
+import { SampleScanProfileChart } from './components/SampleScanProfileChart';
 import { Week3ReadinessView } from './components/Week3ReadinessView';
 import type {
   DatasetSummary,
@@ -67,6 +68,7 @@ export default function App() {
 
   const [sampleQuery, setSampleQuery] = useState<string>('');
   const [sampleLabelFilter, setSampleLabelFilter] = useState<string>('ALL');
+  const [selectedSampleIds, setSelectedSampleIds] = useState<string[]>([]);
 
   const loadEnv = useCallback(async () => {
     try {
@@ -307,6 +309,8 @@ export default function App() {
   ]);
 
   useEffect(() => {
+    setSelectedSampleIds([]);
+    setSampleLabelFilter('ALL');
     loadDataset(pipelineSource);
   }, [pipelineSource, loadDataset]);
 
@@ -376,6 +380,25 @@ export default function App() {
       return matchesLabel && matchesQuery;
     });
   }, [datasetSummary, sampleLabelFilter, sampleQuery]);
+
+  const selectedSampleRows = useMemo(() => {
+    if (!datasetSummary) return [];
+    const map = new Map(datasetSummary.sampleRows.map((r) => [r.sampleId, r]));
+    return selectedSampleIds
+      .map((id) => map.get(id))
+      .filter((r): r is NonNullable<typeof r> => Boolean(r));
+  }, [datasetSummary, selectedSampleIds]);
+
+  const toggleSampleSelection = useCallback((sampleId: string) => {
+    setSelectedSampleIds((prev) => {
+      if (prev.includes(sampleId)) {
+        return prev.filter((id) => id !== sampleId);
+      }
+      // Keep up to 6 overlaid traces crisp and distinguishable
+      const trimmed = prev.length >= 6 ? prev.slice(1) : prev;
+      return [...trimmed, sampleId];
+    });
+  }, []);
 
   const navItems: Array<{ id: ActiveTab; label: string }> = [
     { id: 'demo', label: 'Live Demo' },
@@ -613,17 +636,37 @@ export default function App() {
             )}
 
             {labStage === 'explorer' && (
-              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-5">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <h2 className="text-base font-semibold text-slate-900">
                       Sample Reflectance &amp; Vegetation Index Explorer
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Inspect individual leaf observations from <code className="font-mono">{datasetSummary?.files?.[0] || 'data/raw/'}</code>
+                      Inspect individual leaf scans from <code className="font-mono">{datasetSummary?.files?.[0] || 'data/raw/'}</code> · Click any row to plot its 460–970 nm spectral profile
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md">
+                      <button
+                        type="button"
+                        onClick={() => setPipelineSource('primary')}
+                        className={`px-2.5 py-1 text-xs font-medium rounded cursor-pointer ${
+                          pipelineSource === 'primary' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                        }`}
+                      >
+                        Primary (Zenodo)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPipelineSource('synthetic')}
+                        className={`px-2.5 py-1 text-xs font-medium rounded cursor-pointer ${
+                          pipelineSource === 'synthetic' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600'
+                        }`}
+                      >
+                        Synthetic (61 bands)
+                      </button>
+                    </div>
                     <div className="relative">
                       <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                       <input
@@ -649,10 +692,21 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto border border-slate-200 rounded-md">
+                {/* Interactive Spectral Profile Chart for Selected Rows (460-970 nm) */}
+                <SampleScanProfileChart
+                  selectedRows={selectedSampleRows}
+                  referenceCurves={datasetSummary?.curves || []}
+                  onRemoveRow={(sampleId) =>
+                    setSelectedSampleIds((prev) => prev.filter((id) => id !== sampleId))
+                  }
+                  onClearAll={() => setSelectedSampleIds([])}
+                />
+
+                <div className="overflow-x-auto border border-slate-200 rounded-md max-h-[460px] overflow-y-auto">
                   <table className="w-full text-left border-collapse text-xs font-mono tabular-nums">
-                    <thead>
+                    <thead className="sticky top-0 z-10">
                       <tr className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                        <th className="px-3 py-2 font-medium w-9 text-center">Plot</th>
                         <th className="px-3 py-2 font-medium">Plant ID</th>
                         <th className="px-3 py-2 font-medium">Pot</th>
                         <th className="px-3 py-2 font-medium">Date</th>
@@ -666,23 +720,54 @@ export default function App() {
                     <tbody className="divide-y divide-slate-100">
                       {filteredSampleRows.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="px-4 py-6 text-center font-sans text-slate-500">
+                          <td colSpan={9} className="px-4 py-6 text-center font-sans text-slate-500">
                             No sample scans match your filter.
                           </td>
                         </tr>
                       ) : (
-                        filteredSampleRows.map((row) => (
-                          <tr key={row.sampleId} className="hover:bg-slate-50/70">
-                            <td className="px-3 py-2 font-semibold text-slate-900">{row.plantId}</td>
-                            <td className="px-3 py-2 text-slate-600">{row.potNumber}</td>
-                            <td className="px-3 py-2 text-slate-600">{row.date}</td>
-                            <td className="px-3 py-2 font-sans text-slate-800">{row.label}</td>
-                            <td className="px-3 py-2 text-right text-slate-700">{row.r670.toFixed(2)}</td>
-                            <td className="px-3 py-2 text-right text-slate-700">{row.r780.toFixed(2)}</td>
-                            <td className="px-3 py-2 text-right font-semibold text-teal-800">{row.ndvi.toFixed(3)}</td>
-                            <td className="px-3 py-2 text-right text-slate-700">{row.ndre.toFixed(3)}</td>
-                          </tr>
-                        ))
+                        filteredSampleRows.map((row) => {
+                          const isSelected = selectedSampleIds.includes(row.sampleId);
+                          return (
+                            <tr
+                              key={row.sampleId}
+                              role="button"
+                              tabIndex={0}
+                              aria-selected={isSelected}
+                              onClick={() => toggleSampleSelection(row.sampleId)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  toggleSampleSelection(row.sampleId);
+                                }
+                              }}
+                              className={`cursor-pointer transition-colors ${
+                                isSelected
+                                  ? 'bg-teal-50/75 hover:bg-teal-50'
+                                  : 'hover:bg-slate-50/80'
+                              }`}
+                            >
+                              <td className="px-3 py-2 text-center">
+                                <span
+                                  className={`inline-flex items-center justify-center w-4 h-4 rounded border transition-colors ${
+                                    isSelected
+                                      ? 'bg-teal-800 border-teal-800 text-white'
+                                      : 'bg-white border-slate-300 text-transparent'
+                                  }`}
+                                >
+                                  <Check className="w-3 h-3" />
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 font-semibold text-slate-900">{row.plantId}</td>
+                              <td className="px-3 py-2 text-slate-600">{row.potNumber}</td>
+                              <td className="px-3 py-2 text-slate-600">{row.date}</td>
+                              <td className="px-3 py-2 font-sans text-slate-800">{row.label}</td>
+                              <td className="px-3 py-2 text-right text-slate-700">{row.r670.toFixed(2)}</td>
+                              <td className="px-3 py-2 text-right text-slate-700">{row.r780.toFixed(2)}</td>
+                              <td className="px-3 py-2 text-right font-semibold text-teal-800">{row.ndvi.toFixed(3)}</td>
+                              <td className="px-3 py-2 text-right text-slate-700">{row.ndre.toFixed(3)}</td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
