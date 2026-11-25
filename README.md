@@ -4,7 +4,7 @@
 
 ### Hyperspectral Crop Stress Detection & Temporal Forecasting
 
-*Leak-free spectral machine learning, from raw leaf reflectance to explainable stress detection and multi-horizon canopy forecasts.*
+*Leak-free spectral machine learning: from raw leaf reflectance to explainable stress detection and multi-horizon canopy forecasts.*
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Node](https://img.shields.io/badge/Node.js-18%2B-339933)
@@ -13,9 +13,47 @@
 ![Synthetic](https://img.shields.io/badge/Synthetic-Apache--2.0-green)
 ![Status](https://img.shields.io/badge/Status-Week%203%20in%20progress-yellow)
 
-[Quick Start](#-quick-start) · [Key Results](#-key-results) · [Methodology](#-methodology) · [Pipeline](#-running-the-full-pipeline) · [Web App](#-web-application) · [Limitations](#-limitations)
-
 </div>
+
+---
+
+## Table of Contents
+
+- [Why TerraSpectra](#-why-terraspectra)
+- [At a Glance](#-at-a-glance)
+- [Key Results](#-key-results)
+- [Quick Start](#-quick-start)
+- [Data Sources](#-data-sources)
+- [Methodology](#-methodology)
+- [Vegetation Indices](#-vegetation-indices)
+- [Evaluation Protocol](#-evaluation-protocol)
+- [Installation](#-installation)
+- [Running the Full Pipeline](#-running-the-full-pipeline)
+- [Web Application](#-web-application)
+- [Repository Structure](#-repository-structure)
+- [Limitations](#-limitations)
+- [Risks & Mitigations](#-risks--mitigations)
+- [Roadmap](#-roadmap)
+- [Reproducibility](#-reproducibility)
+- [Troubleshooting](#-troubleshooting)
+- [FAQ](#-faq)
+- [Glossary](#-glossary)
+- [Contributing](#-contributing)
+- [Citation](#-citation)
+- [License](#-license)
+
+---
+
+## 🎯 Why TerraSpectra
+
+Spectral datasets usually contain **many repeated scans of the same plant**. If those replicates land in both the training and validation sets, models memorise plants instead of learning stress signatures, and reported accuracy looks better than it really is.
+
+TerraSpectra is built around one rule: **no information from a validation plant may ever reach training.** Every split is grouped by `Plant_ID`, and every transform (PCA, feature selection, scaling) is fit on training folds only. On top of that honest foundation it provides:
+
+- **Detection:** classify leaf stress from reflectance spectra.
+- **Explanation:** show which wavelengths and indices drive predictions, and how early stress is caught.
+- **Forecasting:** predict future canopy NDVI per plant.
+- **A live workbench** for scoring spectra and CSV batches.
 
 ---
 
@@ -23,40 +61,45 @@
 
 | | |
 |---|---|
-| **Goal** | Detect crop leaf stress from reflectance spectra and forecast future canopy NDVI |
-| **Core principle** | **Zero leakage**: every split is grouped by `Plant_ID`; every transform is fit on training folds only |
+| **Core principle** | Zero leakage: grouped splits on `Plant_ID`, fit-on-train-only transforms |
 | **Primary data** | 79 plants · 2 genotypes · 31 dates · 10 bands (365–970 nm) · 2,272 clean scans |
 | **Classifiers** | Random Forest, XGBoost, SVM (RBF), PLS-DA, Neural MLP |
 | **Forecasters** | Persistence baseline, Lag-Feature Ridge, Lag-Feature Random Forest |
-| **Interpretability** | Validation-fold SHAP (`TreeExplainer`) + early-detection lead time |
+| **Indices** | NDVI, NDRE, PRI, MCARI, Red-Edge Position |
+| **Interpretability** | Validation-fold SHAP (`TreeExplainer`) and early-detection lead time |
 | **Interface** | Express + Node web workbench backed by cached Python models |
+
+| Task | What it does | Core modules |
+|---|---|---|
+| **1. Detection & Diagnosis** | Preprocess spectra, extract indices, benchmark classifiers in grouped CV | `preprocessing.py`, `features.py`, `evaluation.py` |
+| **2. Interpretability & Early Detection** | Rank wavelengths/indices with SHAP, measure lead time on holdout plants, serve live scoring | `inference.py` |
+| **3. Temporal Forecasting** | Sliding windows (`W = 3`) forecasting NDVI<sub>t+k</sub>, `k ∈ {1, 2, 3}` | `sequences.py` |
 
 ---
 
-## 🧭 Overview
+## 📊 Key Results
 
-TerraSpectra solves three connected phenotyping tasks:
+### 🔒 Leakage changes the story
+For **XGBoost on Feature Set E (Macro-F1)**:
 
-| # | Task | Core modules |
-|---|------|--------------|
-| 1 | **Detection & Diagnosis**: classify leaf stress from spectra | `src/preprocessing.py`, `src/features.py`, `src/evaluation.py` |
-| 2 | **Interpretability & Early Detection**: find which wavelengths/indices matter and how early stress is caught | `src/inference.py` |
-| 3 | **Temporal Forecasting**: predict future canopy NDVI per plant | `src/sequences.py` |
+| Split strategy | Macro-F1 |
+| --- | :---: |
+| `StratifiedGroupKFold(plant_id)`, honest | **0.4877** |
+| Naive random split, leaky | 0.5758 |
+| **Inflation from leakage** | **+0.0881** |
 
-**1. Detection & Diagnosis**
-- Preprocessing: `BadBandDropper` (drops the noisy 365 nm UV band), `ReflectanceSanitizer`, Savitzky–Golay denoising, SNV / MSC scatter normalization, first derivative.
-- Vegetation indices (uncentered): **NDVI, NDRE, PRI, MCARI, Red-Edge Position (REP)**.
-- Feature Sets **A–E**, built with train-only PCA and RF + mutual-information (MI) selection.
-- Benchmarked in a frozen 5-fold `StratifiedGroupKFold(plant_id)`.
+> **Takeaway:** ignoring plant identity inflates performance by roughly 9 F1 points. Every headline number in this project uses the grouped figure.
 
-**2. Interpretability & Early Detection**
-- Ranks wavelengths and indices with validation-fold SHAP values.
-- Measures early-detection **lead time** on unseen holdout plants.
-- Powers real-time spectrum classification and batch CSV scoring.
+### 📈 Forecasting beats Persistence at every horizon
+Setup: `W = 3`, 1,828–1,986 sequences depending on horizon. At `k = +3`:
 
-**3. Temporal Forecasting**
-- Sliding windows of `W = 3` prior dates per plant.
-- Forecasts NDVI<sub>t+k</sub> for `k ∈ {1, 2, 3}` against the Persistence baseline (ŷ<sub>t+k</sub> = y<sub>t</sub>), validated with `GroupKFold(plant_id)`.
+| Model | MAE ↓ | R² ↑ |
+| --- | :---: | :---: |
+| Persistence baseline (ŷ<sub>t+k</sub> = y<sub>t</sub>) | 0.0688 | 0.7758 |
+| **Lag-Feature Random Forest** | **0.0327** | **0.9425** |
+| **MAE reduction** | **52.5%** | |
+
+> **Reading the results:** classifying drought stress from 10 bands is hard once leakage is removed (Macro-F1 ≈ 0.49), while short-horizon NDVI forecasting is far more tractable.
 
 ---
 
@@ -67,42 +110,16 @@ TerraSpectra solves three connected phenotyping tasks:
 python3 -m venv .venv && source .venv/bin/activate
 pip install --upgrade pip && pip install -r requirements.txt
 
-# 2. Place data in data/raw/ (see "Data Sources"), then run the pipeline
+# 2. Put the Zenodo CSVs in data/raw/, then verify and run a core stage
 python3 src/pipeline/verify_env.py
 python3 src/pipeline/run_day5_baselines.py      # grouped-CV baselines + leakage audit
 
-# 3. Launch the web app
+# 3. Build the model cache and launch the app
 python3 src/inference.py --action warm-cache
 npm install && npm run dev                      # http://localhost:3000
 ```
 
-> Stages build on each other. For a clean first run, use the [full ordered pipeline](#-running-the-full-pipeline) below.
-
----
-
-## 📊 Key Results
-
-### 🔒 Why Plant-Grouped Validation Matters
-Naive row-level splits leak replicate scans of the same plant across folds. For **XGBoost on Feature Set E (Macro-F1)**:
-
-| Split strategy | Macro-F1 |
-| --- | :---: |
-| `StratifiedGroupKFold(plant_id)`, honest | **0.4877** |
-| Naive random split, leaky | 0.5758 |
-| **Inflation from leakage** | **+0.0881** |
-
-> **Takeaway:** ignoring plant identity makes the model look ~9 F1 points better than it really is. Reported numbers in this project use the grouped, honest figure.
-
-### 📈 Temporal Forecasting (`W = 3`, 1,828–1,986 sequences)
-Lag-Feature Random Forest beats Persistence at **every horizon**. At `k = +3`:
-
-| Model | MAE ↓ | R² ↑ |
-| --- | :---: | :---: |
-| Persistence baseline | 0.0688 | 0.7758 |
-| **Lag-Feature Random Forest** | **0.0327** | **0.9425** |
-| **MAE reduction** | **52.5%** | |
-
-> Grouped Macro-F1 around 0.49 shows that stress classification from 10 bands is genuinely hard once leakage is removed, while NDVI forecasting is far more tractable.
+> Stages feed each other. For a clean first run, use the [full ordered pipeline](#-running-the-full-pipeline).
 
 ---
 
@@ -113,7 +130,7 @@ Lag-Feature Random Forest beats Persistence at **every horizon**. At `k = +3`:
 | **Primary Multi-Temporal Plant Spectra**<br>`data/raw/Multispectral_Reflectance.csv` + `experimental_design.csv` | Zenodo [`10.5281/zenodo.22755812`](https://doi.org/10.5281/zenodo.22755812), *Plant Phenotyping and Environmental Stress Dataset* | **CC-BY-4.0** | 2,285 rows (2,272 clean valid scans), 79 plants (`Plant_ID`), 2 genotypes, 31 dates, 10 bands (365–970 nm). Labels are **abiotic water/drought stress** (`Control 40%` vs `Drought 10%`), **not** pathogen inoculation. |
 | **Companion Synthetic Benchmark**<br>`data/raw/synthetic_leaf_disease_spectra_v1.csv` | Local generator: `src/pipeline/generate_synthetic_spectra.py` | **Apache-2.0** | 120 scans × 61 bands (400–1000 nm, 10 nm step), 4 stages (`Healthy`, `Early_Chlorosis`, `Moderate_Blight`, `Severe_Necrosis`), 5 dates. Tagged `SYNTHETIC_CONTROLLED_STRESS`. |
 
-Files in `data/raw/` are treated as **immutable**. Please cite the Zenodo record if you reuse the data.
+Files in `data/raw/` are **immutable**. Please cite the Zenodo record if you reuse the data.
 
 ---
 
@@ -122,7 +139,7 @@ Files in `data/raw/` are treated as **immutable**. Please cite the Zenodo record
 ```mermaid
 flowchart LR
     A[Raw spectra<br/>Zenodo + Synthetic] --> B[Preprocessing<br/>BadBand · SG · SNV/MSC]
-    B --> C[Vegetation indices<br/>NDVI · NDRE · PRI · MCARI · REP]
+    B --> C[Vegetation indices]
     C --> D[Feature Sets A–E<br/>train-only PCA · RF+MI]
     D --> E[Grouped CV<br/>StratifiedGroupKFold]
     E --> F[Models<br/>RF · XGB · SVM · PLS-DA · MLP]
@@ -134,17 +151,20 @@ flowchart LR
     J --> K[Web workbench]
 ```
 
-### Zero-Leakage Guarantees
+### Preprocessing (`src/preprocessing.py`)
 
-| Guarantee | How it is enforced |
+| Step | Purpose |
 | --- | --- |
-| Plant-level separation | All splits keyed on `Plant_ID`; replicates of one plant never straddle train/validation |
-| Fit-on-train-only | PCA, RF + MI selection and scalers are fit inside each training fold |
-| Frozen folds | CV splits saved in `data/processed/*.json` so all models share identical partitions |
-| Chronological forecasting | Windows respect time order and use `GroupKFold(plant_id)` |
-| Explicit audit | Stage 5 quantifies the naive-vs-grouped gap (+0.0881 Macro-F1) |
+| `BadBandDropper` | Drops the noisy 365 nm UV band |
+| `ReflectanceSanitizer` | Cleans invalid reflectance values |
+| Savitzky–Golay | Denoises spectra |
+| SNV / MSC | Scatter normalization |
+| First derivative | Emphasises spectral shape over absolute level |
 
-### Models Benchmarked
+### Features (`src/features.py`)
+Uncentered vegetation indices plus **Feature Sets A–E**, built with train-only PCA and RF + mutual-information (MI) selection.
+
+### Models
 
 | Task | Models |
 | --- | --- |
@@ -152,24 +172,49 @@ flowchart LR
 | Forecasting | Persistence · Lag-Feature Ridge · Lag-Feature Random Forest |
 | Planned (Week 3) | 1D-CNN · GRU / LSTM · *(optional)* 3D-CNN |
 
+### Zero-Leakage Guarantees
+
+| Guarantee | How it is enforced |
+| --- | --- |
+| Plant-level separation | All splits keyed on `Plant_ID` |
+| Fit-on-train-only | PCA, RF + MI selection and scalers fit inside each training fold |
+| Frozen folds | CV splits saved in `data/processed/*.json`, shared by all models |
+| Chronological forecasting | Windows respect time order; `GroupKFold(plant_id)` |
+| Explicit audit | Stage 5 quantifies the naive-vs-grouped gap |
+
 ---
 
-## 🧰 Tech Stack
+## 🌱 Vegetation Indices
 
-| Layer | Tools |
+Standard literature definitions are shown below. The exact band choices for the 10-band dataset (nearest available band to each wavelength) are implemented in `src/features.py`.
+
+| Index | Common formula | Sensitive to |
+| --- | --- | --- |
+| **NDVI** | (NIR − Red) / (NIR + Red) | Canopy greenness / biomass |
+| **NDRE** | (NIR − RedEdge) / (NIR + RedEdge) | Chlorophyll content, early stress |
+| **PRI** | (R531 − R570) / (R531 + R570) | Xanthophyll cycle, light-use efficiency |
+| **MCARI** | [(R700 − R670) − 0.2 (R700 − R550)] × (R700 / R670) | Chlorophyll absorption |
+| **REP** | Wavelength of steepest red-edge slope (~680–750 nm) | Chlorophyll status (red-edge shift) |
+
+---
+
+## 🧪 Evaluation Protocol
+
+| Item | Setting |
 | --- | --- |
-| Core ML | Python, NumPy, pandas, scikit-learn, XGBoost, PyTorch |
-| Spectral / cube I/O | `spectral`, `rasterio`, `h5py` |
-| Interpretability | SHAP |
-| Visualization | matplotlib, plotly |
-| Web workbench | Node.js, Express (`server.ts`) bridging to Python artifacts |
-| Workflow | Git / GitHub |
+| Classification CV | Frozen 5-fold `StratifiedGroupKFold(plant_id)` |
+| Forecasting CV | `GroupKFold(plant_id)` |
+| Classification metric | Macro-F1 from out-of-fold (OOF) predictions |
+| Forecasting metrics | MAE and R², compared against Persistence |
+| Early detection | Lead time measured on unseen holdout plants |
+| Interpretability | SHAP on validation folds only |
+| Comparison rule | All models evaluated on identical saved folds |
 
 ---
 
 ## ⚙️ Installation
 
-**Prerequisites:** Python 3.10+ and Node.js 18+ with npm (version minimums are recommended defaults; adjust to your tested environment).
+**Prerequisites:** Python 3.10+ and Node.js 18+ with npm (recommended minimums; adjust to your tested environment).
 
 ```bash
 python3 -m venv .venv
@@ -178,11 +223,11 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+**Tech stack:** Python · NumPy · pandas · scikit-learn · XGBoost · PyTorch · `spectral` / `rasterio` / `h5py` · matplotlib / plotly · SHAP · Node.js + Express.
+
 ---
 
 ## 🔁 Running the Full Pipeline
-
-Run the stages in order:
 
 ```bash
 # Stage 0: Verify core Python stack imports
@@ -200,7 +245,7 @@ python3 src/pipeline/run_day3_preprocessing.py
 # Stage 4: Vegetation indices, train-only PCA / RF+MI Sets A–E → Figures 07–08
 python3 src/pipeline/run_day4_features.py
 
-# Stage 5: Grouped-CV baselines (RF, XGBoost, SVM, PLS-DA) + leakage audit → Figures 09–10
+# Stage 5: Grouped-CV baselines + leakage audit → Figures 09–10
 python3 src/pipeline/run_day5_baselines.py
 
 # Stage 6: Error analysis, SHAP alignment, tuning, forecasting → Figures 11–13
@@ -219,7 +264,7 @@ python3 src/inference.py --action warm-cache
 | 3 | `run_day3_preprocessing.py` | Preprocessed matrices, Figures 05–06 |
 | 4 | `run_day4_features.py` | Sets A–E, Figures 07–08 |
 | 5 | `run_day5_baselines.py` | Baseline table, leakage audit, Figures 09–10 |
-| 6 | `run_day6_error_and_forecast.py` | Error/SHAP/forecast results, Figures 11–13 |
+| 6 | `run_day6_error_and_forecast.py` | Error / SHAP / forecast results, Figures 11–13 |
 | 7 | `week3_models.py`, `inference.py` | MLP comparator, cached inference bundle |
 
 ### Outputs
@@ -236,19 +281,26 @@ python3 src/inference.py --action warm-cache
 
 ## 🖥 Web Application
 
+```mermaid
+flowchart LR
+    U[Browser<br/>localhost:3000] --> S[server.ts<br/>Express API]
+    S --> P[src/inference.py]
+    P --> C[(Cached inference bundle<br/>data/processed/)]
+```
+
 ```bash
-python3 src/inference.py --action warm-cache   # build model cache first
+python3 src/inference.py --action warm-cache   # build the model cache first
 npm install
 npm run dev
 # Open http://localhost:3000
 ```
 
-`server.ts` is an Express bridge to the live Python models and artifacts. The workbench supports:
-
-- **Live spectrum classification** for a single spectrum
-- **Batch CSV scoring**
-- **Canopy NDVI forecasting**
-- **Early-detection lead-time** analysis
+| Capability | Description |
+| --- | --- |
+| Live spectrum classification | Score a single spectrum in real time |
+| Batch CSV scoring | Score many scans from a CSV |
+| NDVI forecasting | Forecast future canopy NDVI from a plant's recent scans |
+| Early-detection lead time | See how far ahead stress is flagged |
 
 ---
 
@@ -286,12 +338,20 @@ npm run dev
 └── requirements.txt
 ```
 
+| Document | Purpose |
+| --- | --- |
+| `docs/project_report.md` | Full technical report draft |
+| `docs/project_brief.md` | Scope, goals and metric framing |
+| `docs/dataset_note.md` | Dataset audit and metadata decisions |
+| `docs/week3_plan.md` | Deep-learning roadmap |
+| `docs/weekly_mentor_update.md` | Progress summary for mentor review |
+
 ---
 
 ## ⚠️ Limitations
 
 - **Abiotic, not biotic stress:** primary labels are water/drought stress. Do **not** read results as pathogen or disease detection on real crops.
-- **Synthetic data is not field data:** the synthetic benchmark validates the pipeline and dense-band behavior only.
+- **Synthetic data is not field data:** it validates the pipeline and dense-band behavior only.
 - **Coarse spectral resolution:** 10 bands (365–970 nm) limit fine red-edge and derivative features.
 - **Modest honest accuracy:** grouped Macro-F1 ≈ 0.49 (XGBoost, Set E) reflects a hard task once leakage is removed.
 - **Small cohort:** 79 plants and 2 genotypes limit claims about other species and environments.
@@ -303,7 +363,7 @@ npm run dev
 | Risk | Mitigation |
 | --- | --- |
 | No suitable dataset | Decide by end of Week 1; use the documented fallback instead of waiting |
-| Curse of dimensionality (few samples, many bands) | Band selection or PCA (train-only), strong regularization, cross-validation |
+| Curse of dimensionality | Band selection or PCA (train-only), strong regularization, cross-validation |
 | Data leakage | Group-based splits on `Plant_ID` plus an explicit leakage audit |
 | Time overrun | Treat the 3D-CNN as optional; a solid baseline, working demo and clear report beat an unfinished deep model |
 | Plagiarism / attribution | Original code and text; cite every dataset and paper used |
@@ -312,22 +372,24 @@ npm run dev
 
 ## 🗺 Roadmap
 
-- [x] Leak-free preprocessing and feature pipeline
-- [x] Grouped-CV baselines (RF, XGBoost, SVM, PLS-DA) and leakage audit
-- [x] SHAP interpretability and early-detection lead time
-- [x] Multi-horizon forecasting (Persistence / Ridge / RF)
-- [x] Neural MLP comparator and live inference app
-- [ ] 1D-CNN and GRU / LSTM models (`docs/week3_plan.md`)
-- [ ] Light hyperparameter tuning across models
-- [ ] Finish report Sections 5–6
-- [ ] *(Optional)* 3D-CNN on hyperspectral cubes
+| Status | Milestone |
+| :---: | --- |
+| ✅ | Leak-free preprocessing and feature pipeline |
+| ✅ | Grouped-CV baselines (RF, XGBoost, SVM, PLS-DA) and leakage audit |
+| ✅ | SHAP interpretability and early-detection lead time |
+| ✅ | Multi-horizon forecasting (Persistence / Ridge / RF) |
+| ✅ | Neural MLP comparator and live inference app |
+| ⬜ | 1D-CNN and GRU / LSTM models (`docs/week3_plan.md`) |
+| ⬜ | Light hyperparameter tuning across models |
+| ⬜ | Finish report Sections 5–6 |
+| ⬜ | *(Optional)* 3D-CNN on hyperspectral cubes |
 
 ---
 
-## 🧪 Reproducibility Checklist
+## 🔁 Reproducibility
 
 - [x] Frozen CV folds saved to `data/processed/`
-- [x] All preprocessing, PCA and selection fit on training folds only
+- [x] Preprocessing, PCA and selection fit on training folds only
 - [x] Per-stage metrics in `reports/day*_metrics.json`
 - [x] Experiment tracker in `reports/experiment_log.csv`
 - [x] Immutable raw data
@@ -339,37 +401,58 @@ npm run dev
 
 | Problem | Likely fix |
 | --- | --- |
-| `ModuleNotFoundError` | Activate `.venv` and re-run `pip install -r requirements.txt`; verify with `verify_env.py` |
+| `ModuleNotFoundError` | Activate `.venv`, re-run `pip install -r requirements.txt`, check with `verify_env.py` |
 | Web app shows no predictions | Run `python3 src/inference.py --action warm-cache` first |
 | Missing data file errors | Confirm both Zenodo CSVs are in `data/raw/` with exact filenames |
-| Port 3000 in use | Stop the other process or change the port in `server.ts` |
-| Later stage fails | Run earlier stages first; outputs from each stage feed the next |
+| Port 3000 already in use | Stop the other process or change the port in `server.ts` |
+| A later stage fails | Run earlier stages first; each stage's outputs feed the next |
 
 ---
 
 ## ❓ FAQ
 
 **Why is Macro-F1 only ~0.49?**
-Because the evaluation is honest. Plants never cross folds, and the data has only 10 bands. The naive split's 0.5758 is inflated by leakage.
+The evaluation is honest: plants never cross folds and the data has only 10 bands. The naive split's 0.5758 is inflated by leakage.
 
 **Is this disease detection?**
 No. The real data captures drought stress. The synthetic benchmark simulates disease stages but is not real.
 
 **Why compare against Persistence?**
-It is the hardest simple baseline for time series. Beating it (52.5% lower MAE at `k = +3`) shows the lag features add real signal.
+It is a strong, simple time-series baseline. Cutting MAE by 52.5% at `k = +3` shows the lag features add real signal.
+
+**Why group by `Plant_ID`?**
+Repeated scans of one plant are highly correlated. Grouping prevents the model from being rewarded for recognising a plant it has already seen.
+
+---
+
+## 📖 Glossary
+
+| Term | Meaning |
+| --- | --- |
+| **Leakage** | Information from validation data influencing training, inflating metrics |
+| **Grouped CV** | Cross-validation where all samples of one group (plant) stay in the same fold |
+| **OOF** | Out-of-fold: predictions made on data a model did not train on |
+| **Macro-F1** | F1 averaged equally across classes |
+| **SNV / MSC** | Standard Normal Variate / Multiplicative Scatter Correction |
+| **SG filter** | Savitzky–Golay smoothing filter |
+| **SHAP** | Shapley-value-based feature attribution |
+| **PLS-DA** | Partial Least Squares Discriminant Analysis |
+| **REP** | Red-Edge Position |
+| **Persistence** | Baseline that predicts the future equals the latest observation |
+| **Lead time** | How much earlier stress is detected than a reference point |
 
 ---
 
 ## 🤝 Contributing
 
 1. Fork and create a feature branch.
-2. Keep all splits grouped by `Plant_ID` and fit every transform on training data only.
+2. Keep all splits grouped by `Plant_ID`; fit every transform on training data only.
 3. Log new experiments in `reports/experiment_log.csv`.
 4. Open a pull request describing the change and its effect on grouped-CV metrics.
 
 ---
 
-## 📚 Citation & Acknowledgements
+## 📚 Citation
 
 Please cite the source dataset:
 
